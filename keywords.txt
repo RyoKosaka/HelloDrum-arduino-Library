@@ -9,6 +9,7 @@ cymbal2Piezo	KEYWORD2
 hihat	KEYWORD2
 hihatControl	KEYWORD2
 
+velocity  KEYWORD2
 hit	KEYWORD2
 hit_rim	KEYWORD2
 hit_edge	KEYWORD2
