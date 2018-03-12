@@ -5,7 +5,8 @@ work in progress(12/3/2018)
 ## Description
 
 This is a library for making E-Drum with Arduino.  
-By using it with Arduino MIDI Library, you can make E-drum.  [Open E-Drums](https://open-e-drums.tumblr.com/)
+By using it with Arduino MIDI Library, you can make E-drum.  
+[Open E-Drums](https://open-e-drums.tumblr.com/)
 
 ## Features
 
@@ -39,7 +40,8 @@ I am publishing the STL data of pads from 6 inches to 12 inches.(<https://www.th
 
 ## Author
 
-[@tnctrekit](https://twitter.com/tnctrekit)  [Works](https://www.tumblr.com/blog/ryokosaka)
+[@tnctrekit](https://twitter.com/tnctrekit)  
+[Works](https://www.tumblr.com/blog/ryokosaka)
 
 ## Licence
 
