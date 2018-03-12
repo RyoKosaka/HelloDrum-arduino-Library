@@ -69,7 +69,7 @@ void loop() {
     MIDI.sendNoteOff(SNARE[4], 0, 10);
   }
   
-  else if (tom.hit == true) {
+  if (tom.hit == true) {
     MIDI.sendNoteOn(TOM[4], tom.velocity, 10);  //(note, velocity, channel)
     MIDI.sendNoteOff(TOM[4], 0, 10);
   }
