@@ -25,7 +25,7 @@ By using it with Arduino MIDI Library, you can make E-drum.
 - TCRT5000
 ![tcrt](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/TCRT5000.png)
 
--YAMAHA PCY135/PCY155
+- YAMAHA PCY135/PCY155
 ![pcy](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/YAMAHA_PCY135_155.png)
 
 
