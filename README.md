@@ -17,7 +17,7 @@ By using it with Arduino MIDI Library, you can make E-drum.
 
 ## Circuit
 - Single Piezo
-![sp](hhttps://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/singlePiezo.png)
+![sp](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/singlePiezo.png)
 
 - Dual Piezo
 ![dp](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/dualPiezo.png)
@@ -26,6 +26,7 @@ By using it with Arduino MIDI Library, you can make E-drum.
 ![tcrt](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/TCRT5000.png)
 
 -YAMAHA PCY135/PCY155
+![pcy](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/YAMAHA_PCY135_155.png)
 
 
 ## Pads
