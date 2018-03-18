@@ -15,6 +15,19 @@ By using it with Arduino MIDI Library, you can make E-drum.
 - Sensitivity, threshold, retrigger cancellation, note number can be set with each piezo. 
 - Both optical(TCRT5000) and FSR type hi-hat controllers can be used.
 
+## Circuit
+- Single Piezo
+![sp](hhttps://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/singlePiezo.png)
+
+- Dual Piezo
+![dp](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/dualPiezo.png)
+
+- TCRT5000
+![tcrt](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/TCRT5000.png)
+
+-YAMAHA PCY135/PCY155
+
+
 ## Pads
 
 I am publishing the STL data of pads from 6 inches to 12 inches.(<https://www.thingiverse.com/RyoKosaka/designs>)
