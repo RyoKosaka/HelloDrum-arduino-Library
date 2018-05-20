@@ -1,5 +1,5 @@
 /*
-  EXAMPLE - Minimal Drum Kit (kick Snare Hihat)
+  EXAMPLE - Minimal Drum Kit (kick Snare Hihat Ride)
 
   With this sample code, you can make minimal drum kit.
 
@@ -8,6 +8,7 @@
     Piezo for snare to A1.
     Piezo for hihat to A2.
     TCRT5000 for hihat controller to A3
+    Yamaha PCY135/155 to A4,A5
 
   Buttons Circuit:
     Button for EDIT to digital pin 6
@@ -46,6 +47,7 @@ HelloDrum kick(0);
 HelloDrum snare(1);
 HelloDrum hihat(2);
 HelloDrum hihatControl(3);
+HelloDrum ride(4, 5);
 
 //Set the DIGITAL pin number to which the button and the LCD are connected.
 HelloDrumButton button(6, 7, 8, 9, 10); //(EDIT,UP,DOWN,NEXT,BACK)
@@ -66,6 +68,7 @@ void setup() {
   snare.settingName("SNARE");
   hihat.settingName("HIHAT");
   hihatControl.settingName("HIHAT PEDAL");
+  ride.settingName("RIDE");
 
 
   //Load settings from EEPROM.
@@ -74,6 +77,7 @@ void setup() {
   snare.loadMemory();
   hihat.loadMemory();
   hihatControl.loadMemory();
+  ride.loadMemory();
 }
 
 void loop() {
@@ -87,6 +91,7 @@ void loop() {
   snare.settingEnable();
   hihat.settingEnable();
   hihatControl.settingEnable();
+  ride.settingEnable();
 
 
   ////////// 2. SENSING & SENDING MIDI////////////
@@ -98,16 +103,19 @@ void loop() {
   hihatControl.TCRT5000();
 
   //Sending MIDI signals.
+  //KICK//
   if (kick.hit == true) {
     MIDI.sendNoteOn(kick.note, kick.velocity, 10);  //(note, velocity, channel)
     MIDI.sendNoteOff(kick.note, 0, 10);
   }
 
+  //SNARE//
   if (snare.hit == true) {
     MIDI.sendNoteOn(snare.note, snare.velocity, 10);  //(note, velocity, channel)
     MIDI.sendNoteOff(snare.note, 0, 10);
   }
 
+  //HIHAT//
   if (hihat.hit == true) {
     //check open or close
     //1.open
@@ -122,6 +130,7 @@ void loop() {
     }
   }
 
+  //HIHAT CONTROLLER//
   //when hihat is closed
   if (hihatControl.closeHH == true) {
     MIDI.sendNoteOn(hihatControl.note, hihatControl.velocity, 10);  //(note of pedal, velocity, channel)
@@ -133,4 +142,32 @@ void loop() {
     MIDI.sendControlChange(4, hihatControl.pedalCC, 10);
   }
   
+  //RIDE//
+  //1.bow
+  if (ride.hit == true) {
+    MIDI.sendNoteOn(ride.note, ride.velocity, 10);  //(note, velocity, channel)
+    MIDI.sendNoteOff(ride.note, 0, 10);
+  }
+
+  //2.edge
+  else if (ride.hitRim == true) {
+    MIDI.sendNoteOn(ride.noteRim, ride.velocity, 10);  //(note, velocity, channel)
+    MIDI.sendNoteOff(ride.noteRim, 0, 10);
+  }
+
+  //3.cup
+  else if (ride.hitCup == true) {
+    MIDI.sendNoteOn(ride.noteCup, ride.velocity, 10);  //(note, velocity, channel)
+    MIDI.sendNoteOff(ride.noteCup, 0, 10);
+  }
+
+  //4.choke
+  if (ride.choke == true) {
+    MIDI.sendPolyPressure(ride.note, 127, 10);
+    MIDI.sendPolyPressure(ride.noteRim, 127, 10);
+    MIDI.sendPolyPressure(ride.noteCup, 127, 10);
+    MIDI.sendPolyPressure(ride.note, 0, 10);
+    MIDI.sendPolyPressure(ride.noteRim, 0, 10);
+    MIDI.sendPolyPressure(ride.noteCup, 0, 10);
+  }
 }
