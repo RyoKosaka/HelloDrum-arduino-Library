@@ -57,13 +57,13 @@ void loop() {
   }
 
   //edge
-  else if (ride.hit_edge == true) {
+  else if (ride.hitRim == true) {
     MIDI.sendNoteOn(RIDE[5], ride.velocity, 10);  //(note, velocity, channel)
     MIDI.sendNoteOff(RIDE[5], 0, 10);
   }
 
   //cup
-  else if (ride.hit_cup == true) {
+  else if (ride.hitCup == true) {
     MIDI.sendNoteOn(RIDE[6], ride.velocity, 10);  //(note, velocity, channel)
     MIDI.sendNoteOff(RIDE[6], 0, 10);
   }
