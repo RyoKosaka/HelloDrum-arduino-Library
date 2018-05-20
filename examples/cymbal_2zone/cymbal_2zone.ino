@@ -57,7 +57,7 @@ void loop() {
   }
 
   //edge
-  else if (crash.hit_edge == true) {
+  else if (crash.hitRim == true) {
     MIDI.sendNoteOn(CRASH[5], crash.velocity, 10);  //(note, velocity, channel)
     MIDI.sendNoteOff(CRASH[5], 0, 10);
   }
