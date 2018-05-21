@@ -747,7 +747,7 @@ void HelloDrum::settingEnable(){
     //Edit mode
     if(button_up == LOW && buttonState == true  && editCheck == true){
 	
-	   switch (itemNumber){
+	switch (itemNumber){
     	 case 0:
     	 sensitivity = sensitivity + UP[itemNumber];
        EEPROM.write(padNum*7, sensitivity);
@@ -818,7 +818,7 @@ void HelloDrum::settingEnable(){
     	 break;
 
        case 5:
-       note = noteRim - UP[itemNumber];
+       noteRim = noteRim - UP[itemNumber];
        EEPROM.write((padNum*7) + 5, noteRim);
        break;
 
