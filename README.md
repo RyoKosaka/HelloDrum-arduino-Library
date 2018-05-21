@@ -31,7 +31,7 @@ By using it with Arduino MIDI Library, you can make E-drum.
 
 ## Pads
 
-I am publishing the STL data of pads from 6 inches to 12 inches.(<https://www.thingiverse.com/RyoKosaka/designs>)
+The STL data of pads from 6 inches to 12 inches.(<https://www.thingiverse.com/RyoKosaka/designs>)
 
 ## Install
 
