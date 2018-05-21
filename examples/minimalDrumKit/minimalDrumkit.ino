@@ -101,6 +101,7 @@ void loop() {
   snare.singlePiezo();
   hihat.singlePiezo();
   hihatControl.TCRT5000();
+  ride.cymbal3zone();
 
   //Sending MIDI signals.
   //KICK//
