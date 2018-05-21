@@ -1,6 +1,6 @@
 # HelloDrum-arduino-Library
 This is a library for making E-Drum with Arduino.  
-**work in progress(3/12/2018)**
+**Ver.0.5(5/21/2018)s**
 
 ## Description
 
@@ -43,6 +43,11 @@ I am publishing the STL data of pads from 6 inches to 12 inches.(<https://www.th
 
 * 0.1
     * Work in progress
+* 0.5
+   *· Setting mode available
+   *· Display function by LCD is available
+   *· Saving function of setting items by EEPROM is available
+   *· Improved sensing of TCRT 5000 hi-hat controller
 
 ## Contributing
 
