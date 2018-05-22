@@ -204,7 +204,7 @@ PolyPressure is a MIDI signal that shows the strength of the power to hold down 
 When choke becomes true, it sets the value to 127 (maximize it) and sends it.
 
 
-##Setting Mode
+## Setting Mode
 
 Please refer to [**this video**](http://www.youtube.com/watch?v=She6CrFEwQw)  
 In this video, "minimalDrumKit.ino" which is sample code is used.  
