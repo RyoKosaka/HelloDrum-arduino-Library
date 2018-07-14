@@ -17,7 +17,7 @@ HelloDrum::HelloDrum(int pin1, int pin2)
 {
   pin_1 = pin1;
   pin_2 = pin2;
-  
+
   //initial value
   note = 38;
   noteRim = 39;
@@ -27,7 +27,7 @@ HelloDrum::HelloDrum(int pin1, int pin2)
   retrigger = 10;
   sensitivity = 80;
 
-  //Give the instance a pad number. 
+  //Give the instance a pad number.
   padNum = padIndex;
   padIndex = ++padIndex;
 }
@@ -445,7 +445,7 @@ void HelloDrum::singlePiezo() {
       flag = true; //ここの位置を検証すべき。showLCDとhitの下だと何か変わるか。
       showLCD = true;
       hit = true;
-      padIndex = padNum;     
+      padIndex = padNum;
     }
   }
 
@@ -506,7 +506,7 @@ void HelloDrum::cymbal2zone() {
         flag = true;
         showLCD = true;
         hit = true;
-        padIndex = padNum;  
+        padIndex = padNum;
       }
 
       //edge
@@ -610,7 +610,7 @@ void HelloDrum::cymbal3zone() {
         flag = true;
         showLCD = true;
         hit = true;
-        padIndex = padNum; 
+        padIndex = padNum;
       }
 
       //edge
@@ -636,7 +636,7 @@ void HelloDrum::cymbal3zone() {
         flag = true;
         showLCD = true;
         hitRim = true;
-        padIndex = padNum; 
+        padIndex = padNum;
       }
 
       //cup
@@ -646,7 +646,7 @@ void HelloDrum::cymbal3zone() {
         flag = true;
         showLCD = true;
         hitCup = true;
-        padIndex = padNum; 
+        padIndex = padNum;
       }
     }
   }
@@ -679,7 +679,7 @@ void HelloDrum::TCRT5000() {
   int velo = 0;
   int TCRT = analogRead(pin_1);
   closeHH = false;
- 
+
   if (TCRT < threshold1 * 10 && pedalVelocityFlag == false && pedalFlag == false) {
     time_hit_pedal_1 = millis();
     pedalVelocityFlag = true;
@@ -746,7 +746,7 @@ void HelloDrum::settingEnable(){
 
     //Edit mode
     if(button_up == LOW && buttonState == true  && editCheck == true){
-	
+
 	switch (itemNumber){
     	 case 0:
     	 sensitivity = sensitivity + UP[itemNumber];
@@ -790,7 +790,7 @@ void HelloDrum::settingEnable(){
     }
 
     if(button_down == LOW && buttonState == true  && editCheck == true){
-    
+
       switch (itemNumber){
     	 case 0:
     	 sensitivity = sensitivity - UP[itemNumber];
@@ -863,7 +863,7 @@ void HelloDrum::settingEnable(){
     }
 
     showValue = value;
-  }  
+  }
 }
 
 void HelloDrum::settingName(char *instrumentName){
@@ -939,14 +939,14 @@ void HelloDrumButton::readButtonState() {
 
   if (button_up == LOW && buttonState == true && editCheck == false) {
     UPDOWN = ++UPDOWN;
-     
+
     if (UPDOWN < 0) {
       UPDOWN = nameIndexMax;
     }
     if (UPDOWN > nameIndexMax) {
       UPDOWN = 0;
     }
-    
+
     nameIndex = UPDOWN;
     push = true;
     buttonState = false;
@@ -955,7 +955,7 @@ void HelloDrumButton::readButtonState() {
 
   if (button_down == LOW && buttonState == true && editCheck == false) {
     UPDOWN = --UPDOWN;
-    
+
     if (UPDOWN < 0) {
       UPDOWN = nameIndexMax;
     }
@@ -972,7 +972,7 @@ void HelloDrumButton::readButtonState() {
 
   if (button_next == LOW && buttonState == true && editCheck == false) {
     NEXTBACK = ++NEXTBACK;
-    
+
     if (NEXTBACK < 0) {
       NEXTBACK = 6;
     }
@@ -988,7 +988,7 @@ void HelloDrumButton::readButtonState() {
 
   if (button_back == LOW && buttonState == true && editCheck == false) {
     NEXTBACK = --NEXTBACK;
-    
+
     if (NEXTBACK < 0) {
       NEXTBACK = 6;
     }
@@ -1013,7 +1013,7 @@ void HelloDrumButton::readButtonState() {
 /////////////////////// 5. LCD  //////////////////////////
 
 void HelloDrumLCD::show(){
-  
+
   //Button Push
   if(push == true){
     lcd.clear();
@@ -1044,7 +1044,7 @@ void HelloDrumLCD::show(){
     lcd.print(item[itemNumber]);
     lcd.setCursor(13, 1);
     lcd.print(showValue);
-    
+
   }
 
   //EDIT DONE

@@ -8,8 +8,8 @@
 static char* item[] = {
     "SENSITIVITY",
     "THRESHOLD1",
-    "THRESHOLD2", 
-    "RETRIGGER", 
+    "THRESHOLD2",
+    "RETRIGGER",
     "NOTE",
     "NOTE RIM",
     "NOTE CUP",
@@ -32,7 +32,7 @@ static char* showInstrument[] = {
     "Pad 14",
     "Pad 15",
     "Pad 16",
-    
+
 };
 
 //static char* showInstrument;
@@ -65,22 +65,22 @@ class HelloDrum
     HelloDrum(int pin1, int pin2);
     HelloDrum(int pin1);
 
-    void HelloDrum::singlePiezo(int sens, int thre1, int thre2, int retri);
-    void HelloDrum::singlePiezo();
-    void HelloDrum::dualPiezo(int sens, int thre1, int thre2, int retri);
-    void HelloDrum::dualPiezo();
-    void HelloDrum::cymbal3zone(int sens, int thre1, int thre2, int retri);
-    void HelloDrum::cymbal3zone();
-    void HelloDrum::cymbal2zone(int sens, int thre1, int thre2, int retri);
-    void HelloDrum::cymbal2zone();
-    void HelloDrum::TCRT5000(int sens, int thre1, int thre2);
-    void HelloDrum::TCRT5000();
+    void singlePiezo(int sens, int thre1, int thre2, int retri);
+    void singlePiezo();
+    void dualPiezo(int sens, int thre1, int thre2, int retri);
+    void dualPiezo();
+    void cymbal3zone(int sens, int thre1, int thre2, int retri);
+    void cymbal3zone();
+    void cymbal2zone(int sens, int thre1, int thre2, int retri);
+    void cymbal2zone();
+    void TCRT5000(int sens, int thre1, int thre2);
+    void TCRT5000();
 
-    void HelloDrum::settingName(char *instrumentName);    
-    void HelloDrum::settingEnable();
+    void settingName(char *instrumentName);
+    void settingEnable();
 
-    void HelloDrum::loadMemory();
-    void HelloDrum::initMemory();
+    void loadMemory();
+    void initMemory();
 
     int velocity;
     int pedalCC;
@@ -132,7 +132,7 @@ class HelloDrumButton
   public:
     HelloDrumButton(int pin1, int pin2, int pin3, int pin4, int pin5);
 
-    void HelloDrumButton::readButtonState();
+    void readButtonState();
 
     int GetItemNumber();
     int GetEditState();
@@ -157,8 +157,8 @@ class HelloDrumLCD
   public:
     HelloDrumLCD(int pin1, int pin2, int pin3, int pin4, int pin5, int pin6);
 
-    void HelloDrumLCD::show();
-    
+    void show();
+
     LiquidCrystal lcd;
 
   private:
