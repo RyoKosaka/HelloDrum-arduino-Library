@@ -1,6 +1,6 @@
 # HelloDrum-arduino-Library
 This is a library for making E-Drum with Arduino.  
-**Ver.0.5(5/21/2018)**
+**Ver.0.6(8/1/2018)**
 
 ## Description
 
@@ -12,7 +12,7 @@ By using it with Arduino MIDI Library, you can make E-drum.
 
 - Single piezo pad, Dual Piezo pad, 2 zone cymbal, 3 zone cymbal
 - It is compatible with YAMAHA's 3 zone cymbal.(PCY135/PCY155)
-- Sensitivity, threshold, retrigger cancellation, note number can be set with each piezo. 
+- Sensitivity, threshold, retrigger cancellation, note number can be set with each piezo.
 - Both optical(TCRT5000) and FSR type hi-hat controllers can be used.
 
 ## How to Use
@@ -28,6 +28,9 @@ By using it with Arduino MIDI Library, you can make E-drum.
 
 - TCRT5000
 ![tcrt](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/TCRT5000.png)
+
+- FSR
+![fsr](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/TCRT5000.png)
 
 - YAMAHA PCY135/PCY155
 ![pcy](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/YAMAHA_PCY135_155.png)
@@ -45,13 +48,18 @@ The STL data of pads from 6 inches to 12 inches.(<https://www.thingiverse.com/Ry
 
 ## Release History
 
-* 0.1
-    * Work in progress
+* 0.6
+   - Dual piezo pad sensing available
+   - Hihat Contorller with FSR is available
+   - Improved sensing
+   - Improved LCD display
 * 0.5
    - Setting mode available
    - Display function by LCD is available
    - Saving function of setting items by EEPROM is available
    - Improved sensing of TCRT 5000 hi-hat controller
+* 0.1
+   - Work in progress
 
 ## Contributing
 

@@ -1,7 +1,7 @@
 /*
   " HELLO DRUM LIBRARY" Ver.0.5
 
-  Created May 19, 2018
+  Ver.0.5 - Created May 19, 2018
   by Ryo Kosaka
 
   https://open-e-drums.tumblr.com/
@@ -12,7 +12,7 @@
 #include "LiquidCrystal.h"
 #include "EEPROM.h"
 
-
+//Pad with 2 sensors.
 HelloDrum::HelloDrum(int pin1, int pin2)
 {
   pin_1 = pin1;
@@ -32,11 +32,12 @@ HelloDrum::HelloDrum(int pin1, int pin2)
   padIndex = ++padIndex;
 }
 
+//Pad with a sensor.
 HelloDrum::HelloDrum(int pin1)
 {
   pin_1 = pin1;
 
-  //initial valeu
+  //initial EEPROM value
   note = 38;
   noteRim = 39;
   noteCup = 40;
@@ -52,21 +53,21 @@ HelloDrum::HelloDrum(int pin1)
 
 HelloDrumButton::HelloDrumButton(int pin1, int pin2, int pin3, int pin4, int pin5)
 {
-  pin_1 = pin1;
-  pin_2 = pin2;
-  pin_3 = pin3;
-  pin_4 = pin4;
-  pin_5 = pin5;
+  pin_1 = pin1; //EDIT
+  pin_2 = pin2; //UP
+  pin_3 = pin3; //DOWN
+  pin_4 = pin4; //NEXT
+  pin_5 = pin5; //BACK
 }
 
 HelloDrumLCD::HelloDrumLCD(int pin1, int pin2, int pin3, int pin4, int pin5, int pin6)
 {
-  pin_1 = pin1;
-  pin_2 = pin2;
-  pin_3 = pin3;
-  pin_4 = pin4;
-  pin_5 = pin5;
-  pin_6 = pin6;
+  pin_1 = pin1; //RS
+  pin_2 = pin2; //Enable
+  pin_3 = pin3; //D4
+  pin_4 = pin4; //D5
+  pin_5 = pin5; //D6
+  pin_6 = pin6; //D7
 
   lcd = LiquidCrystal(pin_1, pin_2, pin_3, pin_4, pin_5, pin_6);
   lcd.begin(16,2);
@@ -77,7 +78,7 @@ HelloDrumLCD::HelloDrumLCD(int pin1, int pin2, int pin3, int pin4, int pin5, int
 }
 
 
-///////////////////// 1. SENSING //////////////////////////
+///////////////////// 1. SENSING without EEPROM //////////////////////////
 
 void HelloDrum::singlePiezo(int sens, int thre1, int thre2, int retri) {
 
@@ -131,7 +132,90 @@ void HelloDrum::singlePiezo(int sens, int thre1, int thre2, int retri) {
   }
 }
 
-//void HelloDrum::dualPiezo(void) {
+void HelloDrum::dualPiezo(int sens, int thre1, int thre2, int retri) {
+
+  int velo = 0;
+  int veloRim = 0;
+  hit = false;
+  hitRim = false;
+  piezoValue = analogRead(pin_1);
+  RimPiezoValue = analogRead(pin_2);
+
+  if (analogRead(pin_1) > thre1) {
+    time_hit = millis();
+
+    if (time_hit - time_end < retri) {
+      flag = true;
+    }
+
+    //        if (piezoValue - exValue > thre2) {
+    //          flag = false;
+    //        }
+
+    if (flag == false) {
+
+    for (int i = 0; i < 5; i++) {
+      int peak = analogRead(pin_1);
+      int peakRim = analogRead(pin_2);
+
+      if (peak > velo) {
+        velo = peak;
+      }
+      if (peakRim > veloRim) {
+        veloRim = peakRim;
+      }
+      while (millis() - time_hit < 1);
+    }
+
+    if(veloRim > velo){
+      veloRim = map(veloRim, thre1, sens, 1, 127);
+
+      if (veloRim <= 1) {
+        veloRim = 1;
+      }
+
+      if (veloRim > 127) {
+        veloRim = 127;
+      }
+
+      velocity = veloRim;
+      flag = true;
+      hitRim = true;
+
+    }
+
+    else if(veloRim <= velo){
+
+    velo = map(velo, thre1, sens, 1, 127);
+
+    if (velo <= 1) {
+      velo = 1;
+    }
+
+    if (velo > 127) {
+      velo = 127;
+    }
+
+      //velo = (velo * velo) / 126 + 1;
+
+      velocity = velo;
+      flag = true;
+      hit = true;
+    }
+
+  }
+
+  }
+
+  if (flag == true) {
+    time_end = millis();
+    exValue = analogRead(pin_1);
+    flag = false;
+  }
+}
+
+
+////////////////////////////////////////////
 
 void HelloDrum::cymbal2zone(int sens, int thre1, int thre2, int retri) {
 
@@ -396,19 +480,79 @@ void HelloDrum::TCRT5000(int sens, int thre1, int thre2) {
   }
 }
 
-//void HelloDrum::FSR(void) {
+//with EEPROM と比較！
+void HelloDrum::FSR(int sens, int thre1, int thre2) {
+
+  int velo = 0;
+  openHH = false;
+  closeHH = false;
+  int FSR = analogRead(pin_1);
+
+  if (FSR < thre1 && closeHH == false && pedalVelocityFlag == false && pedalFlag == false) {
+    time_hit_pedal_1 = millis();
+    pedalVelocityFlag = true;
+  }
+
+  if (FSR < thre2 && pedalFlag == false) {
+    time_hit_pedal_2 = millis();
+
+    velo = time_hit_pedal_2 - time_hit_pedal_1;
+    velo = map(velo, 50, 0, 1, 127);
+
+    if (velo <= 1) {
+      velo = 1;
+    }
+
+    if (velo > 127) {
+      velo = 127;
+    }
+
+    velocity = velo;
+    closeHH = true;
+    openHH = false;
+    pedalFlag = true;
+    pedalVelocityFlag = false;
+  }
 
 
-//////////// 2. SENSING WITH LCD & EEPROM //////////////////
+  if (FSR > thre1 && closeHH == true) {
+    closeHH = false;
+    openHH = true;
+  }
+
+  /////////////////////// HIHAT PEDAL CC
+
+  FSR = map(FSR, 900, 100, 0, 127);
+  if (FSR > 127) {
+    FSR = 127;
+  }
+  if (FSR < 0) {
+    FSR = 0;
+  }
+
+  if (exFSR != FSR) {
+    pedalCC = FSR;
+    moving = true;
+    exFSR = FSR;
+  }
+
+  else {
+    moving = false;
+  }
+}
+
+////////////////// 2. SENSING WITH LCD & EEPROM //////////////////////
 
 void HelloDrum::singlePiezo() {
   int velo = 0;
   hit = false;
   piezoValue = analogRead(pin_1);
 
+//when the value > threshold
   if (analogRead(pin_1) > threshold1) {
-    time_hit = millis();
+    time_hit = millis(); //check the time pad hitted
 
+    //compare time to cancel retrigger
     if (time_hit - time_end < retrigger) {
       flag = true;
     }
@@ -418,13 +562,15 @@ void HelloDrum::singlePiezo() {
     //        }
 
     if (flag == false) {
-
+      //"5" is scantime
       for (int i = 0; i < 5; i++) {
         int peak = analogRead(pin_1);
         if (peak > velo) {
-          velo = peak;
+          velo = peak; //peak is max value of 5 times scan.
         }
         while (millis() - time_hit < 1);
+        //delay 1 milisecond.
+        //scan the piezo value 5 times.
       }
 
       velo = map(velo, threshold1, sensitivity * 10, 1, 127);
@@ -456,7 +602,96 @@ void HelloDrum::singlePiezo() {
   }
 }
 
-//void HelloDrum::dualPiezo(void) {
+void HelloDrum::dualPiezo() {
+
+  int velo = 0;
+  int veloRim = 0;
+  hit = false;
+  hitRim = false;
+  piezoValue = analogRead(pin_1);
+  RimPiezoValue = analogRead(pin_2);
+
+  if (analogRead(pin_1) > threshold1) {
+    time_hit = millis();
+
+    if (time_hit - time_end < retrigger) {
+      flag = true;
+    }
+
+    //        if (piezoValue - exValue > thre2) {
+    //          flag = false;
+    //        }
+
+    if (flag == false) {
+
+    for (int i = 0; i < 5; i++) {
+      int peak = analogRead(pin_1);
+      int peakRim = analogRead(pin_2);
+
+      if (peak > velo) {
+        velo = peak;
+      }
+      if (peakRim > veloRim) {
+        veloRim = peakRim;
+      }
+      while (millis() - time_hit < 1);
+    }
+
+    if(veloRim > velo){
+      veloRim = map(veloRim, threshold1, sensitivity*10, 1, 127);
+
+      if (veloRim <= 1) {
+        veloRim = 1;
+      }
+
+      if (veloRim > 127) {
+        veloRim = 127;
+      }
+
+      velocity = veloRim;
+      showVelocity = velocity;
+      flag = true;
+      showLCD = true;
+      hitRim = true;
+      padIndex = padNum;
+
+    }
+
+    else if(veloRim <= velo){
+
+    velo = map(velo, threshold1, sensitivity*10, 1, 127);
+
+    if (velo <= 1) {
+      velo = 1;
+    }
+
+    if (velo > 127) {
+      velo = 127;
+    }
+
+      //velo = (velo * velo) / 126 + 1;
+
+      velocity = velo;
+      showVelocity = velocity;
+      flag = true;
+      showLCD = true;
+      hit = true;
+      padIndex = padNum;
+    }
+
+  }
+
+  }
+
+  if (flag == true) {
+    time_end = millis();
+    exValue = analogRead(pin_1);
+    flag = false;
+  }
+}
+
+
+////////////////////////////////////////////
 
 void HelloDrum::cymbal2zone() {
 
@@ -735,16 +970,77 @@ void HelloDrum::TCRT5000() {
   }
 }
 
-//void HelloDrum::FSR(void) {
+void HelloDrum::FSR() {
+
+  int velo = 0;
+  int FSR = analogRead(pin_1);
+  closeHH = false;
+
+  if (FSR < threshold1 * 10 && pedalVelocityFlag == false && pedalFlag == false) {
+    time_hit_pedal_1 = millis();
+    pedalVelocityFlag = true;
+  }
+
+  if (FSR < threshold2 * 10 && pedalFlag == false) {
+    time_hit_pedal_2 = millis();
+
+    velo = time_hit_pedal_2 - time_hit_pedal_1;
+    velo = map(velo, retrigger, 0, 1, 127);
+    //velo = map(velo, 50, 0, 1, 127);
+
+    if (velo <= 1) {
+      velo = 1;
+    }
+
+    if (velo > 127) {
+      velo = 127;
+    }
+
+    velocity = velo;
+    showVelocity = velocity;
+    closeHH = true;
+    showLCD = true;
+    padIndex = padNum;
+    pedalFlag = true;
+    pedalVelocityFlag = false;
+  }
+
+
+  if (FSR > threshold1 * 10 && pedalFlag == true) {
+    pedalFlag = false;
+  }
+
+  //HIHAT PEDAL CC
+  FSR = map(FSR, sensitivity * 10, 100, 0, 127);
+  //TCRT = map(TCRT, 900, 100, 0, 127);
+  if (FSR > 127) {
+    FSR = 127;
+  }
+  if (FSR < 0) {
+    FSR = 0;
+  }
+
+  if (exFSR != FSR) {
+    pedalCC = FSR;
+    moving = true;
+    exFSR = FSR;
+  }
+
+  else {
+    moving = false;
+  }
+}
 
 
 ////////////////// 3. EEPROM SETTING  ////////////////////
 
+
 void HelloDrum::settingEnable(){
 
+  //When EDIT button pushed
   if(padNum == nameIndex){
 
-    //Edit mode
+    //When UP button pushed
     if(button_up == LOW && buttonState == true  && editCheck == true){
 
 	switch (itemNumber){
@@ -789,6 +1085,7 @@ void HelloDrum::settingEnable(){
       delay(30);
     }
 
+    //When Down button pushed
     if(button_down == LOW && buttonState == true  && editCheck == true){
 
       switch (itemNumber){

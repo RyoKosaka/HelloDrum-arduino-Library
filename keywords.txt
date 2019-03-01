@@ -9,6 +9,7 @@ dualPiezo	KEYWORD2
 cymbal3zone	KEYWORD2
 cymbal2zone	KEYWORD2
 TCRT5000	KEYWORD2
+FSR	KEYWORD2
 
 settingName	KEYWORD2
 readButtonState	KEYWORD2

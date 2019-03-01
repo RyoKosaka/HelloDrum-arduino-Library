@@ -75,6 +75,8 @@ class HelloDrum
     void cymbal2zone();
     void TCRT5000(int sens, int thre1, int thre2);
     void TCRT5000();
+    void FSR(int sens, int thre1, int thre2);
+    void FSR();
 
     void settingName(char *instrumentName);
     void settingEnable();
@@ -87,6 +89,7 @@ class HelloDrum
 
     int exValue;
     int exTCRT = 0;
+    int exFSR = 0;
     bool hit;
     bool openHH = false;
     bool closeHH = false;
@@ -124,6 +127,7 @@ class HelloDrum
     int pin_1;
     int pin_2;
     int piezoValue;
+    int RimPiezoValue;
     int sensorValue;
 };
 
