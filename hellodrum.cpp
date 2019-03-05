@@ -2,6 +2,7 @@
   " HELLO DRUM LIBRARY" Ver.0.5
 
   Ver.0.5 - Created May 19, 2018
+  Ver.0.6 - March 5, 2019
   by Ryo Kosaka
 
   https://open-e-drums.tumblr.com/
