@@ -1,6 +1,6 @@
 # HelloDrum-arduino-Library
 This is a library for making E-Drum with Arduino.  
-**Ver.0.6(8/1/2018)**
+**Ver.0.6(3/5/2019)**
 
 ## Description
 
@@ -30,7 +30,7 @@ By using it with Arduino MIDI Library, you can make E-drum.
 ![tcrt](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/TCRT5000.png)
 
 - FSR
-![fsr](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/TCRT5000.png)
+![fsr](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/FSR.png)
 
 - YAMAHA PCY135/PCY155
 ![pcy](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/YAMAHA_PCY135_155.png)
@@ -49,9 +49,7 @@ The STL data of pads from 6 inches to 12 inches.(<https://www.thingiverse.com/Ry
 ## Release History
 
 * 0.6
-   - Dual piezo pad sensing available
    - Hihat Contorller with FSR is available
-   - Improved sensing
    - Improved LCD display
 * 0.5
    - Setting mode available
