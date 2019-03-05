@@ -1,10 +1,3 @@
-/* NOTICE
-
-  Under development.
-  You can't use this code.
-
-*/
-
 /*
   EXAMPLE - 2 Zone Hi-Hat with FSR Controller
 
@@ -79,7 +72,7 @@ void loop() {
   }
 
   //edge
-  else if (hihat.hit_edge == true) {
+  else if (hihat.hitRim == true) {
     //check open or close
     //1.open
     if (hihatControl.openHH == true) {
