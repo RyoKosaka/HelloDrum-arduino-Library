@@ -16,6 +16,42 @@ By using it with Arduino MIDI Library, you can make E-drum.
 - Both optical(TCRT5000) and FSR type hi-hat controllers can be used.
 
 ## How to Use
+- Coding:
+   ```c++
+    #include <hellodrum.h>
+    #include <MIDI.h>
+    MIDI_CREATE_DEFAULT_INSTANCE();
+
+    //Please name your piezo.
+    //The piezo named snare is connected to the A0 pin
+    HelloDrum snare(0);
+
+    //Setting
+    int SNARE[5] = {
+      800, //sensitivity
+      20,  //threshold1
+      50,  //threshold2
+      10,  //retrigger cancel
+      38   //note
+    }; 
+
+    void setup()
+    {
+        MIDI.begin(10);
+    }
+
+    void loop()
+    {
+        //Sensing
+        snare.singlePiezo(SNARE[0], SNARE[1], SNARE[2], SNARE[3]);
+
+        //Sending MIDI signals
+        if (snare.hit == true) {
+            MIDI.sendNoteOn(SNARE[4], snare.velocity, 10);  //(note, velocity, channel)
+            MIDI.sendNoteOff(SNARE[4], 0, 10);
+        }
+    }
+    ```
 
 [Check instruction.md](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/instruction.md)
 
