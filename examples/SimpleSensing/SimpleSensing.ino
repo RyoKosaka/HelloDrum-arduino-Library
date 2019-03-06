@@ -7,9 +7,8 @@
 
 /* NOTICE
 
-  You have to install some library.
-  1.MIDI : https://playground.arduino.cc/Main/MIDILibrary
-  2.LCD Bar Graph : https://playground.arduino.cc/Code/LcdBarGraph (Extra)
+  You have to install the MIDI library.
+  MIDI : https://playground.arduino.cc/Main/MIDILibrary
 
 */
 
@@ -18,9 +17,21 @@
 //Determine the initial value.
 //By changing the number in this array you can set sensitivity, threshold and so on.
 
-//{sensitivity, threshold1, threshold2, retrigger, note}
-int SNARE[6] = {800, 20, 50, 10, 38};
-int TOM[6] = {800, 20, 50, 10, 50};
+int SNARE[5] = {
+  800, //sensitivity
+  20,  //threshold1
+  50,  //threshold2
+  10,  //retrigger cancel
+  38   //note
+}; 
+
+int TOM[5] = {
+  800, //sensitivity
+  20,  //threshold1
+  50,  //threshold2
+  10,  //retrigger cancel
+  50   //note
+};
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -49,7 +60,6 @@ void loop() {
   //For each piezo, one line is required.
   snare.singlePiezo(SNARE[0], SNARE[1], SNARE[2], SNARE[3]);
   tom.singlePiezo(TOM[0], TOM[1], TOM[2], TOM[3]);
-
 
   //MIDI signals are transmitted with this IF statement.
   //For each piezo, one IF statement is required

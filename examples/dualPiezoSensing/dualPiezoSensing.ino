@@ -36,7 +36,7 @@
 /* NOTICE
 
   You have to install the MIDI library.
-  Arduino MIDI Library : https://playground.arduino.cc/Main/MIDILibrary
+  MIDI : https://playground.arduino.cc/Main/MIDILibrary
 
 */
 

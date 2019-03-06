@@ -5,12 +5,11 @@
   https://open-e-drums.tumblr.com/
 */
 
-/*
-  NOTICE
+/* NOTICE
 
-  You have to install some library.
-  1.MIDI : https://playground.arduino.cc/Main/MIDILibrary
-  2.LCD Bar Graph : https://playground.arduino.cc/Code/LcdBarGraph (Extra)
+  You have to install the MIDI library.
+  MIDI : https://playground.arduino.cc/Main/MIDILibrary
+
 */
 
 //////////////////////////////////////////   INITIAL VALUE   ////////////////////////////////////////////
@@ -18,8 +17,15 @@
 //Determine the initial value.
 //By changing the number in this array you can set sensitivity, threshold and so on.
 
-//{sensitivity, threshold1, threshold2, retrigger, note of bow, note of edge, note of cup}
-int RIDE[7] = {500, 50, 50, 10, 51, 59, 53};
+int RIDE[7] = {
+  500, //sensitivity
+  50,  //threshold1
+  50,  //threshold2
+  10,  //retrigger cancel
+  51,  //note of bow
+  59,  //note of edge
+  53   //note of cup
+}; 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -5,12 +5,11 @@
   https://open-e-drums.tumblr.com/
 */
 
-/*
-  NOTICE
+/* NOTICE
 
-  You have to install some library.
-  1.MIDI : https://playground.arduino.cc/Main/MIDILibrary
-  2.LCD Bar Graph : https://playground.arduino.cc/Code/LcdBarGraph (Extra)
+  You have to install the MIDI library.
+  MIDI : https://playground.arduino.cc/Main/MIDILibrary
+
 */
 
 //////////////////////////////////////////   INITIAL VALUE   ////////////////////////////////////////////
@@ -18,11 +17,23 @@
 //Determine the initial value.
 //By changing the number in this array you can set sensitivity, threshold and so on.
 
-//{sensitivity, threshold1, threshold2, retrigger, note of open, note of close, open edge, close edge}
-int HIHAT[8] = {800, 30, 50, 10, 46, 42, 26, 22};
+int HIHAT[8] = {
+  800, //sensitivity
+  30,  //threshold1
+  50,  //threshold2
+  10,  //retrigger cancel
+  46,  //note of open
+  42,  //note of close
+  26,  //note of open edge
+  22   //note of close edge
+}; 
 
-//{sensitivity, threshold1, threshold2, note of pedal}
-int HIHAT_CONTROL[4] = {300, 300, 200, 44};
+int HIHAT_CONTROL[4] = {
+  300,  //sensitivity
+  300,  //threshold1
+  200,  //threshold2
+  44,   //note of pedal
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
