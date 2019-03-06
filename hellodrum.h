@@ -3,7 +3,13 @@
 
 #include "Arduino.h"
 #include "LiquidCrystal.h"
+
+#ifdef _AVR_
 #include "EEPROM.h"
+#endif
+
+#ifdef ESP32
+#endif
 
 static char* item[] = {
     "SENSITIVITY",

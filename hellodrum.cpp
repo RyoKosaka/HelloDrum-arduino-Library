@@ -11,7 +11,13 @@
 #include "hellodrum.h"
 #include "Arduino.h"
 #include "LiquidCrystal.h"
+
+#ifdef _AVR_
 #include "EEPROM.h"
+#endif
+
+#ifdef ESP32
+#endif
 
 //Pad with 2 sensors.
 HelloDrum::HelloDrum(int pin1, int pin2)
@@ -1035,6 +1041,7 @@ void HelloDrum::FSR() {
 
 ////////////////// 3. EEPROM SETTING  ////////////////////
 
+#ifdef _AVR_
 
 void HelloDrum::settingEnable(){
 
@@ -1193,6 +1200,7 @@ void HelloDrum::initMemory(){
   EEPROM.write((padNum*7) + 6, noteCup);
 }
 
+#endif
 
 ///////////////////// 4. BUTONN //////////////////////////
 
