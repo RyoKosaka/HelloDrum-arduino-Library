@@ -1,6 +1,6 @@
 # HelloDrum-arduino-Library
 This is a library for making E-Drum with Arduino.  
-**Ver.0.6(3/5/2019)**
+**Ver.0.6(3/5/2019) Work in progress.** 
 
 ## Description
 
@@ -8,9 +8,12 @@ This is a library for making E-Drum with Arduino.
 By using it with Arduino MIDI Library, you can make E-drum.  
 [Open E-Drums](https://open-e-drums.tumblr.com/)
 
+This software is an alpha version, and is unsupported.
+Use at your own risk.
+
 ## Features
 
-- Single piezo pad, Dual Piezo pad, 2 zone cymbal, 3 zone cymbal
+- Single piezo pad, ~~Dual Piezo pad~~, 2 zone cymbal, 3 zone cymbal
 - It is compatible with YAMAHA's 3 zone cymbal.(PCY135/PCY155)
 - Sensitivity, threshold, retrigger cancellation, note number can be set with each piezo.
 - Both optical(TCRT5000) and FSR type hi-hat controllers can be used.
