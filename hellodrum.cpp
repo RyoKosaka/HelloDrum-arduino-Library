@@ -12,7 +12,7 @@
 #include "Arduino.h"
 #include "LiquidCrystal.h"
 
-#ifdef _AVR_
+#ifdef __AVR__
 #include "EEPROM.h"
 #endif
 
@@ -92,12 +92,16 @@ void HelloDrum::singlePiezo(int sens, int thre1, int thre2, int retri) {
   int velo = 0;
   hit = false;
   piezoValue = analogRead(pin_1);
+  //static float y[2] = {0};
+  //y[1] = 0.8 * y[0] + 0.2 * analogRead(pin_1);
+  //piezoValue = y[1];
+
 
   if (analogRead(pin_1) > thre1) {
-    time_hit = millis();
+    time_hit = millis(); //record hit time
 
-    if (time_hit - time_end < retri) {
-      flag = true;
+    if (time_hit - time_end < retri) { //compare last hit time
+      flag = true; 
     }
 
     //        if (piezoValue - exValue > thre2) {
@@ -106,7 +110,8 @@ void HelloDrum::singlePiezo(int sens, int thre1, int thre2, int retri) {
 
     if (flag == false) {
 
-      for (int i = 0; i < 5; i++) {
+      //peak scan
+      for (int i = 0; i < 4; i++) {
         int peak = analogRead(pin_1);
         if (peak > velo) {
           velo = peak;
@@ -114,6 +119,7 @@ void HelloDrum::singlePiezo(int sens, int thre1, int thre2, int retri) {
         while (millis() - time_hit < 1);
       }
 
+      //mapping
       velo = map(velo, thre1, sens, 1, 127);
 
       if (velo <= 1) {
@@ -467,14 +473,50 @@ void HelloDrum::TCRT5000(int sens, int thre1, int thre2) {
   }
 
   /////////////////////// HIHAT PEDAL CC
-
+  #ifdef _AVR_
   TCRT = map(TCRT, 900, 100, 0, 127);
+  
   if (TCRT > 127) {
     TCRT = 127;
   }
   if (TCRT < 0) {
     TCRT = 0;
   }
+  #endif
+
+  #ifdef ESP32
+  TCRT = map(TCRT, 4000, 100, 0, 127);
+  //6段階に分ける
+
+  if(TCRT < 20){
+    TCRT = 0;
+  }
+
+  else if(TCRT >= 20 && TCRT < 40){
+    TCRT = 20;
+  }
+
+  else if(TCRT >= 40 && TCRT < 60){
+    TCRT = 40;
+  }
+
+  else if(TCRT >= 60 && TCRT < 80){
+    TCRT = 60;
+  }
+
+  else if(TCRT >= 80 && TCRT < 100){
+    TCRT = 80;
+  }
+
+  else if(TCRT >= 100 && TCRT < 120){
+    TCRT = 100;
+  }
+
+  else if (TCRT >= 120) {
+    TCRT = 127;
+  }
+
+  #endif
 
   if (exTCRT != TCRT) {
     pedalCC = TCRT;
@@ -1041,7 +1083,7 @@ void HelloDrum::FSR() {
 
 ////////////////// 3. EEPROM SETTING  ////////////////////
 
-#ifdef _AVR_
+#ifdef __AVR__
 
 void HelloDrum::settingEnable(){
 

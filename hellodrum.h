@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "LiquidCrystal.h"
 
-#ifdef _AVR_
+#ifdef __AVR__
 #include "EEPROM.h"
 #endif
 
