@@ -60,20 +60,19 @@ Use at your own risk.
 
 ## Circuit
 - Single Piezo
-<img src="https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/singlePiezo.png" width="320px">
+<img src="https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/singlePiezo.png" width="400px">
 
 - Dual Piezo
-![dp](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/dualPiezo.png)
+<img src="https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/dualPiezo.png" width="400px">
 
 - TCRT5000
-![tcrt](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/TCRT5000.png)
+<img src="https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/TCRT5000.png" width="400px">
 
 - FSR
-![fsr](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/FSR.png)
+<img src="https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/FSR.png" width="400px">
 
 - YAMAHA PCY135/PCY155
-![pcy](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/YAMAHA_PCY135_155.png)
-
+<img src="https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/YAMAHA_PCY135_155.png" width="400px">
 
 ## Pads
 
