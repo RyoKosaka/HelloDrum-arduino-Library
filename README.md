@@ -60,7 +60,7 @@ Use at your own risk.
 
 ## Circuit
 - Single Piezo
-![sp](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/singlePiezo.png)
+<img src="https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/singlePiezo.png" width="320px">
 
 - Dual Piezo
 ![dp](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/circuit/dualPiezo.png)
