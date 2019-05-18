@@ -9,9 +9,9 @@
   The values after initialization are as follows.
     
     Sensitivity = 80
-    Retrigger Cancel = 10
-    Threshold 1 = 20
-    Threshold 2 = 50
+    Threshold = 20
+    Scan Time = 5
+    Mask Time = 10
     Note = 38
     Note of rim/Edge = 39
     Note of cup = 40

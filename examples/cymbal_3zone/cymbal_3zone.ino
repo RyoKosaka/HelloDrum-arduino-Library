@@ -19,9 +19,9 @@
 
 int RIDE[7] = {
   500, //sensitivity
-  50,  //threshold1
-  50,  //threshold2
-  10,  //retrigger cancel
+  50,  //threshold
+  5,   //scan time
+  10,  //mask time
   51,  //note of bow
   59,  //note of edge
   53   //note of cup

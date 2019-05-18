@@ -19,20 +19,21 @@
 
 int HIHAT[8] = {
   800, //sensitivity
-  30,  //threshold1
-  50,  //threshold2
-  10,  //retrigger cancel
+  30,  //threshold
+  5,   //scan time
+  10,  //mask time
   46,  //note of open
   42,  //note of close
   26,  //note of open edge
   22   //note of close edge
 }; 
 
-int HIHAT_CONTROL[4] = {
+int HIHAT_CONTROL[5] = {
   300,  //sensitivity
   300,  //threshold1
   200,  //threshold2
-  44,   //note of pedal
+  50,   //scan time
+  44   //note of pedal
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -62,8 +63,8 @@ void loop() {
   //Piezo sensing is done in this line. And it is returned as a velocity of 127 stages.
   //For each pad, one line is required.
   //So, you need the same number of lines as the number of pads or controller.
-  hihat.cymbal2zone(HIHAT[0], HIHAT[1], HIHAT[2], HIHAT[3]);
-  hihatControl.FSR(HIHAT_CONTROL[0], HIHAT_CONTROL[1], HIHAT_CONTROL[2]);
+  hihat.hihat2zone(HIHAT[0], HIHAT[1], HIHAT[2], HIHAT[3]);
+  hihatControl.FSR(HIHAT_CONTROL[0], HIHAT_CONTROL[1], HIHAT_CONTROL[2],HIHAT_CONTROL[3]);
 
 
   //MIDI signals are transmitted with this IF statement.

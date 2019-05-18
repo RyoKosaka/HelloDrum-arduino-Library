@@ -19,9 +19,9 @@
 
 int CRASH[6] = {
   500, //sensitivity
-  50,  //threshold1
-  50,  //threshold2
-  10,  //retrigger cancel
+  50,  //threshold
+  5,   //scan time
+  10,  //mask time
   49,  //note of bow
   55   //note of edge
 }; 

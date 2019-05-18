@@ -19,17 +19,17 @@
 
 int SNARE[5] = {
   800, //sensitivity
-  20,  //threshold1
-  50,  //threshold2
-  10,  //retrigger cancel
+  20,  //threshold
+  5,  //scan time    
+  10,  //mask time
   38   //note
 }; 
 
 int TOM[5] = {
   800, //sensitivity
-  20,  //threshold1
-  50,  //threshold2
-  10,  //retrigger cancel
+  20,  //threshold
+  5,  //scan time
+  10,  //mask time
   50   //note
 };
 

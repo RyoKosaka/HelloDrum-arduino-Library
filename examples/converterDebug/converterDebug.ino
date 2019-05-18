@@ -1,41 +1,4 @@
-/*
-  EXAMPLE - Minimal Drum Kit (kick Snare Hihat Ride)
-
-  With this sample code, you can make minimal drum kit.
-
-  Pads & Controller Circuit:
-    Piezo for kick to A0.
-    Piezo for snare to A1.
-    Piezo for hihat to A2.
-    TCRT5000 for hihat controller to A3
-    Yamaha PCY135/155 to A4,A5
-
-  Buttons Circuit:
-    Button for EDIT to digital pin 6
-    Button for UP to digital pin 7
-    Button for DOWN to digital pin 8
-    Button for NEXT to digital pin 9
-    Button for BACK to digital pin 10
-
-  LCD Circuit:https://www.arduino.cc/en/Tutorial/HelloWorld
-   LCD RS pin to digital pin 12
-   LCD Enable pin to digital pin 11
-   LCD D4 pin to digital pin 5
-   LCD D5 pin to digital pin 4
-   LCD D6 pin to digital pin 3
-   LCD D7 pin to digital pin 2
-   
-
-  https://open-e-drums.tumblr.com/
-*/
-
-/* NOTICE
-
-  You have to install the MIDI library.
-  Arduino MIDI Library : https://playground.arduino.cc/Main/MIDILibrary
-
-*/
-
+//THIS CODE IS FOR DEBUG AND DEVELOP
 
 #include <hellodrum.h>
 #include <MIDI.h>
@@ -43,15 +6,15 @@
 MIDI_CREATE_DEFAULT_INSTANCE();
 
 //Please name your pad and controller.
-HelloDrum kick(0);
-HelloDrum snare(1);
+HelloDrum snare(0);
 HelloDrum hihat(2);
-HelloDrum hihatControl(3);
-HelloDrum ride(4, 5);
+HelloDrum hihatControl(5);
+HelloDrum kick(4);
 
 //Set the DIGITAL pin number to which the button and the LCD are connected.
 HelloDrumButton button(6, 7, 8, 9, 10); //(EDIT,UP,DOWN,NEXT,BACK)
 HelloDrumLCD lcd(12, 11, 5, 4, 3, 2); //(rs, en, d4, d5, d6, d7)
+
 
 void setup() {
 
@@ -63,20 +26,18 @@ void setup() {
 
   //Give each pad a name to be displayed on the LCD.
   //It is necessary to make the order in exactly the same order as you named the pad first.
-  kick.settingName("KICK");
   snare.settingName("SNARE");
   hihat.settingName("HIHAT");
   hihatControl.settingName("HIHAT PEDAL");
-  ride.settingName("RIDE");
+  kick.settingName("KICK");
 
 
   //Load settings from EEPROM.
   //It is necessary to make the order in exactly the same order as you named the pad first.
-  kick.loadMemory();
   snare.loadMemory();
   hihat.loadMemory();
   hihatControl.loadMemory();
-  ride.loadMemory();
+  kick.loadMemory();
 }
 
 void loop() {
@@ -86,20 +47,19 @@ void loop() {
   button.readButtonState();
   lcd.show();
 
-  kick.settingEnable();
   snare.settingEnable();
   hihat.settingEnable();
   hihatControl.settingEnable();
-  ride.settingEnable();
+  kick.settingEnable();
+
 
   ////////// 2. SENSING & SENDING MIDI////////////
 
   //Sensing each pad.
-  kick.singlePiezo();
   snare.singlePiezo();
   hihat.hihat();
-  hihatControl.TCRT5000();
-  ride.cymbal3zone();
+  hihatControl.FSR();
+  kick.singlePiezo();
 
   //Sending MIDI signals.
   //KICK//
@@ -139,34 +99,5 @@ void loop() {
   //sending state of pedal with controll change
   if (hihatControl.moving == true) {
     MIDI.sendControlChange(4, hihatControl.pedalCC, 10);
-  }
-  
-  //RIDE//
-  //1.bow
-  if (ride.hit == true) {
-    MIDI.sendNoteOn(ride.note, ride.velocity, 10);  //(note, velocity, channel)
-    MIDI.sendNoteOff(ride.note, 0, 10);
-  }
-
-  //2.edge
-  else if (ride.hitRim == true) {
-    MIDI.sendNoteOn(ride.noteRim, ride.velocity, 10);  //(note, velocity, channel)
-    MIDI.sendNoteOff(ride.noteRim, 0, 10);
-  }
-
-  //3.cup
-  else if (ride.hitCup == true) {
-    MIDI.sendNoteOn(ride.noteCup, ride.velocity, 10);  //(note, velocity, channel)
-    MIDI.sendNoteOff(ride.noteCup, 0, 10);
-  }
-
-  //4.choke
-  if (ride.choke == true) {
-    MIDI.sendPolyPressure(ride.note, 127, 10);
-    MIDI.sendPolyPressure(ride.noteRim, 127, 10);
-    MIDI.sendPolyPressure(ride.noteCup, 127, 10);
-    MIDI.sendPolyPressure(ride.note, 0, 10);
-    MIDI.sendPolyPressure(ride.noteRim, 0, 10);
-    MIDI.sendPolyPressure(ride.noteCup, 0, 10);
   }
 }
