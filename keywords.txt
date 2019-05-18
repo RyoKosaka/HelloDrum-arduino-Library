@@ -6,6 +6,8 @@ HelloDrumLCD	KEYWORD1
 
 singlePiezo	KEYWORD2
 dualPiezo	KEYWORD2
+hihat	KEYWORD2
+hihat2zone	KEYWORD2
 cymbal3zone	KEYWORD2
 cymbal2zone	KEYWORD2
 TCRT5000	KEYWORD2
@@ -22,6 +24,10 @@ loadMemory	KEYWORD2
 note	KEYWORD2
 noteRim	KEYWORD2
 noteCup	KEYWORD2
+noteOpen	KEYWORD2
+noteClose	KEYWORD2
+noteOpenEdge	KEYWORD2
+noteCloseEdge	KEYWORD2
 velocity	KEYWORD2
 hit	KEYWORD2
 hitRim	KEYWORD2

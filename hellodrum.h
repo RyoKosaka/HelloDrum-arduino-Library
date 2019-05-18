@@ -13,12 +13,32 @@
 
 static char* item[] = {
     "SENSITIVITY",
-    "THRESHOLD1",
-    "THRESHOLD2",
-    "RETRIGGER",
+    "THRESHOLD",
+    "SCAN TIME",
+    "MASK TIME",
     "NOTE",
     "NOTE RIM",
     "NOTE CUP",
+    };
+
+static char* itemHH[] = {
+    "SENSITIVITY",
+    "THRESHOLD",
+    "SCAN TIME",
+    "MASK TIME",
+    "NOTE OPEN",
+    "NOTE CLOSE",
+    "NOTE CUP",
+    };
+
+static char* itemHHC[] = {
+    "SENSITIVITY",
+    "THRESHOLD1",
+    "THRESHOLD2",
+    "SCAN TIME",
+    "NOTE PEDAL",
+    "NOTE OPEN E",
+    "NOTE CLOSE E",
     };
 
 static char* showInstrument[] = {
@@ -38,7 +58,6 @@ static char* showInstrument[] = {
     "Pad 14",
     "Pad 15",
     "Pad 16",
-
 };
 
 //static char* showInstrument;
@@ -49,6 +68,8 @@ static int nameIndex;
 static int nameIndexMax;
 static int showValue = 0;
 static int padIndex = 0;
+static int HHCnum;
+static int HHnum;
 static bool edit;
 static bool editCheck;
 static bool editdone;
@@ -61,8 +82,8 @@ static int button_up;
 static int button_down;
 static int button_next;
 static int button_back;
-static int UP[7] = {5, 10, 10, 1, 1, 1, 1};  //{sensitivity, threshold1, sensitivity2, retrigger, note}
-static int UP_ADVANCE[4] = {1, 50, 1, 1};  //{scantime, rim / head, pedal velocity ,masktime}
+static int UP[7] = {5, 1, 1, 1, 1, 1, 1};  //{sensitivity, threshold1, scantime, masktime, note}
+//static int UP_ADVANCE[4] = {1, 50, 1, 1};  //{scantime, rim / head, pedal velocity ,masktime}
 
 
 class HelloDrum
@@ -71,17 +92,21 @@ class HelloDrum
     HelloDrum(int pin1, int pin2);
     HelloDrum(int pin1);
 
-    void singlePiezo(int sens, int thre1, int thre2, int retri);
+    void singlePiezo(int sens, int thre1, int scan, int mask);
     void singlePiezo();
-    void dualPiezo(int sens, int thre1, int thre2, int retri);
+    void dualPiezo(int sens, int thre1, int scan, int mask);
     void dualPiezo();
-    void cymbal3zone(int sens, int thre1, int thre2, int retri);
+    void hihat(int sens, int thre1, int scan, int mask);
+    void hihat();
+    void hihat2zone(int sens, int thre1, int scan, int mask);
+    void hihat2zone();
+    void cymbal3zone(int sens, int thre1, int scan, int mask);
     void cymbal3zone();
-    void cymbal2zone(int sens, int thre1, int thre2, int retri);
+    void cymbal2zone(int sens, int thre1, int scan, int mask);
     void cymbal2zone();
-    void TCRT5000(int sens, int thre1, int thre2);
+    void TCRT5000(int sens, int thre1, int thre2, int scan);
     void TCRT5000();
-    void FSR(int sens, int thre1, int thre2);
+    void FSR(int sens, int thre1, int thre2, int scan);
     void FSR();
 
     void settingName(char *instrumentName);
@@ -107,6 +132,7 @@ class HelloDrum
     bool flag;
     bool pedalVelocityFlag = false;
     bool pedalFlag = false;
+    bool settingHHC = false;
     bool chokeFlag;
     unsigned long time_hit;
     unsigned long time_end;
@@ -122,9 +148,14 @@ class HelloDrum
     int note;
     int noteRim;
     int noteCup;
+    int noteOpen;
+    int noteClose;
+    int noteOpenEdge;
+    int noteCloseEdge;
     int threshold1;
     int threshold2;
-    int retrigger;
+    int scantime;
+    int masktime;
     int sensitivity;
 
     //int initialValue[5];

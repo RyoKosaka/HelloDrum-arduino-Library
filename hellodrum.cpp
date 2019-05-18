@@ -30,8 +30,8 @@ HelloDrum::HelloDrum(int pin1, int pin2)
   noteRim = 39;
   noteCup = 40;
   threshold1 = 20;
-  threshold2 = 50;
-  retrigger = 10;
+  scantime = 5;
+  masktime = 10;
   sensitivity = 80;
 
   //Give the instance a pad number.
@@ -49,8 +49,8 @@ HelloDrum::HelloDrum(int pin1)
   noteRim = 39;
   noteCup = 40;
   threshold1 = 20;
-  threshold2 = 50;
-  retrigger = 10;
+  scantime = 5;
+  masktime = 10;
   sensitivity = 80;
 
   //Give the instance a pad number.
@@ -87,7 +87,7 @@ HelloDrumLCD::HelloDrumLCD(int pin1, int pin2, int pin3, int pin4, int pin5, int
 
 ///////////////////// 1. SENSING without EEPROM //////////////////////////
 
-void HelloDrum::singlePiezo(int sens, int thre1, int thre2, int retri) {
+void HelloDrum::singlePiezo(int sens, int thre1, int scan, int mask) {
 
   int velo = 0;
   hit = false;
@@ -100,7 +100,7 @@ void HelloDrum::singlePiezo(int sens, int thre1, int thre2, int retri) {
   if (analogRead(pin_1) > thre1) {
     time_hit = millis(); //record hit time
 
-    if (time_hit - time_end < retri) { //compare last hit time
+    if (time_hit - time_end < mask) { //compare last hit time
       flag = true; 
     }
 
@@ -111,7 +111,7 @@ void HelloDrum::singlePiezo(int sens, int thre1, int thre2, int retri) {
     if (flag == false) {
 
       //peak scan
-      for (int i = 0; i < 4; i++) {
+      for (int i = 0; i < scan; i++) {
         int peak = analogRead(pin_1);
         if (peak > velo) {
           velo = peak;
@@ -145,7 +145,7 @@ void HelloDrum::singlePiezo(int sens, int thre1, int thre2, int retri) {
   }
 }
 
-void HelloDrum::dualPiezo(int sens, int thre1, int thre2, int retri) {
+void HelloDrum::dualPiezo(int sens, int thre1, int scan, int mask) {
 
   int velo = 0;
   int veloRim = 0;
@@ -157,7 +157,7 @@ void HelloDrum::dualPiezo(int sens, int thre1, int thre2, int retri) {
   if (analogRead(pin_1) > thre1) {
     time_hit = millis();
 
-    if (time_hit - time_end < retri) {
+    if (time_hit - time_end < mask) {
       flag = true;
     }
 
@@ -167,7 +167,7 @@ void HelloDrum::dualPiezo(int sens, int thre1, int thre2, int retri) {
 
     if (flag == false) {
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < scan; i++) {
       int peak = analogRead(pin_1);
       int peakRim = analogRead(pin_2);
 
@@ -226,11 +226,66 @@ void HelloDrum::dualPiezo(int sens, int thre1, int thre2, int retri) {
     flag = false;
   }
 }
+void HelloDrum::hihat(int sens, int thre1, int scan, int mask) {
 
+  int velo = 0;
+  hit = false;
+  piezoValue = analogRead(pin_1);
+  //static float y[2] = {0};
+  //y[1] = 0.8 * y[0] + 0.2 * analogRead(pin_1);
+  //piezoValue = y[1];
+
+
+  if (analogRead(pin_1) > thre1) {
+    time_hit = millis(); //record hit time
+
+    if (time_hit - time_end < mask) { //compare last hit time
+      flag = true; 
+    }
+
+    //        if (piezoValue - exValue > thre2) {
+    //          flag = false;
+    //        }
+
+    if (flag == false) {
+
+      //peak scan
+      for (int i = 0; i < scan; i++) {
+        int peak = analogRead(pin_1);
+        if (peak > velo) {
+          velo = peak;
+        }
+        while (millis() - time_hit < 1);
+      }
+
+      //mapping
+      velo = map(velo, thre1, sens, 1, 127);
+
+      if (velo <= 1) {
+        velo = 1;
+      }
+
+      if (velo > 127) {
+        velo = 127;
+      }
+
+      //velo = (velo * velo) / 126 + 1;
+
+      velocity = velo;
+      flag = true;
+      hit = true;
+    }
+  }
+
+  if (flag == true) {
+    time_end = millis();
+    exValue = analogRead(pin_1);
+    flag = false;
+  }
+}
 
 ////////////////////////////////////////////
-
-void HelloDrum::cymbal2zone(int sens, int thre1, int thre2, int retri) {
+void HelloDrum::hihat2zone(int sens, int thre1, int scan, int mask) {
 
   int velo = 0;
   hit = false;
@@ -244,7 +299,7 @@ void HelloDrum::cymbal2zone(int sens, int thre1, int thre2, int retri) {
   if (analogRead(pin_2) > thre1 || analogRead(pin_1) > thre1) {
     time_hit = millis();
 
-    if (time_hit - time_end < retri) { //retrigger cancel
+    if (time_hit - time_end < mask) { //retrigger cancel
       flag = true;
     }
 
@@ -253,7 +308,7 @@ void HelloDrum::cymbal2zone(int sens, int thre1, int thre2, int retri) {
     //    }
 
     if (flag == false) {
-      for (int i = 0; i < 5; i++) {  //peak scan
+      for (int i = 0; i < scan; i++) {  //peak scan
         int peak = analogRead(pin_1);
         if (peak > velo) {
           velo = peak;
@@ -326,7 +381,104 @@ void HelloDrum::cymbal2zone(int sens, int thre1, int thre2, int retri) {
   }
 }
 
-void HelloDrum::cymbal3zone(int sens, int thre1, int thre2, int retri) {
+
+void HelloDrum::cymbal2zone(int sens, int thre1, int scan, int mask) {
+
+  int velo = 0;
+  hit = false;
+  hitRim = false;
+  choke = false;
+  int piezoValue = analogRead(pin_1);
+  int sensorValue = analogRead(pin_2);
+
+  //入り口でエッヂとボウ分けるか？
+  //  if (abs(analogRead(pin_1) - analogRead(pin_2)) > thre1) {
+  if (analogRead(pin_2) > thre1 || analogRead(pin_1) > thre1) {
+    time_hit = millis();
+
+    if (time_hit - time_end < mask) { //retrigger cancel
+      flag = true;
+    }
+
+    //    if (analogRead(pin_1) - exValue > thre2) {
+    //      flag = false;
+    //    }
+
+    if (flag == false) {
+      for (int i = 0; i < scan; i++) {  //peak scan
+        int peak = analogRead(pin_1);
+        if (peak > velo) {
+          velo = peak;
+        }
+        while (millis() - time_hit < 1);
+      }
+
+      //bow
+      if (sensorValue < 50) {
+        velo = map(velo, thre1, sens , 1, 127);
+
+        if (velo <= 1) {
+          velo = 1;
+        }
+
+        if (velo > 127) {
+          velo = 127;
+        }
+
+        velocity = velo;
+        flag = true;
+        hit = true;
+      }
+
+      //edge
+      else if (sensorValue > 500) {
+        if (velo > 500) {
+          velo = velo - 500;
+        }
+        else {
+          velo = 500 - velo;
+        }
+        velo = map(velo, thre1, sens, 1, 127);
+
+        if (velo <= 1) {
+          velo = 1;
+        }
+
+        if (velo > 127) {
+          velo = 127;
+        }
+
+        velocity = velo;
+        flag = true;
+        hitRim = true;
+      }
+    }
+  }
+
+  if (flag == true && piezoValue < thre1 && sensorValue < 10) {
+    time_end = millis();
+    flag = false;
+  }
+
+  if (chokeFlag == false && sensorValue > 500 && sensorValue < 900  && abs(piezoValue - sensorValue) < 10) {
+    time_choke = millis();
+    if (time_choke - time_end < 10) {
+      chokeFlag = true;
+
+    }
+    else {
+      choke = true;
+      chokeFlag = true;
+    }
+  }
+
+  if (flag == true &&  sensorValue < 10) {
+    time_end = millis();
+    chokeFlag = false;
+  }
+}
+
+void HelloDrum::cymbal3zone(int sens, int thre1, int scan, int mask) {
 
   int velo = 0;
   hit = false;
@@ -342,7 +494,7 @@ void HelloDrum::cymbal3zone(int sens, int thre1, int thre2, int retri) {
   if (analogRead(pin_2) > thre1 || analogRead(pin_1) > thre1) {
     time_hit = millis();
 
-    if (time_hit - time_end < retri) { //retrigger cancel
+    if (time_hit - time_end < mask) { //retrigger cancel
       flag = true;
     }
 
@@ -351,7 +503,7 @@ void HelloDrum::cymbal3zone(int sens, int thre1, int thre2, int retri) {
     //    }
 
     if (flag == false) {
-      for (int i = 0; i < 5; i++) {  //peak scan
+      for (int i = 0; i < scan; i++) {  //peak scan
         int peak = analogRead(pin_1);
         if (peak > velo) {
           velo = peak;
@@ -433,7 +585,7 @@ void HelloDrum::cymbal3zone(int sens, int thre1, int thre2, int retri) {
   }
 }
 
-void HelloDrum::TCRT5000(int sens, int thre1, int thre2) {
+void HelloDrum::TCRT5000(int sens, int thre1, int thre2, int scan) {
 
   int velo = 0;
   openHH = false;
@@ -449,7 +601,7 @@ void HelloDrum::TCRT5000(int sens, int thre1, int thre2) {
     time_hit_pedal_2 = millis();
 
     velo = time_hit_pedal_2 - time_hit_pedal_1;
-    velo = map(velo, 50, 0, 1, 127);
+    velo = map(velo, scan, 0, 1, 127);
 
     if (velo <= 1) {
       velo = 1;
@@ -474,7 +626,7 @@ void HelloDrum::TCRT5000(int sens, int thre1, int thre2) {
 
   /////////////////////// HIHAT PEDAL CC
   #ifdef _AVR_
-  TCRT = map(TCRT, 900, 100, 0, 127);
+  TCRT = map(TCRT, sens, 100, 0, 127);
   
   if (TCRT > 127) {
     TCRT = 127;
@@ -530,7 +682,7 @@ void HelloDrum::TCRT5000(int sens, int thre1, int thre2) {
 }
 
 //with EEPROM と比較！
-void HelloDrum::FSR(int sens, int thre1, int thre2) {
+void HelloDrum::FSR(int sens, int thre1, int thre2, int scan) {
 
   int velo = 0;
   openHH = false;
@@ -546,7 +698,7 @@ void HelloDrum::FSR(int sens, int thre1, int thre2) {
     time_hit_pedal_2 = millis();
 
     velo = time_hit_pedal_2 - time_hit_pedal_1;
-    velo = map(velo, 50, 0, 1, 127);
+    velo = map(velo, scan, 0, 1, 127);
 
     if (velo <= 1) {
       velo = 1;
@@ -571,7 +723,7 @@ void HelloDrum::FSR(int sens, int thre1, int thre2) {
 
   /////////////////////// HIHAT PEDAL CC
 
-  FSR = map(FSR, 900, 100, 0, 127);
+  FSR = map(FSR, sens, 100, 0, 127);
   if (FSR > 127) {
     FSR = 127;
   }
@@ -602,17 +754,12 @@ void HelloDrum::singlePiezo() {
     time_hit = millis(); //check the time pad hitted
 
     //compare time to cancel retrigger
-    if (time_hit - time_end < retrigger) {
+    if (time_hit - time_end < masktime) {
       flag = true;
     }
 
-    //        if (piezoValue - exValue > thre2) {
-    //          flag = false;
-    //        }
-
     if (flag == false) {
-      //"5" is scantime
-      for (int i = 0; i < 5; i++) {
+      for (int i = 0; i < scantime; i++) {
         int peak = analogRead(pin_1);
         if (peak > velo) {
           velo = peak; //peak is max value of 5 times scan.
@@ -644,6 +791,7 @@ void HelloDrum::singlePiezo() {
     }
   }
 
+  //scantime伸びてるのでは？？？
   if (flag == true) {
     time_end = millis();
     exValue = analogRead(pin_1);
@@ -663,7 +811,7 @@ void HelloDrum::dualPiezo() {
   if (analogRead(pin_1) > threshold1) {
     time_hit = millis();
 
-    if (time_hit - time_end < retrigger) {
+    if (time_hit - time_end < masktime) {
       flag = true;
     }
 
@@ -673,7 +821,7 @@ void HelloDrum::dualPiezo() {
 
     if (flag == false) {
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < scantime; i++) {
       int peak = analogRead(pin_1);
       int peakRim = analogRead(pin_2);
 
@@ -739,6 +887,164 @@ void HelloDrum::dualPiezo() {
   }
 }
 
+void HelloDrum::hihat() {
+  HHnum = padNum;
+  int velo = 0;
+  hit = false;
+  piezoValue = analogRead(pin_1);
+
+//when the value > threshold
+  if (analogRead(pin_1) > threshold1) {
+    time_hit = millis(); //check the time pad hitted
+
+    //compare time to cancel retrigger
+    if (time_hit - time_end < masktime) {
+      flag = true;
+    }
+
+    if (flag == false) {
+      for (int i = 0; i < scantime; i++) {
+        int peak = analogRead(pin_1);
+        if (peak > velo) {
+          velo = peak; //peak is max value of 5 times scan.
+        }
+        while (millis() - time_hit < 1);
+        //delay 1 milisecond.
+        //scan the piezo value 5 times.
+      }
+
+      velo = map(velo, threshold1, sensitivity * 10, 1, 127);
+
+      if (velo <= 1) {
+        velo = 1;
+      }
+
+      if (velo > 127) {
+        velo = 127;
+      }
+
+      //velo = (velo * velo) / 126 + 1;
+
+
+      velocity = velo;
+      showVelocity = velocity;
+      flag = true; //ここの位置を検証すべき。showLCDとhitの下だと何か変わるか。
+      showLCD = true;
+      hit = true;
+      padIndex = padNum;
+    }
+  }
+
+  //scantime伸びてるのでは？？？
+  if (flag == true) {
+    time_end = millis();
+    exValue = analogRead(pin_1);
+    flag = false;
+  }
+}
+
+void HelloDrum::hihat2zone() {
+
+  HHnum = padNum;
+  int velo = 0;
+  hit = false;
+  hitRim = false;
+  choke = false;
+  int piezoValue = analogRead(pin_1);
+  int sensorValue = analogRead(pin_2);
+
+  //入り口でエッヂとボウ分けるか？
+  //  if (abs(analogRead(pin_1) - analogRead(pin_2)) > thre1) {
+  if (analogRead(pin_2) > threshold1 || analogRead(pin_1) > threshold1) {
+    time_hit = millis();
+
+    if (time_hit - time_end < masktime) { //retrigger cancel
+      flag = true;
+    }
+
+    //    if (analogRead(pin_1) - exValue > thre2) {
+    //      flag = false;
+    //    }
+
+    if (flag == false) {
+      for (int i = 0; i < scantime; i++) {  //peak scan
+        int peak = analogRead(pin_1);
+        if (peak > velo) {
+          velo = peak;
+        }
+        while (millis() - time_hit < 1);
+      }
+
+      //bow
+      if (sensorValue < 50) {
+        velo = map(velo, threshold1, sensitivity , 1, 127);
+
+        if (velo <= 1) {
+          velo = 1;
+        }
+
+        if (velo > 127) {
+          velo = 127;
+        }
+
+        velocity = velo;
+        showVelocity = velocity;
+        flag = true;
+        showLCD = true;
+        hit = true;
+        padIndex = padNum;
+      }
+
+      //edge
+      else if (sensorValue > 50) {
+        if (velo > 500) {
+          velo = velo - 500;
+        }
+        else {
+          velo = 500 - velo;
+        }
+        velo = map(velo, threshold1, sensitivity, 1, 127);
+
+        if (velo <= 1) {
+          velo = 1;
+        }
+
+        if (velo > 127) {
+          velo = 127;
+        }
+
+        velocity = velo;
+        showVelocity = velocity;
+        flag = true;
+        showLCD = true;
+        hitRim = true;
+        padIndex = padNum;
+      }
+    }
+  }
+
+  if (flag == true && piezoValue < threshold1 && sensorValue < 10) {
+    time_end = millis();
+    flag = false;
+  }
+
+  if (chokeFlag == false && sensorValue > 500 && sensorValue < 900  && abs(piezoValue - sensorValue) < 10) {
+    time_choke = millis();
+    if (time_choke - time_end < 10) {
+      chokeFlag = true;
+
+    }
+    else {
+      choke = true;
+      chokeFlag = true;
+    }
+  }
+
+  if (flag == true &&  sensorValue < 10) {
+    time_end = millis();
+    chokeFlag = false;
+  }
+}
 
 ////////////////////////////////////////////
 
@@ -756,7 +1062,7 @@ void HelloDrum::cymbal2zone() {
   if (analogRead(pin_2) > threshold1 || analogRead(pin_1) > threshold1) {
     time_hit = millis();
 
-    if (time_hit - time_end < retrigger) { //retrigger cancel
+    if (time_hit - time_end < masktime) { //retrigger cancel
       flag = true;
     }
 
@@ -765,7 +1071,7 @@ void HelloDrum::cymbal2zone() {
     //    }
 
     if (flag == false) {
-      for (int i = 0; i < 5; i++) {  //peak scan
+      for (int i = 0; i < scantime; i++) {  //peak scan
         int peak = analogRead(pin_1);
         if (peak > velo) {
           velo = peak;
@@ -860,7 +1166,7 @@ void HelloDrum::cymbal3zone() {
   if (analogRead(pin_2) > threshold1 || analogRead(pin_1) > threshold1) {
     time_hit = millis();
 
-    if (time_hit - time_end < retrigger) { //retrigger cancel
+    if (time_hit - time_end < masktime) { //retrigger cancel
       flag = true;
     }
 
@@ -869,7 +1175,7 @@ void HelloDrum::cymbal3zone() {
     //    }
 
     if (flag == false) {
-      for (int i = 0; i < 5; i++) {  //peak scan
+      for (int i = 0; i < scantime; i++) {  //peak scan
         int peak = analogRead(pin_1);
         if (peak > velo) {
           velo = peak;
@@ -960,9 +1266,14 @@ void HelloDrum::cymbal3zone() {
 
 void HelloDrum::TCRT5000() {
 
+  threshold2 = scantime;
+  scantime = masktime;
+  
+  HHCnum = padNum;
   int velo = 0;
   int TCRT = analogRead(pin_1);
   closeHH = false;
+  settingHHC = true;
 
   if (TCRT < threshold1 * 10 && pedalVelocityFlag == false && pedalFlag == false) {
     time_hit_pedal_1 = millis();
@@ -972,8 +1283,9 @@ void HelloDrum::TCRT5000() {
   if (TCRT < threshold2 * 10 && pedalFlag == false) {
     time_hit_pedal_2 = millis();
 
+    //傾き＝VELOCITY
     velo = time_hit_pedal_2 - time_hit_pedal_1;
-    velo = map(velo, retrigger, 0, 1, 127);
+    velo = map(velo, scantime, 0, 1, 127);
     //velo = map(velo, 50, 0, 1, 127);
 
     if (velo <= 1) {
@@ -1021,6 +1333,10 @@ void HelloDrum::TCRT5000() {
 
 void HelloDrum::FSR() {
 
+  threshold2 = scantime;
+  scantime = masktime;
+  
+  HHCnum = padNum;
   int velo = 0;
   int FSR = analogRead(pin_1);
   closeHH = false;
@@ -1034,7 +1350,7 @@ void HelloDrum::FSR() {
     time_hit_pedal_2 = millis();
 
     velo = time_hit_pedal_2 - time_hit_pedal_1;
-    velo = map(velo, retrigger, 0, 1, 127);
+    velo = map(velo, scantime, 0, 1, 127);
     //velo = map(velo, 50, 0, 1, 127);
 
     if (velo <= 1) {
@@ -1105,28 +1421,32 @@ void HelloDrum::settingEnable(){
     	 break;
 
     	 case 2:
-    	 threshold2 = threshold2 + UP[itemNumber];
-       EEPROM.write((padNum*7) + 2, threshold2);
+    	 scantime = scantime + UP[itemNumber];
+       EEPROM.write((padNum*7) + 2, scantime);
     	 break;
 
     	 case 3:
-    	 retrigger = retrigger + UP[itemNumber];
-       EEPROM.write((padNum*7) + 3, retrigger);
+    	 masktime = masktime + UP[itemNumber];
+       EEPROM.write((padNum*7) + 3, masktime);
     	 break;
 
     	 case 4:
     	 note = note + UP[itemNumber];
        EEPROM.write((padNum*7) + 4, note);
+       noteOpen = note;
     	 break;
 
        case 5:
        noteRim = noteRim + UP[itemNumber];
        EEPROM.write((padNum*7) + 5, noteRim);
+       noteClose = noteRim;
+       noteOpenEdge = noteRim;
        break;
 
        case 6:
        noteCup = noteCup + UP[itemNumber];
        EEPROM.write((padNum*7) + 6, noteCup);
+       noteCloseEdge = noteCup;
        break;
       }
       change = true;
@@ -1150,28 +1470,32 @@ void HelloDrum::settingEnable(){
     	 break;
 
     	 case 2:
-    	 threshold2 = threshold2 - UP[itemNumber];
-       EEPROM.write((padNum*7) + 2, threshold2);
+    	 scantime = scantime - UP[itemNumber];
+       EEPROM.write((padNum*7) + 2, scantime);
     	 break;
 
     	 case 3:
-    	 retrigger = retrigger - UP[itemNumber];
-       EEPROM.write((padNum*7) + 3, retrigger);
+    	 masktime = masktime - UP[itemNumber];
+       EEPROM.write((padNum*7) + 3, masktime);
     	 break;
 
     	 case 4:
     	 note = note - UP[itemNumber];
        EEPROM.write((padNum*7) + 4, note);
+       noteOpen = note;
     	 break;
 
        case 5:
        noteRim = noteRim - UP[itemNumber];
        EEPROM.write((padNum*7) + 5, noteRim);
+       noteClose = noteRim;
+       noteOpenEdge = noteRim;
        break;
 
        case 6:
        noteCup = noteCup - UP[itemNumber];
        EEPROM.write((padNum*7) + 6, noteCup);
+       noteCloseEdge = noteCup;
        break;
       }
       change = true;
@@ -1190,11 +1514,11 @@ void HelloDrum::settingEnable(){
 	  }
 
     else if (itemNumber == 2){
-      value = threshold2;
+      value = scantime;
     }
 
     else if (itemNumber == 3){
-      value = retrigger;
+      value = masktime;
     }
 
     else if (itemNumber == 4){
@@ -1224,19 +1548,23 @@ void HelloDrum::loadMemory(){
   //Read values from EEPROM.
   sensitivity = EEPROM.read(padNum*7);
   threshold1 = EEPROM.read((padNum*7) + 1);
-  threshold2 = EEPROM.read((padNum*7) + 2);
-  retrigger = EEPROM.read((padNum*7) + 3);
+  scantime = EEPROM.read((padNum*7) + 2);
+  masktime = EEPROM.read((padNum*7) + 3);
   note = EEPROM.read((padNum*7) + 4);
+  noteOpen = EEPROM.read((padNum*7) + 4);
   noteRim = EEPROM.read((padNum*7) + 5);
+  noteClose = EEPROM.read((padNum*7) + 5);
+  noteOpenEdge = EEPROM.read((padNum*7) + 5);
   noteCup = EEPROM.read((padNum*7) + 6);
+  noteCloseEdge = EEPROM.read((padNum*7) + 6);
 }
 
 void HelloDrum::initMemory(){
   //Write initial value to EEPROM.
   EEPROM.write(padNum*7, sensitivity);
   EEPROM.write((padNum*7) + 1, threshold1);
-  EEPROM.write((padNum*7) + 2, threshold2);
-  EEPROM.write((padNum*7) + 3, retrigger);
+  EEPROM.write((padNum*7) + 2, scantime);
+  EEPROM.write((padNum*7) + 3, masktime);
   EEPROM.write((padNum*7) + 4, note);
   EEPROM.write((padNum*7) + 5, noteRim);
   EEPROM.write((padNum*7) + 6, noteCup);
@@ -1367,9 +1695,23 @@ void HelloDrumLCD::show(){
     lcd.clear();
     lcd.print(showInstrument[nameIndex]);
     lcd.setCursor(0, 1);
-    lcd.print(item[itemNumber]);
-    lcd.setCursor(13, 1);
-    lcd.print(showValue);
+    if(nameIndex == HHCnum){
+      lcd.print(itemHHC[itemNumber]);
+      lcd.setCursor(13, 1);
+      lcd.print(showValue);
+    }
+
+    else if(nameIndex == HHnum){
+      lcd.print(itemHH[itemNumber]);
+      lcd.setCursor(13, 1);
+      lcd.print(showValue);
+    }
+
+    else{
+      lcd.print(item[itemNumber]);
+      lcd.setCursor(13, 1);
+      lcd.print(showValue);
+    }
   }
 
   //Pad hit

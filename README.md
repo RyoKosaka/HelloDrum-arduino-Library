@@ -6,7 +6,7 @@ This is a library for making E-Drum with Arduino.
 
 This is a library for making E-Drum with Arduino.  
 By using it with Arduino MIDI Library, you can make E-drum.  
-[Open E-Drums](https://open-e-drums.tumblr.com/)
+Blog :[https://open-e-drums.tumblr.com/](https://open-e-drums.tumblr.com/)
 
 This software is an alpha version, and is unsupported.
 Use at your own risk.
@@ -15,7 +15,7 @@ Use at your own risk.
 
 - Single piezo pad, ~~Dual Piezo pad~~, 2 zone cymbal, 3 zone cymbal
 - It is compatible with YAMAHA's 3 zone cymbal.(PCY135/PCY155)
-- Sensitivity, threshold, retrigger cancellation, note number can be set with each piezo.
+- Sensitivity, Threshold, Scan Time, Mask Time, Note Number can be set with each piezo.
 - Both optical(TCRT5000) and FSR type hi-hat controllers can be used.
 
 ## How to Use
@@ -32,9 +32,9 @@ Use at your own risk.
     //Setting
     int SNARE[5] = {
       800, //sensitivity
-      20,  //threshold1
-      50,  //threshold2
-      10,  //retrigger cancel
+      20,  //threshold
+      5,   //scantime
+      10,  //masktime
       38   //note
     }; 
 
@@ -108,7 +108,7 @@ The STL data of pads from 6 inches to 12 inches.(<https://www.thingiverse.com/Ry
 ## Author
 
 [@tnctrekit](https://twitter.com/tnctrekit)  
-[Works](https://www.tumblr.com/blog/ryokosaka)
+[Works](https://ryokosaka.com)
 
 ## Licence
 

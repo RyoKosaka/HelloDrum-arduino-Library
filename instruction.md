@@ -19,14 +19,14 @@ Before using "minimalDrumKit.ino", you need to initialize EEPROM.
 I made sample code that can be initialized simply by writing to arduino. Please write [**"InitializeEEPROM.ino"**](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/examples/InitializeEEPROM/InitializeEEPROM.ino) to arduino. Once written, the initialization is completed.  
 
 The values after initialization are as follows.
-    
-Sensitivity = 80  
-Retrigger Cancel = 10  
-Threshold 1 = 20  
-Threshold 2 = 50  
-Note = 38  
-Note of rim/Edge = 39  
-Note of cup = 40  
+
+Sensitivity = 80
+Threshold = 20
+Scan Time = 5
+Mask Time = 10
+Note of Head/Open = 38
+Note of Rim/Edge/Close = 39
+Note of Cup = 40
 
 ## Circuit
 
