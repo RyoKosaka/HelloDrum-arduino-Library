@@ -226,7 +226,7 @@ void HelloDrum::dualPiezo(int sens, int thre1, int scan, int mask) {
     flag = false;
   }
 }
-void HelloDrum::hihat(int sens, int thre1, int scan, int mask) {
+void HelloDrum::HH(int sens, int thre1, int scan, int mask) {
 
   int velo = 0;
   hit = false;
@@ -285,7 +285,7 @@ void HelloDrum::hihat(int sens, int thre1, int scan, int mask) {
 }
 
 ////////////////////////////////////////////
-void HelloDrum::hihat2zone(int sens, int thre1, int scan, int mask) {
+void HelloDrum::HH2zone(int sens, int thre1, int scan, int mask) {
 
   int velo = 0;
   hit = false;
@@ -887,7 +887,7 @@ void HelloDrum::dualPiezo() {
   }
 }
 
-void HelloDrum::hihat() {
+void HelloDrum::HH() {
   HHnum = padNum;
   int velo = 0;
   hit = false;
@@ -943,7 +943,7 @@ void HelloDrum::hihat() {
   }
 }
 
-void HelloDrum::hihat2zone() {
+void HelloDrum::HH2zone() {
 
   HHnum = padNum;
   int velo = 0;

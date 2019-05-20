@@ -63,7 +63,7 @@ void loop() {
   //Piezo sensing is done in this line. And it is returned as a velocity of 127 stages.
   //For each pad, one line is required.
   //So, you need the same number of lines as the number of pads or controller.
-  hihat.hihat2zone(HIHAT[0], HIHAT[1], HIHAT[2], HIHAT[3]);
+  hihat.HH2zone(HIHAT[0], HIHAT[1], HIHAT[2], HIHAT[3]);
   hihatControl.FSR(HIHAT_CONTROL[0], HIHAT_CONTROL[1], HIHAT_CONTROL[2],HIHAT_CONTROL[3]);
 
 

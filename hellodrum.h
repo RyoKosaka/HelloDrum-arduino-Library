@@ -96,10 +96,10 @@ class HelloDrum
     void singlePiezo();
     void dualPiezo(int sens, int thre1, int scan, int mask);
     void dualPiezo();
-    void hihat(int sens, int thre1, int scan, int mask);
-    void hihat();
-    void hihat2zone(int sens, int thre1, int scan, int mask);
-    void hihat2zone();
+    void HH(int sens, int thre1, int scan, int mask);
+    void HH();
+    void HH2zone(int sens, int thre1, int scan, int mask);
+    void HH2zone();
     void cymbal3zone(int sens, int thre1, int scan, int mask);
     void cymbal3zone();
     void cymbal2zone(int sens, int thre1, int scan, int mask);

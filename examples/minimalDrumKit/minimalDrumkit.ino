@@ -97,7 +97,7 @@ void loop() {
   //Sensing each pad.
   kick.singlePiezo();
   snare.singlePiezo();
-  hihat.hihat();
+  hihat.HH();
   hihatControl.TCRT5000();
   ride.cymbal3zone();
 

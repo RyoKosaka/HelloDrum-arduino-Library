@@ -57,7 +57,7 @@ void loop() {
 
   //Sensing each pad.
   snare.singlePiezo();
-  hihat.hihat();
+  hihat.HH();
   hihatControl.FSR();
   kick.singlePiezo();
 
