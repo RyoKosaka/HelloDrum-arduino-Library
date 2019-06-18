@@ -67,7 +67,7 @@ Use at your own risk.
     HelloDrumMUX mux(2,3,4,0);//D2, D3, D4, A0
     
     //Please name your piezo.
-    //The piezo named snare is connected to the A0 pin
+    //The piezo named snare is connected to MUX 0 pin
     HelloDrum snare(0);
 
     //Setting
