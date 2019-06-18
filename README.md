@@ -1,6 +1,6 @@
 # HelloDrum-arduino-Library
 This is a library for making E-Drum with Arduino.  
-**Ver.0.7(6/16/2019) Work in progress.** 
+**Ver.0.6(6/18/2019) Work in progress.** 
 
 ## Description
 
