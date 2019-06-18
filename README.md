@@ -21,7 +21,7 @@ Use at your own risk.
 
 ## How to Use
 - Coding:
-   ```arduino
+   ```cpp
     #include <hellodrum.h>
     #include <MIDI.h>
     MIDI_CREATE_DEFAULT_INSTANCE();
@@ -58,7 +58,7 @@ Use at your own risk.
     ```
 
 - Coding (MUX):
-   ```arduino
+   ```cpp
     #include <hellodrum.h>
     #include <MIDI.h>
     MIDI_CREATE_DEFAULT_INSTANCE();
