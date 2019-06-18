@@ -5,8 +5,8 @@ This article briefly explains how to use the library.
 ## Install
 
 1. Download ZIP
-2. Import a .zip Library ()
-3. Import Arduino MIDI Library ()
+2. Import a .zip Library (<https://www.arduino.cc/en/Guide/Libraries#toc4>)
+3. Import Arduino MIDI Library (<https://playground.arduino.cc/Main/MIDILibrary>)
 
 ## Sample Code
 
@@ -65,8 +65,9 @@ HelloDrum hihat(2);
 HelloDrum hihatControl(3);
 HelloDrum ride(4, 5);
 ```  
-**HelloDrum** is a class related to pads and controllers.  
-I put the name kick on the pad connected to No. 0 of the analog pin. The same is true for snare and hihat, hihatControl.
+**HelloDrum** is a class related to pads or hihat controllers.  
+I put the name kick on the pad connected to No. 0 of the analog pin. The same is true for snare and hihat, hihatControl.  
+If you connect a pad using MUX, just change the analog pin number to the MUX pin number.
 
 
   

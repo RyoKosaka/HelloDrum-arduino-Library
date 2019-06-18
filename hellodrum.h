@@ -60,7 +60,6 @@ static char* showInstrument[] = {
     "Pad 16",
 };
 
-//static char* showInstrument;
 static bool push;
 static bool showLCD;
 static int showVelocity;
@@ -68,6 +67,7 @@ static int nameIndex;
 static int nameIndexMax;
 static int showValue = 0;
 static int padIndex = 0;
+static int muxIndex = -1;
 static int HHCnum;
 static int HHnum;
 static bool edit;
@@ -83,6 +83,7 @@ static int button_down;
 static int button_next;
 static int button_back;
 static int UP[7] = {5, 1, 1, 1, 1, 1, 1};  //{sensitivity, threshold1, scantime, masktime, note}
+static int rawValue[64]; //8 * 8chanel Mux
 //static int UP_ADVANCE[4] = {1, 50, 1, 1};  //{scantime, rim / head, pedal velocity ,masktime}
 
 
@@ -91,6 +92,23 @@ class HelloDrum
   public:
     HelloDrum(int pin1, int pin2);
     HelloDrum(int pin1);
+
+    void singlePiezoMUX(int sens, int thre1, int scan, int mask);
+    void singlePiezoMUX();
+    void dualPiezoMUX(int sens, int thre1, int scan, int mask);
+    void dualPiezoMUX();
+    void HHMUX(int sens, int thre1, int scan, int mask);
+    void HHMUX();
+    void HH2zoneMUX(int sens, int thre1, int scan, int mask);
+    void HH2zoneMUX();
+    void cymbal3zoneMUX(int sens, int thre1, int scan, int mask);
+    void cymbal3zoneMUX();
+    void cymbal2zoneMUX(int sens, int thre1, int scan, int mask);
+    void cymbal2zoneMUX();
+    void TCRT5000MUX(int sens, int thre1, int thre2, int scan);
+    void TCRT5000MUX();
+    void FSRMUX(int sens, int thre1, int thre2, int scan);
+    void FSRMUX();
 
     void singlePiezo(int sens, int thre1, int scan, int mask);
     void singlePiezo();
@@ -168,6 +186,24 @@ class HelloDrum
     int sensorValue;
 };
 
+class HelloDrumMUX
+{
+  public:
+    HelloDrumMUX(int pin1, int pin2, int pin3, int pinA);
+    void scan();
+    int selectPins[3];
+    int muxNum;
+
+  private:
+    int pin_1;
+    int pin_2;
+    int pin_3;
+    int pin_A;
+    int piezoValue;
+    int RimPiezoValue;
+    int sensorValue;
+};
+
 class HelloDrumButton
 {
   public:
@@ -211,6 +247,5 @@ class HelloDrumLCD
     int pin_6;
 
 };
-
 
 #endif
