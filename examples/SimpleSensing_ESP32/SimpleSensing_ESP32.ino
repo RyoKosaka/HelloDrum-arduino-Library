@@ -36,11 +36,12 @@ int HIHAT[6] = {
   42   //note of close
 };
 
-int HIHAT_CONTROL[4] = {
-  1400,  //sensitivity
-  1400,  //threshold1
-  150,  //threshold2
-  44,   //note of pedal
+int HIHAT_CONTROL[5] = {
+  300,  //sensitivity
+  300,  //threshold1
+  200,  //threshold2
+  50,   //scan time
+  44   //note of pedal
 };
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -143,7 +144,7 @@ void loop() {
     snare.singlePiezo(SNARE[0], SNARE[1], SNARE[2], SNARE[3]);
     tom.singlePiezo(TOM[0], TOM[1], TOM[2], TOM[3]);
     hihat.singlePiezo(HIHAT[0], HIHAT[1], HIHAT[2], HIHAT[3]);
-    hihatControl.TCRT5000(HIHAT_CONTROL[0], HIHAT_CONTROL[1], HIHAT_CONTROL[2]);
+    hihatControl.TCRT5000(HIHAT_CONTROL[0], HIHAT_CONTROL[1], HIHAT_CONTROL[2],HIHAT_CONTROL[3]);
 
     if (snare.hit == true) {
       // noteOn
