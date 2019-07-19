@@ -12,25 +12,25 @@
 
 */
 
-///////////////////////////////   INITIAL VALUE   ///////////////////////////////////
+///////////////////////////////   SETTING VALUE   ///////////////////////////////////
 
-//Determine the initial value.
+//Determine the setting value.
 //By changing the number in this array you can set sensitivity, threshold and so on.
 
 int SNARE[5] = {
-  800, //sensitivity
-  20,  //threshold
-  5,  //scan time    
-  10,  //mask time
-  38   //note
-}; 
+    100, //sensitivity (1-100)
+    10,  //threshold (1-100)
+    30,  //scan time (1-)
+    10,  //mask time (1-)
+    38   //note (0-127)
+};
 
 int TOM[5] = {
-  800, //sensitivity
-  20,  //threshold
-  5,  //scan time
-  10,  //mask time
-  50   //note
+    100, //sensitivity (1-100)
+    10,  //threshold (1-100)
+    30,  //scan time (1-)
+    10,  //mask time(1-)
+    50   //note (0-127)
 };
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -45,17 +45,18 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 HelloDrum snare(0);
 HelloDrum tom(1);
 
-void setup() {
+void setup()
+{
   //If you use Hairless MIDI, you have to comment out the next line.
-  //MIDI.begin(10);
+  MIDI.begin(10);
 
   //And uncomment the next two lines.
-  MIDI.begin();
-  Serial.begin(38400);
+  //MIDI.begin();
+  //Serial.begin(38400);
 }
 
-void loop() {
-
+void loop()
+{
   //Piezo sensing is done in this line. And it is returned as a velocity of 127 stages.
   //For each piezo, one line is required.
   snare.singlePiezo(SNARE[0], SNARE[1], SNARE[2], SNARE[3]);
@@ -63,14 +64,15 @@ void loop() {
 
   //MIDI signals are transmitted with this IF statement.
   //For each piezo, one IF statement is required
-  if (snare.hit == true) {
-    MIDI.sendNoteOn(SNARE[4], snare.velocity, 10);  //(note, velocity, channel)
+  if (snare.hit == true)
+  {
+    MIDI.sendNoteOn(SNARE[4], snare.velocity, 10); //(note, velocity, channel)
     MIDI.sendNoteOff(SNARE[4], 0, 10);
   }
 
-  if (tom.hit == true) {
-    MIDI.sendNoteOn(TOM[4], tom.velocity, 10);  //(note, velocity, channel)
+  if (tom.hit == true)
+  {
+    MIDI.sendNoteOn(TOM[4], tom.velocity, 10); //(note, velocity, channel)
     MIDI.sendNoteOff(TOM[4], 0, 10);
   }
-
 }

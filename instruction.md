@@ -26,7 +26,7 @@ Scan Time = 5
 Mask Time = 10
 Note of Head/Open = 38
 Note of Rim/Edge/Close = 39
-Note of Cup = 40
+Note of Cup/Side Stick = 40
 
 ## Circuit
 

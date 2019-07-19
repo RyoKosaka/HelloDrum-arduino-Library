@@ -1,3 +1,15 @@
+/*
+  " HELLO DRUM LIBRARY" Ver.0.6.1
+
+  Ver.0.5 - May 19, 2018
+  Ver.0.6 - June 18, 2019
+  Ver.0.6.1 - July 3, 2019
+
+  by Ryo Kosaka
+
+  https://open-e-drums.tumblr.com/
+*/
+
 #ifndef HelloDrum_h
 #define HelloDrum_h
 
@@ -9,9 +21,10 @@
 #endif
 
 #ifdef ESP32
+#include "EEPROM_ESP.h"
 #endif
 
-static char* item[] = {
+static char *item[] = {
     "SENSITIVITY",
     "THRESHOLD",
     "SCAN TIME",
@@ -19,9 +32,9 @@ static char* item[] = {
     "NOTE",
     "NOTE RIM",
     "NOTE CUP",
-    };
+};
 
-static char* itemHH[] = {
+static char *itemHH[] = {
     "SENSITIVITY",
     "THRESHOLD",
     "SCAN TIME",
@@ -29,9 +42,9 @@ static char* itemHH[] = {
     "NOTE OPEN",
     "NOTE CLOSE",
     "NOTE CUP",
-    };
+};
 
-static char* itemHHC[] = {
+static char *itemHHC[] = {
     "SENSITIVITY",
     "THRESHOLD1",
     "THRESHOLD2",
@@ -39,9 +52,9 @@ static char* itemHHC[] = {
     "NOTE PEDAL",
     "NOTE OPEN E",
     "NOTE CLOSE E",
-    };
+};
 
-static char* showInstrument[] = {
+static char *showInstrument[] = {
     "Pad 1",
     "Pad 2",
     "Pad 3",
@@ -82,170 +95,176 @@ static int button_up;
 static int button_down;
 static int button_next;
 static int button_back;
-static int UP[7] = {5, 1, 1, 1, 1, 1, 1};  //{sensitivity, threshold1, scantime, masktime, note}
-static int rawValue[64]; //8 * 8chanel Mux
+static int UP[7] = {1, 1, 1, 1, 1, 1, 1}; //{sensitivity, threshold1, scantime, masktime, note}
+static int rawValue[64];                  //8 * 8chanel Mux
 //static int UP_ADVANCE[4] = {1, 50, 1, 1};  //{scantime, rim / head, pedal velocity ,masktime}
-
 
 class HelloDrum
 {
-  public:
-    HelloDrum(int pin1, int pin2);
-    HelloDrum(int pin1);
+public:
+  HelloDrum(int pin1, int pin2);
+  HelloDrum(int pin1);
 
-    void singlePiezoMUX(int sens, int thre1, int scan, int mask);
-    void singlePiezoMUX();
-    void dualPiezoMUX(int sens, int thre1, int scan, int mask);
-    void dualPiezoMUX();
-    void HHMUX(int sens, int thre1, int scan, int mask);
-    void HHMUX();
-    void HH2zoneMUX(int sens, int thre1, int scan, int mask);
-    void HH2zoneMUX();
-    void cymbal3zoneMUX(int sens, int thre1, int scan, int mask);
-    void cymbal3zoneMUX();
-    void cymbal2zoneMUX(int sens, int thre1, int scan, int mask);
-    void cymbal2zoneMUX();
-    void TCRT5000MUX(int sens, int thre1, int thre2, int scan);
-    void TCRT5000MUX();
-    void FSRMUX(int sens, int thre1, int thre2, int scan);
-    void FSRMUX();
+  void singlePiezoMUX(int sens, int thre1, int scan, int mask);
+  void singlePiezoMUX();
+  void dualPiezoMUX(int sens, int thre1, int scan, int mask);
+  void dualPiezoMUX();
+  void HHMUX(int sens, int thre1, int scan, int mask);
+  void HHMUX();
+  void HH2zoneMUX(int sens, int thre1, int scan, int mask);
+  void HH2zoneMUX();
+  void cymbal3zoneMUX(int sens, int thre1, int scan, int mask);
+  void cymbal3zoneMUX();
+  void cymbal2zoneMUX(int sens, int thre1, int scan, int mask);
+  void cymbal2zoneMUX();
+  void TCRT5000MUX(int sens, int thre1, int thre2, int scan);
+  void TCRT5000MUX();
+  void FSRMUX(int sens, int thre1, int thre2, int scan);
+  void FSRMUX();
 
-    void singlePiezo(int sens, int thre1, int scan, int mask);
-    void singlePiezo();
-    void dualPiezo(int sens, int thre1, int scan, int mask);
-    void dualPiezo();
-    void HH(int sens, int thre1, int scan, int mask);
-    void HH();
-    void HH2zone(int sens, int thre1, int scan, int mask);
-    void HH2zone();
-    void cymbal3zone(int sens, int thre1, int scan, int mask);
-    void cymbal3zone();
-    void cymbal2zone(int sens, int thre1, int scan, int mask);
-    void cymbal2zone();
-    void TCRT5000(int sens, int thre1, int thre2, int scan);
-    void TCRT5000();
-    void FSR(int sens, int thre1, int thre2, int scan);
-    void FSR();
+  void singlePiezo(int sens, int thre1, int scan, int mask);
+  void singlePiezo();
+  void dualPiezo(int sens, int thre1, int scan, int mask);
+  void dualPiezo();
+  void HH(int sens, int thre1, int scan, int mask);
+  void HH();
+  void HH2zone(int sens, int thre1, int scan, int mask);
+  void HH2zone();
+  void cymbal3zone(int sens, int thre1, int scan, int mask);
+  void cymbal3zone();
+  void cymbal2zone(int sens, int thre1, int scan, int mask);
+  void cymbal2zone();
+  void TCRT5000(int sens, int thre1, int thre2, int scan);
+  void TCRT5000();
+  void FSR(int sens, int thre1, int thre2, int scan);
+  void FSR();
 
-    void settingName(char *instrumentName);
-    void settingEnable();
+  void settingName(char *instrumentName);
+  void settingEnable();
 
-    void loadMemory();
-    void initMemory();
+  void loadMemory();
+  void initMemory();
 
-    int velocity;
-    int pedalCC;
+  int velocity;
+  int velocityRim;
+  int velocityCup;
+  int pedalCC;
 
-    int exValue;
-    int exTCRT = 0;
-    int exFSR = 0;
-    bool hit;
-    bool openHH = false;
-    bool closeHH = false;
-    bool hitRim;
-    bool hitCup;
-    bool choke;
-    bool sensorFlag;
-    bool moving;
-    bool flag;
-    bool pedalVelocityFlag = false;
-    bool pedalFlag = false;
-    bool settingHHC = false;
-    bool chokeFlag;
-    unsigned long time_hit;
-    unsigned long time_end;
-    unsigned long time_choke;
-    unsigned long time_hit_pedal_1;
-    unsigned long time_hit_pedal_2;
+  int exValue;
+  int exTCRT = 0;
+  int exFSR = 0;
+  bool hit;
+  bool openHH = false;
+  bool closeHH = false;
+  bool hitRim;
+  bool hitCup;
+  bool choke;
+  bool sensorFlag;
+  bool moving;
+  bool flag;
+  bool pedalVelocityFlag = false;
+  bool pedalFlag = false;
+  bool settingHHC = false;
+  bool chokeFlag;
+  unsigned long time_hit;
+  unsigned long time_end;
+  unsigned long time_choke;
+  unsigned long time_hit_pedal_1;
+  unsigned long time_hit_pedal_2;
 
-    char* GetItem(int i);
+  char *GetItem(int i);
 
-    int value;
-    int padNum;
+  int value;
+  int padNum;
 
-    int note;
-    int noteRim;
-    int noteCup;
-    int noteOpen;
-    int noteClose;
-    int noteOpenEdge;
-    int noteCloseEdge;
-    int threshold1;
-    int threshold2;
-    int scantime;
-    int masktime;
-    int sensitivity;
+  int note;
+  int noteRim;
+  int noteCup;
+  int noteOpen;
+  int noteClose;
+  int noteOpenEdge;
+  int noteCloseEdge;
+  int threshold1;
+  int threshold2;
+  int scantime;
+  int masktime;
+  int sensitivity;
+  int loopTimes = 0;
 
-    //int initialValue[5];
+  //int initialValue[5];
 
-  private:
-    int pin_1;
-    int pin_2;
-    int piezoValue;
-    int RimPiezoValue;
-    int sensorValue;
+private:
+  int pin_1;
+  int pin_2;
+  int piezoValue;
+  int RimPiezoValue;
+  int sensorValue;
+  int firstSensorValue;
+  int lastSensorValue;
+  int piezoValueSUM;
+  int RimPiezoValueSUM;
 };
 
 class HelloDrumMUX
 {
-  public:
-    HelloDrumMUX(int pin1, int pin2, int pin3, int pinA);
-    void scan();
-    int selectPins[3];
-    int muxNum;
+public:
+  HelloDrumMUX(int pin1, int pin2, int pin3, int pinA);
+  void scan();
+  int selectPins[3];
+  int muxNum;
 
-  private:
-    int pin_1;
-    int pin_2;
-    int pin_3;
-    int pin_A;
-    int piezoValue;
-    int RimPiezoValue;
-    int sensorValue;
+private:
+  int pin_1;
+  int pin_2;
+  int pin_3;
+  int pin_A;
 };
 
 class HelloDrumButton
 {
-  public:
-    HelloDrumButton(int pin1, int pin2, int pin3, int pin4, int pin5);
+public:
+  HelloDrumButton(int pin1, int pin2, int pin3, int pin4, int pin5);
 
-    void readButtonState();
+  void readButtonState();
 
-    int GetItemNumber();
-    int GetEditState();
-    int GetEditdoneState();
-    int GetPushState();
-    int GetChangeState();
+  int GetSettingValue();
+  int GetVelocity();
+  int GetItemNumber();
+  bool GetEditState();
+  int GetEditdoneState();
+  bool GetPushState();
+  int GetChangeState();
+  char *GetPadName();
+  char *GetSettingItem();
+  char *GetHitPad();
 
-    int UPDOWN;
-    int NEXTBACK;
+  int UPDOWN;
+  int NEXTBACK;
 
-  private:
-    int pin_1;
-    int pin_2;
-    int pin_3;
-    int pin_4;
-    int pin_5;
-
+private:
+  int pin_1;
+  int pin_2;
+  int pin_3;
+  int pin_4;
+  int pin_5;
 };
 
 class HelloDrumLCD
 {
-  public:
-    HelloDrumLCD(int pin1, int pin2, int pin3, int pin4, int pin5, int pin6);
+public:
+  HelloDrumLCD(int pin1, int pin2, int pin3, int pin4, int pin5, int pin6);
 
-    void show();
+  void show();
 
-    LiquidCrystal lcd;
+  LiquidCrystal lcd;
 
-  private:
-    int pin_1;
-    int pin_2;
-    int pin_3;
-    int pin_4;
-    int pin_5;
-    int pin_6;
-
+private:
+  int pin_1;
+  int pin_2;
+  int pin_3;
+  int pin_4;
+  int pin_5;
+  int pin_6;
 };
 
 #endif

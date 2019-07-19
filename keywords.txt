@@ -48,3 +48,12 @@ openHH	KEYWORD2
 closeHH	KEYWORD2
 pedalCC	KEYWORD2
 moving	KEYWORD2
+
+GetPushState    KEYWORD2
+GetEditState    KEYWORD2
+GetEditdoneState    KEYWORD2
+GetPadName  KEYWORD2
+GetSettingItem  KEYWORD2
+GetSettingValue KEYWORD2
+GetVelocity KEYWORD2
+GetHitPad   KEYWORD2

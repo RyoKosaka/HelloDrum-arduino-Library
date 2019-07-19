@@ -36,7 +36,6 @@
 
 */
 
-
 #include <hellodrum.h>
 #include <MIDI.h>
 
@@ -51,9 +50,12 @@ HelloDrum ride(4, 5);
 
 //Set the DIGITAL pin number to which the button and the LCD are connected.
 HelloDrumButton button(6, 7, 8, 9, 10); //(EDIT,UP,DOWN,NEXT,BACK)
-HelloDrumLCD lcd(12, 11, 5, 4, 3, 2); //(rs, en, d4, d5, d6, d7)
+HelloDrumLCD lcd(12, 11, 5, 4, 3, 2);   //(rs, en, d4, d5, d6, d7)
 
-void setup() {
+void setup()
+{
+  //if you use ESP32, you have to uncomment the next line.
+  //EEPROM_ESP.begin(512);
 
   //If you use Hairless MIDI, you have to comment out the next line.
   MIDI.begin(10);
@@ -69,7 +71,6 @@ void setup() {
   hihatControl.settingName("HIHAT PEDAL");
   ride.settingName("RIDE");
 
-
   //Load settings from EEPROM.
   //It is necessary to make the order in exactly the same order as you named the pad first.
   kick.loadMemory();
@@ -79,7 +80,8 @@ void setup() {
   ride.loadMemory();
 }
 
-void loop() {
+void loop()
+{
 
   /////////// 1. LCD & SETTING MODE /////////////
 
@@ -103,65 +105,76 @@ void loop() {
 
   //Sending MIDI signals.
   //KICK//
-  if (kick.hit == true) {
-    MIDI.sendNoteOn(kick.note, kick.velocity, 10);  //(note, velocity, channel)
+  if (kick.hit == true)
+  {
+    MIDI.sendNoteOn(kick.note, kick.velocity, 10); //(note, velocity, channel)
     MIDI.sendNoteOff(kick.note, 0, 10);
   }
 
   //SNARE//
-  if (snare.hit == true) {
-    MIDI.sendNoteOn(snare.note, snare.velocity, 10);  //(note, velocity, channel)
+  if (snare.hit == true)
+  {
+    MIDI.sendNoteOn(snare.note, snare.velocity, 10); //(note, velocity, channel)
     MIDI.sendNoteOff(snare.note, 0, 10);
   }
 
   //HIHAT//
-  if (hihat.hit == true) {
+  if (hihat.hit == true)
+  {
     //check open or close
     //1.open
-    if (hihatControl.openHH == true) {
-      MIDI.sendNoteOn(hihat.noteOpen, hihat.velocity, 10);  //(note of open, velocity, channel)
+    if (hihatControl.openHH == true)
+    {
+      MIDI.sendNoteOn(hihat.noteOpen, hihat.velocity, 10); //(note of open, velocity, channel)
       MIDI.sendNoteOff(hihat.noteOpen, 0, 10);
     }
     //2.close
-    else {
-      MIDI.sendNoteOn(hihat.noteClose, hihat.velocity, 10);  //(note of close, velocity, channel)
+    else
+    {
+      MIDI.sendNoteOn(hihat.noteClose, hihat.velocity, 10); //(note of close, velocity, channel)
       MIDI.sendNoteOff(hihat.noteClose, 0, 10);
     }
   }
 
   //HIHAT CONTROLLER//
   //when hihat is closed
-  if (hihatControl.closeHH == true) {
-    MIDI.sendNoteOn(hihatControl.note, hihatControl.velocity, 10);  //(note of pedal, velocity, channel)
+  if (hihatControl.closeHH == true)
+  {
+    MIDI.sendNoteOn(hihatControl.note, hihatControl.velocity, 10); //(note of pedal, velocity, channel)
     MIDI.sendNoteOff(hihatControl.note, 0, 10);
   }
 
   //sending state of pedal with controll change
-  if (hihatControl.moving == true) {
+  if (hihatControl.moving == true)
+  {
     MIDI.sendControlChange(4, hihatControl.pedalCC, 10);
   }
-  
+
   //RIDE//
   //1.bow
-  if (ride.hit == true) {
-    MIDI.sendNoteOn(ride.note, ride.velocity, 10);  //(note, velocity, channel)
+  if (ride.hit == true)
+  {
+    MIDI.sendNoteOn(ride.note, ride.velocity, 10); //(note, velocity, channel)
     MIDI.sendNoteOff(ride.note, 0, 10);
   }
 
   //2.edge
-  else if (ride.hitRim == true) {
-    MIDI.sendNoteOn(ride.noteRim, ride.velocity, 10);  //(note, velocity, channel)
+  else if (ride.hitRim == true)
+  {
+    MIDI.sendNoteOn(ride.noteRim, ride.velocity, 10); //(note, velocity, channel)
     MIDI.sendNoteOff(ride.noteRim, 0, 10);
   }
 
   //3.cup
-  else if (ride.hitCup == true) {
-    MIDI.sendNoteOn(ride.noteCup, ride.velocity, 10);  //(note, velocity, channel)
+  else if (ride.hitCup == true)
+  {
+    MIDI.sendNoteOn(ride.noteCup, ride.velocity, 10); //(note, velocity, channel)
     MIDI.sendNoteOff(ride.noteCup, 0, 10);
   }
 
   //4.choke
-  if (ride.choke == true) {
+  if (ride.choke == true)
+  {
     MIDI.sendPolyPressure(ride.note, 127, 10);
     MIDI.sendPolyPressure(ride.noteRim, 127, 10);
     MIDI.sendPolyPressure(ride.noteCup, 127, 10);

@@ -1,6 +1,6 @@
 # HelloDrum-arduino-Library
 This is a library for making E-Drum with Arduino.  
-**Ver.0.6(6/18/2019) Work in progress.** 
+**Ver.0.7(7/20/2019) Work in progress.** 
 
 ## Description
 
@@ -13,7 +13,7 @@ Use at your own risk.
 
 ## Features
 
-- Single piezo pad, ~~Dual Piezo pad~~, 2 zone cymbal, 3 zone cymbal
+- Single piezo pad, Dual Piezo pad, 2 zone cymbal, 3 zone cymbal
 - It is compatible with YAMAHA's 3 zone cymbal.(PCY135/PCY155)
 - Sensitivity, Threshold, Scan Time, Mask Time, Note Number can be set with each piezo.
 - Both optical(TCRT5000) and FSR type hi-hat controllers can be used.
@@ -32,10 +32,10 @@ Use at your own risk.
 
     //Setting
     int SNARE[5] = {
-      800, //sensitivity
-      20,  //threshold
-      5,   //scantime
-      10,  //masktime
+      80, //sensitivity 
+      10,  //threshold
+      20,   //scantime
+      20,  //masktime
       38   //note
     }; 
 
@@ -72,10 +72,10 @@ Use at your own risk.
 
     //Setting
     int SNARE[5] = {
-      800, //sensitivity
-      20,  //threshold
-      5,   //scantime
-      10,  //masktime
+      80, //sensitivity
+      10,  //threshold
+      20,   //scantime
+      20,  //masktime
       38   //note
     }; 
 
@@ -136,6 +136,12 @@ The STL data of pads from 6 inches to 12 inches.(<https://www.thingiverse.com/Ry
 
 ## Release History
 
+* 0.7
+   - Improved sensing
+   - Dual Piezo sensing available (Test)
+   - ESP32 EEPROM available
+   - Setting mode with I2C LCD or I2C OLED available
+   - Add sample code
 * 0.6
    - Sensing with MUX(4051) is available
    - Add BLE MIDI sample code with ESP32

@@ -8,9 +8,9 @@
   
   The values after initialization are as follows.
     
-    Sensitivity = 80
-    Threshold = 20
-    Scan Time = 5
+    Sensitivity = 100
+    Threshold = 10
+    Scan Time = 30
     Mask Time = 10
     Note = 38
     Note of rim/Edge = 39
@@ -19,17 +19,15 @@
   https://open-e-drums.tumblr.com/
 */
 
-
 #include <hellodrum.h>
 
+//input number
 HelloDrum pad_0(0);
 HelloDrum pad_1(1);
 HelloDrum pad_2(2);
 HelloDrum pad_3(3);
 HelloDrum pad_4(4);
 HelloDrum pad_5(5);
-//if you use arduino MEGA, uncomment below lines.
-/*
 HelloDrum pad_6(6);
 HelloDrum pad_7(7);
 HelloDrum pad_8(8);
@@ -40,10 +38,18 @@ HelloDrum pad_12(12);
 HelloDrum pad_13(13);
 HelloDrum pad_14(14);
 HelloDrum pad_15(15);
-*/
 
-void setup() {
-  
+//if you have more pads, just add code like this
+//HelloDrum pad_16(16);
+//HelloDrum pad_17(17);
+//HelloDrum pad_18(18);
+
+void setup()
+{
+
+  //if you use ESP32, uncomment below line.
+  //EEPROM_ESP.begin(512);
+
   //Initialize
   pad_0.initMemory();
   pad_1.initMemory();
@@ -51,8 +57,6 @@ void setup() {
   pad_3.initMemory();
   pad_4.initMemory();
   pad_5.initMemory();
-  //if you use arduino MEGA, uncomment below lines.
-  /*
   pad_6.initMemory();
   pad_7.initMemory();
   pad_8.initMemory();
@@ -63,9 +67,13 @@ void setup() {
   pad_13.initMemory();
   pad_14.initMemory();
   pad_15.initMemory();
-  */
+
+  //if you have more pads, just add code like this
+  //pad_16.initMemory();
+  //pad_17.initMemory();
+  //pad_18.initMemory();
 }
 
-void loop() {
+void loop()
+{
 }
-

@@ -1,8 +1,9 @@
 /*
-  " HELLO DRUM LIBRARY" Ver.0.6
+  " HELLO DRUM LIBRARY" Ver.0.6.1
 
   Ver.0.5 - May 19, 2018
-  Ver.0.6 - june 18, 2019
+  Ver.0.6 - June 18, 2019
+  Ver.0.6.1 - July 3, 2019
 
   by Ryo Kosaka
 
@@ -18,8 +19,7 @@
 #endif
 
 #ifdef ESP32
-//#include "EEPROM_ESP.h"
-//#include "EEPROM_ESP.cpp"
+#include "EEPROM_ESP.h"
 #endif
 
 //Pad with 2 sensors.
@@ -32,10 +32,10 @@ HelloDrum::HelloDrum(int pin1, int pin2)
   note = 38;
   noteRim = 39;
   noteCup = 40;
-  threshold1 = 20;
-  scantime = 5;
+  threshold1 = 10;
+  scantime = 30;
   masktime = 10;
-  sensitivity = 80;
+  sensitivity = 100;
 
   //Give the instance a pad number.
   padNum = padIndex;
@@ -48,13 +48,13 @@ HelloDrum::HelloDrum(int pin1)
   pin_1 = pin1;
 
   //initial EEPROM value
-  note = 38;
-  noteRim = 39;
-  noteCup = 40;
-  threshold1 = 20;
-  scantime = 5;
+  note = 38;       //0-127
+  noteRim = 39;    //0-127
+  noteCup = 40;    //0-127
+  threshold1 = 10; //*10 1-100
+  scantime = 30;
   masktime = 10;
-  sensitivity = 80;
+  sensitivity = 100; //*10 1-100
 
   //Give the instance a pad number.
   padNum = padIndex;
@@ -62,7 +62,7 @@ HelloDrum::HelloDrum(int pin1)
 }
 
 //MUX pin define
-HelloDrumMUX::HelloDrumMUX(int pin1, int pin2, int pin3, int pinA)//s0,s1,s2, analogPin
+HelloDrumMUX::HelloDrumMUX(int pin1, int pin2, int pin3, int pinA) //s0,s1,s2, analogPin
 {
   pin_1 = pin1;
   pin_2 = pin2;
@@ -72,7 +72,7 @@ HelloDrumMUX::HelloDrumMUX(int pin1, int pin2, int pin3, int pinA)//s0,s1,s2, an
   selectPins[1] = pin_2;
   selectPins[2] = pin_3;
 
-  for (int i=0; i<3; i++)
+  for (int i = 0; i < 3; i++)
   {
     pinMode(selectPins[i], OUTPUT);
     digitalWrite(selectPins[i], HIGH);
@@ -102,7 +102,7 @@ HelloDrumLCD::HelloDrumLCD(int pin1, int pin2, int pin3, int pin4, int pin5, int
   pin_6 = pin6; //D7
 
   lcd = LiquidCrystal(pin_1, pin_2, pin_3, pin_4, pin_5, pin_6);
-  lcd.begin(16,2);
+  lcd.begin(16, 2);
   lcd.clear();
   lcd.print("hello, world!");
   lcd.setCursor(0, 1);
@@ -111,1322 +111,1749 @@ HelloDrumLCD::HelloDrumLCD(int pin1, int pin2, int pin3, int pin4, int pin5, int
 
 ///////////////////// 1. SENSING without EEPROM //////////////////////////
 
-void HelloDrum::singlePiezo(int sens, int thre1, int scan, int mask) {
+void HelloDrum::singlePiezo(int sens, int thre1, int scan, int mask)
+{
+#ifdef __AVR__
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+#endif
+#ifdef ESP32
+  int thre1Raw = thre1 * 40;
+  int sensRaw = sens * 40;
+#endif
 
-  int velo = 0;
   hit = false;
   piezoValue = analogRead(pin_1);
-  //static float y[2] = {0};
-  //y[1] = 0.8 * y[0] + 0.2 * analogRead(pin_1);
-  //piezoValue = y[1];
 
+  //when the value > threshold
+  if (piezoValue > thre1Raw && loopTimes == 0)
+  {
+    time_hit = millis(); //check the time pad hitted
 
-  if (analogRead(pin_1) > thre1) {
-    time_hit = millis(); //record hit time
+    //compare time to cancel retrigger
+    if (time_hit - time_end < mask)
+    {
+      flag = true;
+    }
+    else
+    {
+      velocity = piezoValue; //first peak
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
 
-    if (time_hit - time_end < mask) { //compare last hit time
-      flag = true; 
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scan)
+    {
+      if (piezoValue > velocity)
+      {
+        velocity = piezoValue;
+      }
+      loopTimes = ++loopTimes;
     }
 
-    //        if (piezoValue - exValue > thre2) {
-    //          flag = false;
-    //        }
+    //scan end
+    if (loopTimes == scan)
+    {
+      velocity = map(velocity, thre1Raw, sensRaw, 1, 127);
 
-    if (flag == false) {
-
-      //peak scan
-      for (int i = 0; i < scan; i++) {
-        int peak = analogRead(pin_1);
-        if (peak > velo) {
-          velo = peak;
-        }
-        while (millis() - time_hit < 1);
+      if (velocity <= 1)
+      {
+        velocity = 1;
       }
 
-      //mapping
-      velo = map(velo, thre1, sens, 1, 127);
-
-      if (velo <= 1) {
-        velo = 1;
-      }
-
-      if (velo > 127) {
-        velo = 127;
+      if (velocity > 127)
+      {
+        velocity = 127;
       }
 
       //velo = (velo * velo) / 126 + 1;
 
-      velocity = velo;
-      flag = true;
       hit = true;
+      loopTimes = 0;
+      flag = true;
     }
   }
 
-  if (flag == true) {
+  if (flag == true)
+  {
     time_end = millis();
-    exValue = analogRead(pin_1);
     flag = false;
   }
 }
 
-void HelloDrum::dualPiezo(int sens, int thre1, int scan, int mask) {
+void HelloDrum::dualPiezo(int sens, int thre1, int scan, int mask)
+{
+#ifdef __AVR__
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+#endif
+#ifdef ESP32
+  int thre1Raw = thre1 * 40;
+  int sensRaw = sens * 40;
+#endif
 
-  int velo = 0;
-  int veloRim = 0;
   hit = false;
   hitRim = false;
   piezoValue = analogRead(pin_1);
   RimPiezoValue = analogRead(pin_2);
 
-  if (analogRead(pin_1) > thre1) {
+  //when the value > threshold
+  if ((piezoValue > thre1Raw && loopTimes == 0) || (RimPiezoValue > thre1Raw && loopTimes == 0))
+  {
     time_hit = millis();
 
-    if (time_hit - time_end < mask) {
+    if (time_hit - time_end < mask)
+    {
       flag = true;
     }
-
-    //        if (piezoValue - exValue > thre2) {
-    //          flag = false;
-    //        }
-
-    if (flag == false) {
-
-    for (int i = 0; i < scan; i++) {
-      int peak = analogRead(pin_1);
-      int peakRim = analogRead(pin_2);
-
-      if (peak > velo) {
-        velo = peak;
-      }
-      if (peakRim > veloRim) {
-        veloRim = peakRim;
-      }
-      while (millis() - time_hit < 1);
+    else
+    {
+      velocity = piezoValue; //first peak
+      velocityRim = RimPiezoValue;
+      loopTimes = ++loopTimes;
+      flag = false;
     }
-
-    if(veloRim > velo){
-      veloRim = map(veloRim, thre1, sens, 1, 127);
-
-      if (veloRim <= 1) {
-        veloRim = 1;
-      }
-
-      if (veloRim > 127) {
-        veloRim = 127;
-      }
-
-      velocity = veloRim;
-      flag = true;
-      hitRim = true;
-
-    }
-
-    else if(veloRim <= velo){
-
-    velo = map(velo, thre1, sens, 1, 127);
-
-    if (velo <= 1) {
-      velo = 1;
-    }
-
-    if (velo > 127) {
-      velo = 127;
-    }
-
-      //velo = (velo * velo) / 126 + 1;
-
-      velocity = velo;
-      flag = true;
-      hit = true;
-    }
-
   }
 
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scan)
+    {
+      piezoValueSUM = piezoValueSUM + piezoValue;
+      RimPiezoValueSUM = RimPiezoValueSUM + RimPiezoValue;
+
+      if (piezoValue > velocity)
+      {
+        velocity = piezoValue;
+      }
+      if (RimPiezoValue > velocityRim)
+      {
+        velocityRim = RimPiezoValue;
+      }
+      loopTimes = ++loopTimes;
+    }
+
+    //scan end
+    if (loopTimes == scan)
+    {
+
+      bool Rimjudge;
+
+      if (velocity >= velocityRim)
+      {
+        Rimjudge = false;
+      }
+      else if (velocity < velocityRim)
+      {
+        Rimjudge = true;
+      }
+
+      velocity = map(velocity, thre1Raw, sensRaw, 1, 127);
+      velocityRim = map(velocityRim, thre1Raw, sensRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
+      }
+
+      if (velocityRim <= 1)
+      {
+        velocityRim = 1;
+      }
+
+      if (velocityRim > 127)
+      {
+        velocityRim = 127;
+      }
+
+      //if (piezoValueSUM > RimPiezoValueSUM)
+      if (Rimjudge == false)
+      {
+        hit = true;
+        loopTimes = 0;
+        flag = true;
+      }
+      //else if (piezoValueSUM <= RimPiezoValueSUM)
+      else if (Rimjudge == true)
+      {
+        velocity = velocityRim;
+        hitRim = true;
+        loopTimes = 0;
+        flag = true;
+      }
+    }
   }
 
-  if (flag == true) {
+  if (flag == true)
+  {
     time_end = millis();
-    exValue = analogRead(pin_1);
     flag = false;
   }
 }
-void HelloDrum::HH(int sens, int thre1, int scan, int mask) {
 
-  int velo = 0;
+void HelloDrum::HH(int sens, int thre1, int scan, int mask)
+{
+#ifdef __AVR__
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+#endif
+#ifdef ESP32
+  int thre1Raw = thre1 * 40;
+  int sensRaw = sens * 40;
+#endif
+
+  HHnum = padNum;
   hit = false;
   piezoValue = analogRead(pin_1);
-  //static float y[2] = {0};
-  //y[1] = 0.8 * y[0] + 0.2 * analogRead(pin_1);
-  //piezoValue = y[1];
 
+  //when the value > threshold
+  if (piezoValue > thre1Raw && loopTimes == 0)
+  {
+    time_hit = millis(); //check the time pad hitted
 
-  if (analogRead(pin_1) > thre1) {
-    time_hit = millis(); //record hit time
-
-    if (time_hit - time_end < mask) { //compare last hit time
-      flag = true; 
-    }
-
-    //        if (piezoValue - exValue > thre2) {
-    //          flag = false;
-    //        }
-
-    if (flag == false) {
-
-      //peak scan
-      for (int i = 0; i < scan; i++) {
-        int peak = analogRead(pin_1);
-        if (peak > velo) {
-          velo = peak;
-        }
-        while (millis() - time_hit < 1);
-      }
-
-      //mapping
-      velo = map(velo, thre1, sens, 1, 127);
-
-      if (velo <= 1) {
-        velo = 1;
-      }
-
-      if (velo > 127) {
-        velo = 127;
-      }
-
-      //velo = (velo * velo) / 126 + 1;
-
-      velocity = velo;
+    //compare time to cancel retrigger
+    if (time_hit - time_end < mask)
+    {
       flag = true;
-      hit = true;
+    }
+    else
+    {
+      velocity = piezoValue; //first peak
+      loopTimes = ++loopTimes;
+      flag = false;
     }
   }
 
-  if (flag == true) {
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scan)
+    {
+      if (piezoValue > velocity)
+      {
+        velocity = piezoValue;
+      }
+      loopTimes = ++loopTimes;
+    }
+
+    //scan end
+    if (loopTimes == scan)
+    {
+      velocity = map(velocity, thre1Raw, sensRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
+      }
+
+      //velo = (velo * velo) / 126 + 1;
+      hit = true;
+      loopTimes = 0;
+      flag = true;
+    }
+  }
+
+  if (flag == true)
+  {
     time_end = millis();
-    exValue = analogRead(pin_1);
     flag = false;
   }
 }
 
 ////////////////////////////////////////////
-void HelloDrum::HH2zone(int sens, int thre1, int scan, int mask) {
+void HelloDrum::HH2zone(int sens, int thre1, int scan, int mask)
+{
 
-  int velo = 0;
-  hit = false;
-  hitRim = false;
-  choke = false;
-  int piezoValue = analogRead(pin_1);
-  int sensorValue = analogRead(pin_2);
+#ifdef __AVR__
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+  int edgeThreshold = 50;
+#endif
+#ifdef ESP32
+  int thre1Raw = thre1 * 40;
+  int sensRaw = sens * 40;
+  int edgeThreshold = 200;
+#endif
 
-  //入り口でエッヂとボウ分けるか？
-  //  if (abs(analogRead(pin_1) - analogRead(pin_2)) > thre1) {
-  if (analogRead(pin_2) > thre1 || analogRead(pin_1) > thre1) {
-    time_hit = millis();
-
-    if (time_hit - time_end < mask) { //retrigger cancel
-      flag = true;
-    }
-
-    //    if (analogRead(pin_1) - exValue > thre2) {
-    //      flag = false;
-    //    }
-
-    if (flag == false) {
-      for (int i = 0; i < scan; i++) {  //peak scan
-        int peak = analogRead(pin_1);
-        if (peak > velo) {
-          velo = peak;
-        }
-        while (millis() - time_hit < 1);
-      }
-
-      //bow
-      if (sensorValue < 50) {
-        velo = map(velo, thre1, sens , 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
-        flag = true;
-        hit = true;
-      }
-
-      //edge
-      else if (sensorValue > 500) {
-        if (velo > 500) {
-          velo = velo - 500;
-        }
-        else {
-          velo = 500 - velo;
-        }
-        velo = map(velo, thre1, sens, 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
-        flag = true;
-        hitRim = true;
-      }
-    }
-  }
-
-  if (flag == true && piezoValue < thre1 && sensorValue < 10) {
-    time_end = millis();
-    flag = false;
-  }
-
-  if (chokeFlag == false && sensorValue > 500 && sensorValue < 900  && abs(piezoValue - sensorValue) < 10) {
-    time_choke = millis();
-    if (time_choke - time_end < 10) {
-      chokeFlag = true;
-
-    }
-    else {
-      choke = true;
-      chokeFlag = true;
-    }
-  }
-
-  if (flag == true &&  sensorValue < 10) {
-    time_end = millis();
-    chokeFlag = false;
-  }
-}
-
-
-void HelloDrum::cymbal2zone(int sens, int thre1, int scan, int mask) {
-
-  int velo = 0;
-  hit = false;
-  hitRim = false;
-  choke = false;
-  int piezoValue = analogRead(pin_1);
-  int sensorValue = analogRead(pin_2);
-
-  //入り口でエッヂとボウ分けるか？
-  //  if (abs(analogRead(pin_1) - analogRead(pin_2)) > thre1) {
-  if (analogRead(pin_2) > thre1 || analogRead(pin_1) > thre1) {
-    time_hit = millis();
-
-    if (time_hit - time_end < mask) { //retrigger cancel
-      flag = true;
-    }
-
-    //    if (analogRead(pin_1) - exValue > thre2) {
-    //      flag = false;
-    //    }
-
-    if (flag == false) {
-      for (int i = 0; i < scan; i++) {  //peak scan
-        int peak = analogRead(pin_1);
-        if (peak > velo) {
-          velo = peak;
-        }
-        while (millis() - time_hit < 1);
-      }
-
-      //bow
-      if (sensorValue < 50) {
-        velo = map(velo, thre1, sens , 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
-        flag = true;
-        hit = true;
-      }
-
-      //edge
-      else if (sensorValue > 500) {
-        if (velo > 500) {
-          velo = velo - 500;
-        }
-        else {
-          velo = 500 - velo;
-        }
-        velo = map(velo, thre1, sens, 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
-        flag = true;
-        hitRim = true;
-      }
-    }
-  }
-
-  if (flag == true && piezoValue < thre1 && sensorValue < 10) {
-    time_end = millis();
-    flag = false;
-  }
-
-  if (chokeFlag == false && sensorValue > 500 && sensorValue < 900  && abs(piezoValue - sensorValue) < 10) {
-    time_choke = millis();
-    if (time_choke - time_end < 10) {
-      chokeFlag = true;
-
-    }
-    else {
-      choke = true;
-      chokeFlag = true;
-    }
-  }
-
-  if (flag == true &&  sensorValue < 10) {
-    time_end = millis();
-    chokeFlag = false;
-  }
-}
-
-void HelloDrum::cymbal3zone(int sens, int thre1, int scan, int mask) {
-
-  int velo = 0;
+  HHnum = padNum;
   hit = false;
   hitRim = false;
   hitCup = false;
   choke = false;
 
-  int piezoValue = analogRead(pin_1);
-  int sensorValue = analogRead(pin_2);
+  piezoValue = analogRead(pin_1);
+  sensorValue = analogRead(pin_2);
 
-  //入り口でエッヂとボウ分けるか？
-  //  if (abs(analogRead(pin_1) - analogRead(pin_2)) > thre1) {
-  if (analogRead(pin_2) > thre1 || analogRead(pin_1) > thre1) {
-    time_hit = millis();
+  //when the value > threshold
+  if ((piezoValue > thre1Raw && loopTimes == 0) || (sensorValue > edgeThreshold && loopTimes == 0))
+  {
+    time_hit = millis(); //check the time pad hitted
 
-    if (time_hit - time_end < mask) { //retrigger cancel
+    if (time_hit - time_end < mask)
+    {
       flag = true;
     }
+    else
+    {
+      velocity = abs(piezoValue - sensorValue); //first peak //ここコメント化ありうる。
+      firstSensorValue = sensorValue;
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
 
-    //    if (analogRead(pin_1) - exValue > thre2) {
-    //      flag = false;
-    //    }
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scan)
+    {
+      if (abs(piezoValue - sensorValue) > velocity)
+      {
+        velocity = abs(piezoValue - sensorValue);
+      }
+      if (sensorValue > firstSensorValue && loopTimes < 5)
+      {
+        firstSensorValue = sensorValue;
+      }
+      loopTimes = ++loopTimes;
+    }
 
-    if (flag == false) {
-      for (int i = 0; i < scan; i++) {  //peak scan
-        int peak = analogRead(pin_1);
-        if (peak > velo) {
-          velo = peak;
-        }
-        while (millis() - time_hit < 1);
+    //scan end
+    if (loopTimes == scan)
+    {
+      lastSensorValue = sensorValue;
+      velocity = map(velocity, thre1Raw, sensRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
       }
 
       //bow
-      if (sensorValue < 50) {
-        velo = map(velo, thre1, sens , 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
+      if (firstSensorValue < edgeThreshold && lastSensorValue < edgeThreshold)
+      {
         flag = true;
         hit = true;
       }
 
       //edge
-      else if (sensorValue > 500 && sensorValue < 520) {
-        if (velo > 500) {
-          velo = velo - 500;
-        }
-        else {
-          velo = 500 - velo;
-        }
-        velo = map(velo, thre1, sens, 1, 127);
+      else if (firstSensorValue > edgeThreshold && lastSensorValue < edgeThreshold)
+      {
+        hitRim = true;
+        flag = true;
+      }
 
-        if (velo <= 1) {
-          velo = 1;
-        }
+      //choke
+      else if (lastSensorValue > edgeThreshold && firstSensorValue > edgeThreshold)
+      {
+        choke = true;
+        flag = true;
+      }
+      loopTimes = 0;
+    }
+  }
 
-        if (velo > 127) {
-          velo = 127;
-        }
+  if (flag == true)
+  {
+    time_end = millis();
+    flag = false;
+  }
+}
 
-        velocity = velo;
+void HelloDrum::cymbal2zone(int sens, int thre1, int scan, int mask)
+{
+
+#ifdef __AVR__
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+  int edgeThreshold = 50;
+#endif
+#ifdef ESP32
+  int thre1Raw = thre1 * 40;
+  int sensRaw = sens * 40;
+  int edgeThreshold = 200;
+#endif
+
+  hit = false;
+  hitRim = false;
+  choke = false;
+
+  piezoValue = analogRead(pin_1);
+  sensorValue = analogRead(pin_2);
+
+  //when the value > threshold
+  if ((piezoValue > thre1Raw && loopTimes == 0) || (sensorValue > edgeThreshold && loopTimes == 0))
+  {
+    time_hit = millis(); //check the time pad hitted
+
+    if (time_hit - time_end < mask)
+    {
+      flag = true;
+    }
+    else
+    {
+      velocity = abs(piezoValue - sensorValue); //first peak //ここコメント化ありうる。
+      firstSensorValue = sensorValue;
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
+
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scan)
+    {
+      if (abs(piezoValue - sensorValue) > velocity)
+      {
+        velocity = abs(piezoValue - sensorValue);
+      }
+      if (sensorValue > firstSensorValue && loopTimes < 5)
+      {
+        firstSensorValue = sensorValue;
+      }
+      loopTimes = ++loopTimes;
+    }
+
+    //scan end
+    if (loopTimes == scan)
+    {
+      lastSensorValue = sensorValue;
+      velocity = map(velocity, thre1Raw, sensRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
+      }
+
+      //bow
+      if (firstSensorValue < edgeThreshold && lastSensorValue < edgeThreshold)
+      {
+        flag = true;
+        hit = true;
+      }
+
+      //edge
+      else if (firstSensorValue > edgeThreshold && lastSensorValue < edgeThreshold)
+      {
+        hitRim = true;
+        flag = true;
+      }
+
+      //choke
+      else if (lastSensorValue > edgeThreshold && firstSensorValue > edgeThreshold)
+      {
+        choke = true;
+        flag = true;
+      }
+      loopTimes = 0;
+    }
+  }
+
+  if (flag == true)
+  {
+    time_end = millis();
+    flag = false;
+  }
+}
+
+void HelloDrum::cymbal3zone(int sens, int thre1, int scan, int mask)
+{
+#ifdef __AVR__
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+  int edgeThreshold = 50;
+  int cupThreshold = 520;
+  int loopTimesCup = 10; //?
+#endif
+#ifdef ESP32
+  int thre1Raw = thre1 * 40;
+  int sensRaw = sens * 40;
+  int edgeThreshold = 200;
+  int cupThreshold = 2000;
+  int loopTimesCup = 25;
+#endif
+
+  hit = false;
+  hitRim = false;
+  hitCup = false;
+  choke = false;
+
+  piezoValue = analogRead(pin_1);
+  sensorValue = analogRead(pin_2);
+
+  //when the value > threshold
+  if ((piezoValue > thre1Raw && loopTimes == 0) || (sensorValue > edgeThreshold && loopTimes == 0))
+  {
+    time_hit = millis(); //check the time pad hitted
+
+    if (time_hit - time_end < mask)
+    {
+      flag = true;
+    }
+    else
+    {
+      velocity = abs(piezoValue - sensorValue); //first peak //ここコメント化ありうる。
+      firstSensorValue = sensorValue;
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
+
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scan)
+    {
+      if (loopTimes == loopTimesCup)
+      {
+        velocityCup = 1;
+      }
+      if (abs(piezoValue - sensorValue) > velocity)
+      {
+        velocity = abs(piezoValue - sensorValue);
+        velocityCup = velocity;
+      }
+      if (sensorValue > firstSensorValue && loopTimes < 5)
+      {
+        firstSensorValue = sensorValue;
+      }
+      loopTimes = ++loopTimes;
+    }
+
+    //scan end
+    if (loopTimes == scan)
+    {
+      lastSensorValue = sensorValue;
+      velocity = map(velocity, thre1Raw, sensRaw, 1, 127);
+      velocityCup = map(velocityCup, thre1Raw, sensRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
+      }
+
+      if (velocityCup <= 1)
+      {
+        velocityCup = 1;
+      }
+
+      if (velocityCup > 127)
+      {
+        velocityCup = 127;
+      }
+
+      //bow
+      if (firstSensorValue < edgeThreshold && lastSensorValue < edgeThreshold)
+      {
+        flag = true;
+        hit = true;
+      }
+
+      //edge
+      else if (firstSensorValue > edgeThreshold && firstSensorValue < cupThreshold && lastSensorValue < edgeThreshold)
+      {
         hitRim = true;
         flag = true;
       }
 
       //cup
-      else if (sensorValue > 520) {
-        //MIDI.sendNoteOn(53, 100, 10);   //(note, velocity, channel) cup note is 53
-        //MIDI.sendNoteOff(53, 0, 10);
-        velocity = 100;
+      else if (firstSensorValue > cupThreshold && lastSensorValue < edgeThreshold)
+      {
+        velocity = velocityCup;
         hitCup = true;
         flag = true;
       }
+
+      //choke
+      else if (firstSensorValue > edgeThreshold && lastSensorValue > edgeThreshold)
+      {
+        choke = true;
+        flag = true;
+      }
+      loopTimes = 0;
     }
   }
 
-  if (flag == true && piezoValue < thre1 && sensorValue < 10) {
+  if (flag == true)
+  {
     time_end = millis();
     flag = false;
   }
-
-  if (chokeFlag == false && sensorValue > 500 && sensorValue < 900  && abs(piezoValue - sensorValue) < 10) {
-    time_choke = millis();
-    if (time_choke - time_end < 10) {
-      chokeFlag = true;
-
-    }
-    else {
-      choke = true;
-      chokeFlag = true;
-    }
-  }
-
-  if (flag == true &&  sensorValue < 10) {
-    time_end = millis();
-    chokeFlag = false;
-  }
 }
 
-void HelloDrum::TCRT5000(int sens, int thre1, int thre2, int scan) {
-
-  int velo = 0;
-  openHH = false;
-  closeHH = false;
+void HelloDrum::TCRT5000(int sens, int thre1, int thre2, int scan)
+{
   int TCRT = analogRead(pin_1);
 
-  if (TCRT < thre1 && closeHH == false && pedalVelocityFlag == false && pedalFlag == false) {
+#ifdef __AVR__
+  int thre1Raw = thre1 * 10;
+  int thre2Raw = thre2 * 10;
+  int sensRaw = sens * 10;
+  TCRT = 1024 - TCRT;
+#endif
+#ifdef ESP32
+  int thre1Raw = thre1 * 40;
+  int thre2Raw = thre2 * 40;
+  int sensRaw = sens * 40;
+  TCRT = 4096 - TCRT;
+#endif
+
+  HHCnum = padNum;
+  velocity = 0;
+  openHH = false;
+  closeHH = false;
+
+  if (TCRT > thre2Raw && closeHH == false && pedalVelocityFlag == false && pedalFlag == false)
+  {
     time_hit_pedal_1 = millis();
     pedalVelocityFlag = true;
   }
 
-  if (TCRT < thre2 && pedalFlag == false) {
+  else if (TCRT > sens && pedalFlag == false)
+  {
     time_hit_pedal_2 = millis();
 
-    velo = time_hit_pedal_2 - time_hit_pedal_1;
-    velo = map(velo, scan, 0, 1, 127);
+    velocity = time_hit_pedal_2 - time_hit_pedal_1;
+    velocity = map(velocity, scan * 100, 0, 1, 127);
 
-    if (velo <= 1) {
-      velo = 1;
+    if (velocity <= 1)
+    {
+      velocity = 1;
     }
 
-    if (velo > 127) {
-      velo = 127;
+    if (velocity > 127)
+    {
+      velocity = 127;
     }
 
-    velocity = velo;
     closeHH = true;
     openHH = false;
     pedalFlag = true;
     pedalVelocityFlag = false;
   }
 
-
-  if (TCRT > thre1 && closeHH == true) {
+  if (TCRT < thre2Raw && pedalFlag == true)
+  {
+    pedalFlag = false;
     closeHH = false;
     openHH = true;
   }
 
   /////////////////////// HIHAT PEDAL CC
-  #ifdef _AVR_
-  TCRT = map(TCRT, sens, 100, 0, 127);
-  
-  if (TCRT > 127) {
+
+  /* 
+#ifdef __AVR__
+  TCRT = map(TCRT, thre1Raw, sensRaw, 0, 127);
+
+  if (TCRT > 127)
+  {
     TCRT = 127;
   }
-  if (TCRT < 0) {
+  if (TCRT < 0)
+  {
     TCRT = 0;
   }
-  #endif
+#endif
+*/
 
-  #ifdef ESP32
-  TCRT = map(TCRT, 4000, 100, 0, 127);
+  //#ifdef ESP32
+  TCRT = map(TCRT, thre1Raw, sensRaw, 0, 127);
   //6段階に分ける
 
-  if(TCRT < 20){
+  if (TCRT < 20)
+  {
     TCRT = 0;
   }
 
-  else if(TCRT >= 20 && TCRT < 40){
+  else if (TCRT >= 20 && TCRT < 40)
+  {
     TCRT = 20;
   }
 
-  else if(TCRT >= 40 && TCRT < 60){
+  else if (TCRT >= 40 && TCRT < 60)
+  {
     TCRT = 40;
   }
 
-  else if(TCRT >= 60 && TCRT < 80){
+  else if (TCRT >= 60 && TCRT < 80)
+  {
     TCRT = 60;
   }
 
-  else if(TCRT >= 80 && TCRT < 100){
+  else if (TCRT >= 80 && TCRT < 100)
+  {
     TCRT = 80;
   }
 
-  else if(TCRT >= 100 && TCRT < 120){
+  else if (TCRT >= 100 && TCRT < 120)
+  {
     TCRT = 100;
   }
 
-  else if (TCRT >= 120) {
+  else if (TCRT >= 120)
+  {
     TCRT = 127;
   }
+  //#endif
 
-  #endif
-
-  if (exTCRT != TCRT) {
+  if (exTCRT != TCRT)
+  {
     pedalCC = TCRT;
     moving = true;
     exTCRT = TCRT;
   }
 
-  else {
+  else
+  {
     moving = false;
   }
 }
 
-//with EEPROM と比較！
-void HelloDrum::FSR(int sens, int thre1, int thre2, int scan) {
+void HelloDrum::FSR(int sens, int thre1, int thre2, int scan)
+{
+#ifdef __AVR__
+  int thre1Raw = thre1 * 10;
+  int thre2Raw = thre2 * 10;
+  int sensRaw = sens * 10;
+#endif
+#ifdef ESP32
+  int thre1Raw = thre1 * 40;
+  int thre2Raw = thre2 * 40;
+  int sensRaw = sens * 40;
+#endif
 
-  int velo = 0;
+  HHCnum = padNum;
+  velocity = 0;
   openHH = false;
   closeHH = false;
   int FSR = analogRead(pin_1);
 
-  if (FSR < thre1 && closeHH == false && pedalVelocityFlag == false && pedalFlag == false) {
+  if (FSR > thre2Raw && closeHH == false && pedalVelocityFlag == false && pedalFlag == false)
+  {
     time_hit_pedal_1 = millis();
     pedalVelocityFlag = true;
   }
 
-  if (FSR < thre2 && pedalFlag == false) {
+  else if (FSR > sens && pedalFlag == false)
+  {
     time_hit_pedal_2 = millis();
 
-    velo = time_hit_pedal_2 - time_hit_pedal_1;
-    velo = map(velo, scan, 0, 1, 127);
+    velocity = time_hit_pedal_2 - time_hit_pedal_1;
+    velocity = map(velocity, scan * 100, 0, 1, 127);
 
-    if (velo <= 1) {
-      velo = 1;
+    if (velocity <= 1)
+    {
+      velocity = 1;
     }
 
-    if (velo > 127) {
-      velo = 127;
+    if (velocity > 127)
+    {
+      velocity = 127;
     }
 
-    velocity = velo;
     closeHH = true;
     openHH = false;
     pedalFlag = true;
     pedalVelocityFlag = false;
   }
 
-
-  if (FSR > thre1 && closeHH == true) {
+  if (FSR < thre2Raw && pedalFlag == true)
+  {
+    pedalFlag = false;
     closeHH = false;
     openHH = true;
   }
 
   /////////////////////// HIHAT PEDAL CC
 
-  FSR = map(FSR, sens, 100, 0, 127);
-  if (FSR > 127) {
+  /* 
+#ifdef __AVR__
+  FSR = map(FSR, thre1Raw, sensRaw, 0, 127);
+
+  if (FSR > 127)
+  {
     FSR = 127;
   }
-  if (FSR < 0) {
+  if (FSR < 0)
+  {
+    FSR = 0;
+  }
+#endif
+*/
+
+  //#ifdef ESP32
+  FSR = map(FSR, thre1Raw, sensRaw, 0, 127);
+  //6段階に分ける
+
+  if (FSR < 20)
+  {
     FSR = 0;
   }
 
-  if (exFSR != FSR) {
+  else if (FSR >= 20 && FSR < 40)
+  {
+    FSR = 20;
+  }
+
+  else if (FSR >= 40 && FSR < 60)
+  {
+    FSR = 40;
+  }
+
+  else if (FSR >= 60 && FSR < 80)
+  {
+    FSR = 60;
+  }
+
+  else if (FSR >= 80 && FSR < 100)
+  {
+    FSR = 80;
+  }
+
+  else if (FSR >= 100 && FSR < 120)
+  {
+    FSR = 100;
+  }
+
+  else if (FSR >= 120)
+  {
+    FSR = 127;
+  }
+  //#endif
+
+  if (exFSR != FSR)
+  {
     pedalCC = FSR;
     moving = true;
     exFSR = FSR;
   }
 
-  else {
+  else
+  {
     moving = false;
   }
 }
 
 ////////////////// 2. SENSING WITH LCD & EEPROM //////////////////////
 
-void HelloDrum::singlePiezo() {
-  int velo = 0;
+void HelloDrum::singlePiezo()
+{
+#ifdef __AVR__
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+#endif
+#ifdef ESP32
+  int threshold1Raw = threshold1 * 40;
+  int sensitivityRaw = sensitivity * 40;
+#endif
+
   hit = false;
   piezoValue = analogRead(pin_1);
 
-//when the value > threshold
-  if (analogRead(pin_1) > threshold1) {
+  //when the value > threshold
+  if (piezoValue > threshold1Raw && loopTimes == 0)
+  {
     time_hit = millis(); //check the time pad hitted
 
     //compare time to cancel retrigger
-    if (time_hit - time_end < masktime) {
+    if (time_hit - time_end < masktime)
+    {
       flag = true;
     }
+    else
+    {
+      velocity = piezoValue; //first peak
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
 
-    if (flag == false) {
-      for (int i = 0; i < scantime; i++) {
-        int peak = analogRead(pin_1);
-        if (peak > velo) {
-          velo = peak; //peak is max value of 5 times scan.
-        }
-        while (millis() - time_hit < 1);
-        //delay 1 milisecond.
-        //scan the piezo value 5 times.
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scantime)
+    {
+      if (piezoValue > velocity)
+      {
+        velocity = piezoValue;
+      }
+      loopTimes = ++loopTimes;
+    }
+
+    //scan end
+    if (loopTimes == scantime)
+    {
+      velocity = map(velocity, threshold1Raw, sensitivityRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
       }
 
-      velo = map(velo, threshold1, sensitivity * 10, 1, 127);
-
-      if (velo <= 1) {
-        velo = 1;
-      }
-
-      if (velo > 127) {
-        velo = 127;
+      if (velocity > 127)
+      {
+        velocity = 127;
       }
 
       //velo = (velo * velo) / 126 + 1;
 
-
-      velocity = velo;
       showVelocity = velocity;
-      flag = true; //ここの位置を検証すべき。showLCDとhitの下だと何か変わるか。
       showLCD = true;
       hit = true;
       padIndex = padNum;
+      loopTimes = 0;
+      flag = true;
     }
   }
 
-  //scantime伸びてるのでは？？？
-  if (flag == true) {
+  if (flag == true)
+  {
     time_end = millis();
-    exValue = analogRead(pin_1);
     flag = false;
   }
 }
 
-void HelloDrum::dualPiezo() {
+void HelloDrum::dualPiezo()
+{
+#ifdef __AVR__
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+#endif
+#ifdef ESP32
+  int threshold1Raw = threshold1 * 40;
+  int sensitivityRaw = sensitivity * 40;
+#endif
 
-  int velo = 0;
-  int veloRim = 0;
   hit = false;
   hitRim = false;
   piezoValue = analogRead(pin_1);
   RimPiezoValue = analogRead(pin_2);
 
-  if (analogRead(pin_1) > threshold1) {
+  //when the value > threshold
+  if ((piezoValue > threshold1Raw && loopTimes == 0) || (RimPiezoValue > threshold1Raw && loopTimes == 0))
+  {
     time_hit = millis();
 
-    if (time_hit - time_end < masktime) {
+    if (time_hit - time_end < masktime)
+    {
       flag = true;
     }
-
-    //        if (piezoValue - exValue > thre2) {
-    //          flag = false;
-    //        }
-
-    if (flag == false) {
-
-    for (int i = 0; i < scantime; i++) {
-      int peak = analogRead(pin_1);
-      int peakRim = analogRead(pin_2);
-
-      if (peak > velo) {
-        velo = peak;
-      }
-      if (peakRim > veloRim) {
-        veloRim = peakRim;
-      }
-      while (millis() - time_hit < 1);
+    else
+    {
+      velocity = piezoValue; //first peak
+      velocityRim = RimPiezoValue;
+      loopTimes = ++loopTimes;
+      flag = false;
     }
-
-    if(veloRim > velo){
-      veloRim = map(veloRim, threshold1, sensitivity*10, 1, 127);
-
-      if (veloRim <= 1) {
-        veloRim = 1;
-      }
-
-      if (veloRim > 127) {
-        veloRim = 127;
-      }
-
-      velocity = veloRim;
-      showVelocity = velocity;
-      flag = true;
-      showLCD = true;
-      hitRim = true;
-      padIndex = padNum;
-
-    }
-
-    else if(veloRim <= velo){
-
-    velo = map(velo, threshold1, sensitivity*10, 1, 127);
-
-    if (velo <= 1) {
-      velo = 1;
-    }
-
-    if (velo > 127) {
-      velo = 127;
-    }
-
-      //velo = (velo * velo) / 126 + 1;
-
-      velocity = velo;
-      showVelocity = velocity;
-      flag = true;
-      showLCD = true;
-      hit = true;
-      padIndex = padNum;
-    }
-
   }
 
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scantime)
+    {
+      piezoValueSUM = piezoValueSUM + piezoValue;
+      RimPiezoValueSUM = RimPiezoValueSUM + RimPiezoValue;
+
+      if (piezoValue > velocity)
+      {
+        velocity = piezoValue;
+      }
+      if (RimPiezoValue > velocityRim)
+      {
+        velocityRim = RimPiezoValue;
+      }
+      loopTimes = ++loopTimes;
+    }
+
+    //scan end
+    if (loopTimes == scantime)
+    {
+
+      bool Rimjudge;
+
+      if (velocity >= velocityRim)
+      {
+        Rimjudge = false;
+      }
+      else if (velocity < velocityRim)
+      {
+        Rimjudge = true;
+      }
+
+      velocity = map(velocity, threshold1Raw, sensitivityRaw, 1, 127);
+      velocityRim = map(velocityRim, threshold1Raw, sensitivityRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
+      }
+
+      if (velocityRim <= 1)
+      {
+        velocityRim = 1;
+      }
+
+      if (velocityRim > 127)
+      {
+        velocityRim = 127;
+      }
+
+      //if (piezoValueSUM > RimPiezoValueSUM)
+      if (Rimjudge == false)
+      {
+        showVelocity = velocity;
+        showLCD = true;
+        hit = true;
+        padIndex = padNum;
+        loopTimes = 0;
+        flag = true;
+      }
+      //else if (piezoValueSUM <= RimPiezoValueSUM)
+      else if (Rimjudge == true)
+      {
+        velocity = velocityRim;
+        showVelocity = velocity;
+        showLCD = true;
+        hitRim = true;
+        padIndex = padNum;
+        loopTimes = 0;
+        flag = true;
+      }
+    }
   }
 
-  if (flag == true) {
+  if (flag == true)
+  {
     time_end = millis();
-    exValue = analogRead(pin_1);
     flag = false;
   }
 }
 
-void HelloDrum::HH() {
+void HelloDrum::HH()
+{
+#ifdef __AVR__
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+#endif
+#ifdef ESP32
+  int threshold1Raw = threshold1 * 40;
+  int sensitivityRaw = sensitivity * 40;
+#endif
+
   HHnum = padNum;
-  int velo = 0;
   hit = false;
   piezoValue = analogRead(pin_1);
 
-//when the value > threshold
-  if (analogRead(pin_1) > threshold1) {
+  //when the value > threshold
+  if (piezoValue > threshold1Raw && loopTimes == 0)
+  {
     time_hit = millis(); //check the time pad hitted
 
     //compare time to cancel retrigger
-    if (time_hit - time_end < masktime) {
+    if (time_hit - time_end < masktime)
+    {
       flag = true;
     }
+    else
+    {
+      velocity = piezoValue; //first peak
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
 
-    if (flag == false) {
-      for (int i = 0; i < scantime; i++) {
-        int peak = analogRead(pin_1);
-        if (peak > velo) {
-          velo = peak; //peak is max value of 5 times scan.
-        }
-        while (millis() - time_hit < 1);
-        //delay 1 milisecond.
-        //scan the piezo value 5 times.
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scantime)
+    {
+      if (piezoValue > velocity)
+      {
+        velocity = piezoValue;
+      }
+      loopTimes = ++loopTimes;
+    }
+
+    //scan end
+    if (loopTimes == scantime)
+    {
+      velocity = map(velocity, threshold1Raw, sensitivityRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
       }
 
-      velo = map(velo, threshold1, sensitivity * 10, 1, 127);
-
-      if (velo <= 1) {
-        velo = 1;
-      }
-
-      if (velo > 127) {
-        velo = 127;
+      if (velocity > 127)
+      {
+        velocity = 127;
       }
 
       //velo = (velo * velo) / 126 + 1;
 
-
-      velocity = velo;
       showVelocity = velocity;
-      flag = true; //ここの位置を検証すべき。showLCDとhitの下だと何か変わるか。
       showLCD = true;
       hit = true;
       padIndex = padNum;
+      loopTimes = 0;
+      flag = true;
     }
   }
 
-  //scantime伸びてるのでは？？？
-  if (flag == true) {
+  if (flag == true)
+  {
     time_end = millis();
-    exValue = analogRead(pin_1);
     flag = false;
   }
 }
 
-void HelloDrum::HH2zone() {
+void HelloDrum::HH2zone()
+{
+#ifdef __AVR__
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+  int edgeThreshold = 50;
+#endif
+#ifdef ESP32
+  int threshold1Raw = threshold1 * 40;
+  int sensitivityRaw = sensitivity * 40;
+  int edgeThreshold = 200;
+#endif
 
   HHnum = padNum;
-  int velo = 0;
   hit = false;
   hitRim = false;
   choke = false;
-  int piezoValue = analogRead(pin_1);
-  int sensorValue = analogRead(pin_2);
 
-  //入り口でエッヂとボウ分けるか？
-  //  if (abs(analogRead(pin_1) - analogRead(pin_2)) > thre1) {
-  if (analogRead(pin_2) > threshold1 || analogRead(pin_1) > threshold1) {
-    time_hit = millis();
+  piezoValue = analogRead(pin_1);
+  sensorValue = analogRead(pin_2);
 
-    if (time_hit - time_end < masktime) { //retrigger cancel
+  //when the value > threshold
+  if ((piezoValue > threshold1Raw && loopTimes == 0) || (sensorValue > edgeThreshold && loopTimes == 0))
+  {
+    time_hit = millis(); //check the time pad hitted
+
+    if (time_hit - time_end < masktime)
+    {
       flag = true;
     }
+    else
+    {
+      velocity = abs(piezoValue - sensorValue); //first peak
+      firstSensorValue = sensorValue;
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
 
-    //    if (analogRead(pin_1) - exValue > thre2) {
-    //      flag = false;
-    //    }
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scantime)
+    {
+      if (abs(piezoValue - sensorValue) > velocity)
+      {
+        velocity = abs(piezoValue - sensorValue);
+      }
+      if (sensorValue > firstSensorValue && loopTimes < 5)
+      {
+        firstSensorValue = sensorValue;
+      }
+      loopTimes = ++loopTimes;
+    }
 
-    if (flag == false) {
-      for (int i = 0; i < scantime; i++) {  //peak scan
-        int peak = analogRead(pin_1);
-        if (peak > velo) {
-          velo = peak;
-        }
-        while (millis() - time_hit < 1);
+    //scan end
+    if (loopTimes == scantime)
+    {
+      lastSensorValue = sensorValue;
+      velocity = map(velocity, threshold1Raw, sensitivityRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
       }
 
       //bow
-      if (sensorValue < 50) {
-        velo = map(velo, threshold1, sensitivity , 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
+      if (firstSensorValue < edgeThreshold && lastSensorValue < edgeThreshold)
+      {
         showVelocity = velocity;
-        flag = true;
         showLCD = true;
+        flag = true;
         hit = true;
         padIndex = padNum;
       }
 
       //edge
-      else if (sensorValue > 50) {
-        if (velo > 500) {
-          velo = velo - 500;
-        }
-        else {
-          velo = 500 - velo;
-        }
-        velo = map(velo, threshold1, sensitivity, 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
+      else if (firstSensorValue > edgeThreshold && lastSensorValue < edgeThreshold)
+      {
         showVelocity = velocity;
-        flag = true;
         showLCD = true;
         hitRim = true;
+        flag = true;
         padIndex = padNum;
       }
+
+      //choke
+      else if (lastSensorValue > edgeThreshold && firstSensorValue > edgeThreshold)
+      {
+        choke = true;
+        flag = true;
+      }
+      loopTimes = 0;
     }
   }
 
-  if (flag == true && piezoValue < threshold1 && sensorValue < 10) {
+  if (flag == true)
+  {
     time_end = millis();
     flag = false;
-  }
-
-  if (chokeFlag == false && sensorValue > 500 && sensorValue < 900  && abs(piezoValue - sensorValue) < 10) {
-    time_choke = millis();
-    if (time_choke - time_end < 10) {
-      chokeFlag = true;
-
-    }
-    else {
-      choke = true;
-      chokeFlag = true;
-    }
-  }
-
-  if (flag == true &&  sensorValue < 10) {
-    time_end = millis();
-    chokeFlag = false;
   }
 }
 
 ////////////////////////////////////////////
 
-void HelloDrum::cymbal2zone() {
+void HelloDrum::cymbal2zone()
+{
+#ifdef __AVR__
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+  int edgeThreshold = 50;
+#endif
+#ifdef ESP32
+  int threshold1Raw = threshold1 * 40;
+  int sensitivityRaw = sensitivity * 40;
+  int edgeThreshold = 200;
+#endif
 
-  int velo = 0;
   hit = false;
   hitRim = false;
   choke = false;
-  int piezoValue = analogRead(pin_1);
-  int sensorValue = analogRead(pin_2);
 
-  //入り口でエッヂとボウ分けるか？
-  //  if (abs(analogRead(pin_1) - analogRead(pin_2)) > thre1) {
-  if (analogRead(pin_2) > threshold1 || analogRead(pin_1) > threshold1) {
-    time_hit = millis();
+  piezoValue = analogRead(pin_1);
+  sensorValue = analogRead(pin_2);
 
-    if (time_hit - time_end < masktime) { //retrigger cancel
+  //when the value > threshold
+  if ((piezoValue > threshold1Raw && loopTimes == 0) || (sensorValue > edgeThreshold && loopTimes == 0))
+  {
+    time_hit = millis(); //check the time pad hitted
+
+    if (time_hit - time_end < masktime)
+    {
       flag = true;
     }
+    else
+    {
+      velocity = abs(piezoValue - sensorValue); //first peak
+      firstSensorValue = sensorValue;
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
 
-    //    if (analogRead(pin_1) - exValue > thre2) {
-    //      flag = false;
-    //    }
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scantime)
+    {
+      if (abs(piezoValue - sensorValue) > velocity)
+      {
+        velocity = abs(piezoValue - sensorValue);
+      }
+      if (sensorValue > firstSensorValue && loopTimes < 5)
+      {
+        firstSensorValue = sensorValue;
+      }
+      loopTimes = ++loopTimes;
+    }
 
-    if (flag == false) {
-      for (int i = 0; i < scantime; i++) {  //peak scan
-        int peak = analogRead(pin_1);
-        if (peak > velo) {
-          velo = peak;
-        }
-        while (millis() - time_hit < 1);
+    //scan end
+    if (loopTimes == scantime)
+    {
+      lastSensorValue = sensorValue;
+      velocity = map(velocity, threshold1Raw, sensitivityRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
       }
 
       //bow
-      if (sensorValue < 50) {
-        velo = map(velo, threshold1, sensitivity , 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
+      if (firstSensorValue < edgeThreshold && lastSensorValue < edgeThreshold)
+      {
         showVelocity = velocity;
-        flag = true;
         showLCD = true;
+        flag = true;
         hit = true;
         padIndex = padNum;
       }
 
       //edge
-      else if (sensorValue > 50) {
-        if (velo > 500) {
-          velo = velo - 500;
-        }
-        else {
-          velo = 500 - velo;
-        }
-        velo = map(velo, threshold1, sensitivity, 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
+      else if (firstSensorValue > edgeThreshold && lastSensorValue < edgeThreshold)
+      {
         showVelocity = velocity;
-        flag = true;
         showLCD = true;
         hitRim = true;
+        flag = true;
         padIndex = padNum;
       }
+
+      //choke
+      else if (lastSensorValue > edgeThreshold && firstSensorValue > edgeThreshold)
+      {
+        choke = true;
+        flag = true;
+      }
+      loopTimes = 0;
     }
   }
 
-  if (flag == true && piezoValue < threshold1 && sensorValue < 10) {
+  if (flag == true)
+  {
     time_end = millis();
     flag = false;
   }
-
-  if (chokeFlag == false && sensorValue > 500 && sensorValue < 900  && abs(piezoValue - sensorValue) < 10) {
-    time_choke = millis();
-    if (time_choke - time_end < 10) {
-      chokeFlag = true;
-
-    }
-    else {
-      choke = true;
-      chokeFlag = true;
-    }
-  }
-
-  if (flag == true &&  sensorValue < 10) {
-    time_end = millis();
-    chokeFlag = false;
-  }
 }
 
-void HelloDrum::cymbal3zone() {
+void HelloDrum::cymbal3zone()
+{
+#ifdef __AVR__
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+  int edgeThreshold = 50;
+  int cupThreshold = 520;
+  int loopTimesCup = 10; //?
+#endif
+#ifdef ESP32
+  int threshold1Raw = threshold1 * 40;
+  int sensitivityRaw = sensitivity * 40;
+  int edgeThreshold = 200;
+  int cupThreshold = 2000;
+  int loopTimesCup = 25;
+#endif
 
-  int velo = 0;
   hit = false;
   hitRim = false;
   hitCup = false;
   choke = false;
 
-  int piezoValue = analogRead(pin_1);
-  int sensorValue = analogRead(pin_2);
+  piezoValue = analogRead(pin_1);
+  sensorValue = analogRead(pin_2);
 
-  //入り口でエッヂとボウ分けるか？
-  //  if (abs(analogRead(pin_1) - analogRead(pin_2)) > thre1) {
-  if (analogRead(pin_2) > threshold1 || analogRead(pin_1) > threshold1) {
-    time_hit = millis();
+  //when the value > threshold
+  if ((piezoValue > threshold1Raw && loopTimes == 0) || (sensorValue > edgeThreshold && loopTimes == 0))
+  {
+    time_hit = millis(); //check the time pad hitted
 
-    if (time_hit - time_end < masktime) { //retrigger cancel
+    if (time_hit - time_end < masktime)
+    {
       flag = true;
     }
+    else
+    {
+      velocity = abs(piezoValue - sensorValue); //first peak
+      firstSensorValue = sensorValue;
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
 
-    //    if (analogRead(pin_1) - exValue > thre2) {
-    //      flag = false;
-    //    }
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scantime)
+    {
+      if (loopTimes == loopTimesCup)
+      {
+        velocityCup = 1;
+      }
+      if (abs(piezoValue - sensorValue) > velocity)
+      {
+        velocity = abs(piezoValue - sensorValue);
+        velocityCup = velocity;
+      }
+      if (sensorValue > firstSensorValue && loopTimes < 5)
+      {
+        firstSensorValue = sensorValue;
+      }
+      loopTimes = ++loopTimes;
+    }
 
-    if (flag == false) {
-      for (int i = 0; i < scantime; i++) {  //peak scan
-        int peak = analogRead(pin_1);
-        if (peak > velo) {
-          velo = peak;
-        }
-        while (millis() - time_hit < 1);
+    //scan end
+    if (loopTimes == scantime)
+    {
+      lastSensorValue = sensorValue;
+      velocity = map(velocity, threshold1Raw, sensitivityRaw, 1, 127);
+      velocityCup = map(velocityCup, threshold1Raw, sensitivityRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
       }
 
       //bow
-      if (sensorValue < 50) {
-        velo = map(velo, threshold1, sensitivity , 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
+      if (firstSensorValue < edgeThreshold && lastSensorValue < edgeThreshold)
+      {
         showVelocity = velocity;
-        flag = true;
         showLCD = true;
+        flag = true;
         hit = true;
         padIndex = padNum;
       }
 
       //edge
-      else if (sensorValue > 500 && sensorValue < 520) {
-        if (velo > 500) {
-          velo = velo - 500;
-        }
-        else {
-          velo = 500 - velo;
-        }
-        velo = map(velo, threshold1, sensitivity, 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
+      else if (firstSensorValue > edgeThreshold && firstSensorValue < cupThreshold && lastSensorValue < edgeThreshold)
+      {
         showVelocity = velocity;
-        flag = true;
         showLCD = true;
         hitRim = true;
+        flag = true;
         padIndex = padNum;
       }
 
       //cup
-      else if (sensorValue > 520) {
-        velocity = 100;
+      else if (firstSensorValue > cupThreshold && lastSensorValue < edgeThreshold)
+      {
+        velocity = velocityCup;
         showVelocity = velocity;
-        flag = true;
         showLCD = true;
         hitCup = true;
+        flag = true;
         padIndex = padNum;
       }
+
+      //choke
+      else if (lastSensorValue > edgeThreshold && firstSensorValue > edgeThreshold)
+      {
+        choke = true;
+        flag = true;
+      }
+      loopTimes = 0;
     }
   }
 
-  if (flag == true && piezoValue < threshold1 && sensorValue < 10) {
+  if (flag == true)
+  {
     time_end = millis();
     flag = false;
   }
-
-  if (chokeFlag == false && sensorValue > 500 && sensorValue < 900  && abs(piezoValue - sensorValue) < 10) {
-    time_choke = millis();
-    if (time_choke - time_end < 10) {
-      chokeFlag = true;
-
-    }
-    else {
-      choke = true;
-      chokeFlag = true;
-    }
-  }
-
-  if (flag == true &&  sensorValue < 10) {
-    time_end = millis();
-    chokeFlag = false;
-  }
 }
 
-void HelloDrum::TCRT5000() {
-
-  threshold2 = scantime;
-  scantime = masktime;
-  
-  HHCnum = padNum;
-  int velo = 0;
+void HelloDrum::TCRT5000()
+{
   int TCRT = analogRead(pin_1);
-  closeHH = false;
-  settingHHC = true;
 
-  if (TCRT < threshold1 * 10 && pedalVelocityFlag == false && pedalFlag == false) {
+#ifdef __AVR__
+  int threshold1Raw = threshold1 * 10;
+  int threshold2Raw = threshold2 * 10;
+  int sensitivityRaw = sensitivity * 10;
+  TCRT = 1024 - TCRT;
+#endif
+#ifdef ESP32
+  int threshold1Raw = threshold1 * 40;
+  int threshold2Raw = threshold2 * 40;
+  int sensitivityRaw = sensitivity * 40;
+  TCRT = 4096 - TCRT;
+#endif
+
+  HHCnum = padNum;
+  velocity = 0;
+  openHH = false;
+  closeHH = false;
+
+  if (TCRT > threshold2Raw && closeHH == false && pedalVelocityFlag == false && pedalFlag == false)
+  {
     time_hit_pedal_1 = millis();
     pedalVelocityFlag = true;
   }
 
-  if (TCRT < threshold2 * 10 && pedalFlag == false) {
+  else if (TCRT > sensitivity && pedalFlag == false)
+  {
     time_hit_pedal_2 = millis();
 
-    //傾き＝VELOCITY
-    velo = time_hit_pedal_2 - time_hit_pedal_1;
-    velo = map(velo, scantime, 0, 1, 127);
-    //velo = map(velo, 50, 0, 1, 127);
+    velocity = time_hit_pedal_2 - time_hit_pedal_1;
+    velocity = map(velocity, scantime * 100, 0, 1, 127);
 
-    if (velo <= 1) {
-      velo = 1;
+    if (velocity <= 1)
+    {
+      velocity = 1;
     }
 
-    if (velo > 127) {
-      velo = 127;
+    if (velocity > 127)
+    {
+      velocity = 127;
     }
 
-    velocity = velo;
-    showVelocity = velocity;
     closeHH = true;
-    showLCD = true;
-    padIndex = padNum;
+    openHH = false;
     pedalFlag = true;
     pedalVelocityFlag = false;
   }
 
-
-  if (TCRT > threshold1 * 10 && pedalFlag == true) {
+  if (TCRT < threshold2Raw && pedalFlag == true)
+  {
     pedalFlag = false;
+    closeHH = false;
+    openHH = true;
   }
 
-  //HIHAT PEDAL CC
-  TCRT = map(TCRT, sensitivity * 10, 100, 0, 127);
-  //TCRT = map(TCRT, 900, 100, 0, 127);
-  if (TCRT > 127) {
+  /////////////////////// HIHAT PEDAL CC
+
+  /* 
+#ifdef __AVR__
+  TCRT = map(TCRT, thre1Raw, sensRaw, 0, 127);
+
+  if (TCRT > 127)
+  {
     TCRT = 127;
   }
-  if (TCRT < 0) {
+  if (TCRT < 0)
+  {
+    TCRT = 0;
+  }
+#endif
+*/
+
+  //#ifdef ESP32
+  TCRT = map(TCRT, threshold1Raw, sensitivityRaw, 0, 127);
+  //6段階に分ける
+
+  if (TCRT < 20)
+  {
     TCRT = 0;
   }
 
-  if (exTCRT != TCRT) {
+  else if (TCRT >= 20 && TCRT < 40)
+  {
+    TCRT = 20;
+  }
+
+  else if (TCRT >= 40 && TCRT < 60)
+  {
+    TCRT = 40;
+  }
+
+  else if (TCRT >= 60 && TCRT < 80)
+  {
+    TCRT = 60;
+  }
+
+  else if (TCRT >= 80 && TCRT < 100)
+  {
+    TCRT = 80;
+  }
+
+  else if (TCRT >= 100 && TCRT < 120)
+  {
+    TCRT = 100;
+  }
+
+  else if (TCRT >= 120)
+  {
+    TCRT = 127;
+  }
+  //#endif
+
+  if (exTCRT != TCRT)
+  {
     pedalCC = TCRT;
     moving = true;
     exTCRT = TCRT;
   }
 
-  else {
+  else
+  {
     moving = false;
   }
 }
 
-void HelloDrum::FSR() {
+void HelloDrum::FSR()
+{
+#ifdef __AVR__
+  int threshold1Raw = threshold1 * 10;
+  int threshold2Raw = threshold2 * 10;
+  int sensitivityRaw = sensitivity * 10;
+#endif
+#ifdef ESP32
+  int threshold1Raw = threshold1 * 40;
+  int threshold2Raw = threshold2 * 40;
+  int sensitivityRaw = sensitivity * 40;
+#endif
 
-  threshold2 = scantime;
-  scantime = masktime;
-  
   HHCnum = padNum;
-  int velo = 0;
-  int FSR = analogRead(pin_1);
+  velocity = 0;
+  openHH = false;
   closeHH = false;
+  int FSR = analogRead(pin_1);
 
-  if (FSR < threshold1 * 10 && pedalVelocityFlag == false && pedalFlag == false) {
+  if (FSR > threshold2Raw && closeHH == false && pedalVelocityFlag == false && pedalFlag == false)
+  {
     time_hit_pedal_1 = millis();
     pedalVelocityFlag = true;
   }
 
-  if (FSR < threshold2 * 10 && pedalFlag == false) {
+  else if (FSR > sensitivity && pedalFlag == false)
+  {
     time_hit_pedal_2 = millis();
 
-    velo = time_hit_pedal_2 - time_hit_pedal_1;
-    velo = map(velo, scantime, 0, 1, 127);
-    //velo = map(velo, 50, 0, 1, 127);
+    velocity = time_hit_pedal_2 - time_hit_pedal_1;
+    velocity = map(velocity, scantime * 100, 0, 1, 127);
 
-    if (velo <= 1) {
-      velo = 1;
+    if (velocity <= 1)
+    {
+      velocity = 1;
     }
 
-    if (velo > 127) {
-      velo = 127;
+    if (velocity > 127)
+    {
+      velocity = 127;
     }
 
-    velocity = velo;
-    showVelocity = velocity;
     closeHH = true;
-    showLCD = true;
-    padIndex = padNum;
+    openHH = false;
     pedalFlag = true;
     pedalVelocityFlag = false;
   }
 
-
-  if (FSR > threshold1 * 10 && pedalFlag == true) {
+  if (FSR < threshold2Raw && pedalFlag == true)
+  {
     pedalFlag = false;
+    closeHH = false;
+    openHH = true;
   }
 
-  //HIHAT PEDAL CC
-  FSR = map(FSR, sensitivity * 10, 100, 0, 127);
-  //TCRT = map(TCRT, 900, 100, 0, 127);
-  if (FSR > 127) {
+  /////////////////////// HIHAT PEDAL CC
+
+  /* 
+#ifdef __AVR__
+  FSR = map(FSR, thre1Raw, sensRaw, 0, 127);
+
+  if (FSR > 127)
+  {
     FSR = 127;
   }
-  if (FSR < 0) {
+  if (FSR < 0)
+  {
+    FSR = 0;
+  }
+#endif
+*/
+
+  //#ifdef ESP32
+  FSR = map(FSR, threshold1Raw, sensitivityRaw, 0, 127);
+  //6段階に分ける
+
+  if (FSR < 20)
+  {
     FSR = 0;
   }
 
-  if (exFSR != FSR) {
+  else if (FSR >= 20 && FSR < 40)
+  {
+    FSR = 20;
+  }
+
+  else if (FSR >= 40 && FSR < 60)
+  {
+    FSR = 40;
+  }
+
+  else if (FSR >= 60 && FSR < 80)
+  {
+    FSR = 60;
+  }
+
+  else if (FSR >= 80 && FSR < 100)
+  {
+    FSR = 80;
+  }
+
+  else if (FSR >= 100 && FSR < 120)
+  {
+    FSR = 100;
+  }
+
+  else if (FSR >= 120)
+  {
+    FSR = 127;
+  }
+  //#endif
+
+  if (exFSR != FSR)
+  {
     pedalCC = FSR;
     moving = true;
     exFSR = FSR;
   }
 
-  else {
+  else
+  {
     moving = false;
   }
 }
+
 /////////////////////////////// 3. MUX SCANNING ///////////////////////////////////
 
-void HelloDrumMUX::scan() {
+void HelloDrumMUX::scan()
+{
 
-  for (byte pin = muxNum*8; pin<(muxNum+1)*8; pin++){
-    
-    for (int i=0; i<3; i++){
-      if (pin & (1<<i))
+  for (byte pin = muxNum * 8; pin < (muxNum + 1) * 8; pin++)
+  {
+
+    for (int i = 0; i < 3; i++)
+    {
+      if (pin & (1 << i))
         digitalWrite(selectPins[i], HIGH);
       else
         digitalWrite(selectPins[i], LOW);
@@ -1434,1316 +1861,1747 @@ void HelloDrumMUX::scan() {
 
     rawValue[pin] = analogRead(pin_A);
   }
-  
 }
 
-//////////////////////// 4. MUX SENSING without EEPROM //////////////////////////  
+//////////////////////// 4. MUX SENSING without EEPROM //////////////////////////
 
-void HelloDrum::singlePiezoMUX(int sens, int thre1, int scan, int mask) {
+void HelloDrum::singlePiezoMUX(int sens, int thre1, int scan, int mask)
+{
+#ifdef __AVR__
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+#endif
+#ifdef ESP32
+  int thre1Raw = thre1 * 40;
+  int sensRaw = sens * 40;
+#endif
 
-  int velo = 0;
   hit = false;
   piezoValue = rawValue[pin_1];
-  //static float y[2] = {0};
-  //y[1] = 0.8 * y[0] + 0.2 * analogRead(pin_1);
-  //piezoValue = y[1];
 
+  //when the value > threshold
+  if (piezoValue > thre1Raw && loopTimes == 0)
+  {
+    time_hit = millis(); //check the time pad hitted
 
-  if (rawValue[pin_1] > thre1) {
-    time_hit = millis(); //record hit time
-    velo = piezoValue; //first Value
-    if (time_hit - time_end < mask) { //compare last hit time
-      flag = true; 
-    }
-
-    //        if (piezoValue - exValue > thre2) {
-    //          flag = false;
-    //        }
-
-    if (flag == false) {
-
-      //peak scan
-      for (int i = 0; i < scan; i++) {
-        int peak = rawValue[pin_1];
-        if (peak > velo) {
-          velo = peak;
-        }
-        while (millis() - time_hit < 1);
-      }
-
-      //mapping
-      velo = map(velo, thre1, sens, 1, 127);
-
-      if (velo <= 1) {
-        velo = 1;
-      }
-
-      if (velo > 127) {
-        velo = 127;
-      }
-
-      //velo = (velo * velo) / 126 + 1;
-
-      velocity = velo;
+    //compare time to cancel retrigger
+    if (time_hit - time_end < mask)
+    {
       flag = true;
-      hit = true;
+    }
+    else
+    {
+      velocity = piezoValue; //first peak
+      loopTimes = ++loopTimes;
+      flag = false;
     }
   }
 
-  if (flag == true) {
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scan)
+    {
+      if (piezoValue > velocity)
+      {
+        velocity = piezoValue;
+      }
+      loopTimes = ++loopTimes;
+    }
+
+    //scan end
+    if (loopTimes == scan)
+    {
+      velocity = map(velocity, thre1Raw, sensRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
+      }
+
+      //velo = (velo * velo) / 126 + 1;
+      hit = true;
+      loopTimes = 0;
+      flag = true;
+    }
+  }
+
+  if (flag == true)
+  {
     time_end = millis();
-    exValue = rawValue[pin_1];
     flag = false;
   }
 }
 
-void HelloDrum::dualPiezoMUX(int sens, int thre1, int scan, int mask) {
+void HelloDrum::dualPiezoMUX(int sens, int thre1, int scan, int mask)
+{
+#ifdef __AVR__
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+#endif
+#ifdef ESP32
+  int thre1Raw = thre1 * 40;
+  int sensRaw = sens * 40;
+#endif
 
-  int velo = 0;
-  int veloRim = 0;
   hit = false;
   hitRim = false;
   piezoValue = rawValue[pin_1];
   RimPiezoValue = rawValue[pin_2];
 
-  if (rawValue[pin_1] > thre1) {
+  //when the value > threshold
+  if ((piezoValue > thre1Raw && loopTimes == 0) || (RimPiezoValue > thre1Raw && loopTimes == 0))
+  {
     time_hit = millis();
 
-    if (time_hit - time_end < mask) {
+    if (time_hit - time_end < mask)
+    {
       flag = true;
     }
-
-    //        if (piezoValue - exValue > thre2) {
-    //          flag = false;
-    //        }
-
-    if (flag == false) {
-
-    for (int i = 0; i < scan; i++) {
-      int peak = rawValue[pin_1];
-      int peakRim = rawValue[pin_2];
-
-      if (peak > velo) {
-        velo = peak;
-      }
-      if (peakRim > veloRim) {
-        veloRim = peakRim;
-      }
-      while (millis() - time_hit < 1);
+    else
+    {
+      velocity = piezoValue; //first peak
+      velocityRim = RimPiezoValue;
+      loopTimes = ++loopTimes;
+      flag = false;
     }
-
-    if(veloRim > velo){
-      veloRim = map(veloRim, thre1, sens, 1, 127);
-
-      if (veloRim <= 1) {
-        veloRim = 1;
-      }
-
-      if (veloRim > 127) {
-        veloRim = 127;
-      }
-
-      velocity = veloRim;
-      flag = true;
-      hitRim = true;
-
-    }
-
-    else if(veloRim <= velo){
-
-    velo = map(velo, thre1, sens, 1, 127);
-
-    if (velo <= 1) {
-      velo = 1;
-    }
-
-    if (velo > 127) {
-      velo = 127;
-    }
-
-      //velo = (velo * velo) / 126 + 1;
-
-      velocity = velo;
-      flag = true;
-      hit = true;
-    }
-
   }
 
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scan)
+    {
+      piezoValueSUM = piezoValueSUM + piezoValue;
+      RimPiezoValueSUM = RimPiezoValueSUM + RimPiezoValue;
+
+      if (piezoValue > velocity)
+      {
+        velocity = piezoValue;
+      }
+      if (RimPiezoValue > velocityRim)
+      {
+        velocityRim = RimPiezoValue;
+      }
+      loopTimes = ++loopTimes;
+    }
+
+    //scan end
+    if (loopTimes == scan)
+    {
+
+      bool Rimjudge;
+
+      if (velocity >= velocityRim)
+      {
+        Rimjudge = false;
+      }
+      else if (velocity < velocityRim)
+      {
+        Rimjudge = true;
+      }
+
+      velocity = map(velocity, thre1Raw, sensRaw, 1, 127);
+      velocityRim = map(velocityRim, thre1Raw, sensRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
+      }
+
+      if (velocityRim <= 1)
+      {
+        velocityRim = 1;
+      }
+
+      if (velocityRim > 127)
+      {
+        velocityRim = 127;
+      }
+
+      //if (piezoValueSUM > RimPiezoValueSUM)
+      if (Rimjudge == false)
+      {
+        hit = true;
+        loopTimes = 0;
+        flag = true;
+      }
+      //else if (piezoValueSUM <= RimPiezoValueSUM)
+      else if (Rimjudge == true)
+      {
+        velocity = velocityRim;
+        hitRim = true;
+        loopTimes = 0;
+        flag = true;
+      }
+    }
   }
 
-  if (flag == true) {
+  if (flag == true)
+  {
     time_end = millis();
-    exValue = rawValue[pin_1];
     flag = false;
   }
 }
-void HelloDrum::HHMUX(int sens, int thre1, int scan, int mask) {
 
-  int velo = 0;
+void HelloDrum::HHMUX(int sens, int thre1, int scan, int mask)
+{
+#ifdef __AVR__
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+#endif
+#ifdef ESP32
+  int thre1Raw = thre1 * 40;
+  int sensRaw = sens * 40;
+#endif
+
+  HHnum = padNum;
   hit = false;
   piezoValue = rawValue[pin_1];
-  //static float y[2] = {0};
-  //y[1] = 0.8 * y[0] + 0.2 * analogRead(pin_1);
-  //piezoValue = y[1];
 
+  //when the value > threshold
+  if (piezoValue > thre1Raw && loopTimes == 0)
+  {
+    time_hit = millis(); //check the time pad hitted
 
-  if (rawValue[pin_1] > thre1) {
-    time_hit = millis(); //record hit time
-
-    if (time_hit - time_end < mask) { //compare last hit time
-      flag = true; 
-    }
-
-    //        if (piezoValue - exValue > thre2) {
-    //          flag = false;
-    //        }
-
-    if (flag == false) {
-
-      //peak scan
-      for (int i = 0; i < scan; i++) {
-        int peak = rawValue[pin_1];
-        if (peak > velo) {
-          velo = peak;
-        }
-        while (millis() - time_hit < 1);
-      }
-
-      //mapping
-      velo = map(velo, thre1, sens, 1, 127);
-
-      if (velo <= 1) {
-        velo = 1;
-      }
-
-      if (velo > 127) {
-        velo = 127;
-      }
-
-      //velo = (velo * velo) / 126 + 1;
-
-      velocity = velo;
+    //compare time to cancel retrigger
+    if (time_hit - time_end < mask)
+    {
       flag = true;
-      hit = true;
+    }
+    else
+    {
+      velocity = piezoValue; //first peak
+      loopTimes = ++loopTimes;
+      flag = false;
     }
   }
 
-  if (flag == true) {
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scan)
+    {
+      if (piezoValue > velocity)
+      {
+        velocity = piezoValue;
+      }
+      loopTimes = ++loopTimes;
+    }
+
+    //scan end
+    if (loopTimes == scan)
+    {
+      velocity = map(velocity, thre1Raw, sensRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
+      }
+
+      //velo = (velo * velo) / 126 + 1;
+      hit = true;
+      loopTimes = 0;
+      flag = true;
+    }
+  }
+
+  if (flag == true)
+  {
     time_end = millis();
-    exValue = rawValue[pin_1];
     flag = false;
   }
 }
 
 ////////////////////////////////////////////
-void HelloDrum::HH2zoneMUX(int sens, int thre1, int scan, int mask) {
+void HelloDrum::HH2zoneMUX(int sens, int thre1, int scan, int mask)
+{
+#ifdef __AVR__
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+  int edgeThreshold = 50;
+#endif
+#ifdef ESP32
+  int thre1Raw = thre1 * 40;
+  int sensRaw = sens * 40;
+  int edgeThreshold = 200;
+#endif
 
-  int velo = 0;
+  HHnum = padNum;
   hit = false;
   hitRim = false;
   choke = false;
-  int piezoValue = rawValue[pin_1];
-  int sensorValue = rawValue[pin_2];
 
-  //入り口でエッヂとボウ分けるか？
-  //  if (abs(analogRead(pin_1) - analogRead(pin_2)) > thre1) {
-  if (rawValue[pin_2] > thre1 || rawValue[pin_1] > thre1) {
-    time_hit = millis();
+  piezoValue = rawValue[pin_1];
+  sensorValue = rawValue[pin_2];
 
-    if (time_hit - time_end < mask) { //retrigger cancel
+  //when the value > threshold
+  if ((piezoValue > thre1Raw && loopTimes == 0) || (sensorValue > edgeThreshold && loopTimes == 0))
+  {
+    time_hit = millis(); //check the time pad hitted
+
+    if (time_hit - time_end < mask)
+    {
       flag = true;
     }
+    else
+    {
+      velocity = abs(piezoValue - sensorValue); //first peak //ここコメント化ありうる。
+      firstSensorValue = sensorValue;
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
 
-    //    if (analogRead(pin_1) - exValue > thre2) {
-    //      flag = false;
-    //    }
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scan)
+    {
+      if (abs(piezoValue - sensorValue) > velocity)
+      {
+        velocity = abs(piezoValue - sensorValue);
+      }
+      if (sensorValue > firstSensorValue && loopTimes < 5)
+      {
+        firstSensorValue = sensorValue;
+      }
+      loopTimes = ++loopTimes;
+    }
 
-    if (flag == false) {
-      for (int i = 0; i < scan; i++) {  //peak scan
-        int peak = rawValue[pin_1];
-        if (peak > velo) {
-          velo = peak;
-        }
-        while (millis() - time_hit < 1);
+    //scan end
+    if (loopTimes == scan)
+    {
+      lastSensorValue = sensorValue;
+      velocity = map(velocity, thre1Raw, sensRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
       }
 
       //bow
-      if (sensorValue < 50) {
-        velo = map(velo, thre1, sens , 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
+      if (firstSensorValue < edgeThreshold && lastSensorValue < edgeThreshold)
+      {
         flag = true;
         hit = true;
       }
 
       //edge
-      else if (sensorValue > 500) {
-        if (velo > 500) {
-          velo = velo - 500;
-        }
-        else {
-          velo = 500 - velo;
-        }
-        velo = map(velo, thre1, sens, 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
-        flag = true;
+      else if (firstSensorValue > edgeThreshold && lastSensorValue < edgeThreshold)
+      {
         hitRim = true;
+        flag = true;
       }
+
+      //choke
+      else if (lastSensorValue > edgeThreshold && firstSensorValue > edgeThreshold)
+      {
+        choke = true;
+        flag = true;
+      }
+      loopTimes = 0;
     }
   }
 
-  if (flag == true && piezoValue < thre1 && sensorValue < 10) {
+  if (flag == true)
+  {
     time_end = millis();
     flag = false;
   }
-
-  if (chokeFlag == false && sensorValue > 500 && sensorValue < 900  && abs(piezoValue - sensorValue) < 10) {
-    time_choke = millis();
-    if (time_choke - time_end < 10) {
-      chokeFlag = true;
-
-    }
-    else {
-      choke = true;
-      chokeFlag = true;
-    }
-  }
-
-  if (flag == true &&  sensorValue < 10) {
-    time_end = millis();
-    chokeFlag = false;
-  }
 }
 
+void HelloDrum::cymbal2zoneMUX(int sens, int thre1, int scan, int mask)
+{
+#ifdef __AVR__
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+  int edgeThreshold = 50;
+#endif
+#ifdef ESP32
+  int thre1Raw = thre1 * 40;
+  int sensRaw = sens * 40;
+  int edgeThreshold = 200;
+#endif
 
-void HelloDrum::cymbal2zoneMUX(int sens, int thre1, int scan, int mask) {
-
-  int velo = 0;
   hit = false;
   hitRim = false;
   choke = false;
-  int piezoValue = rawValue[pin_1];
-  int sensorValue = rawValue[pin_2];
 
-  //入り口でエッヂとボウ分けるか？
-  //  if (abs(analogRead(pin_1) - analogRead(pin_2)) > thre1) {
-  if (rawValue[pin_2] > thre1 || rawValue[pin_1] > thre1) {
-    time_hit = millis();
+  piezoValue = rawValue[pin_1];
+  sensorValue = rawValue[pin_2];
 
-    if (time_hit - time_end < mask) { //retrigger cancel
+  //when the value > threshold
+  if ((piezoValue > thre1Raw && loopTimes == 0) || (sensorValue > edgeThreshold && loopTimes == 0))
+  {
+    time_hit = millis(); //check the time pad hitted
+
+    if (time_hit - time_end < mask)
+    {
       flag = true;
     }
+    else
+    {
+      velocity = abs(piezoValue - sensorValue); //first peak //ここコメント化ありうる。
+      firstSensorValue = sensorValue;
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
 
-    //    if (analogRead(pin_1) - exValue > thre2) {
-    //      flag = false;
-    //    }
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scan)
+    {
+      if (abs(piezoValue - sensorValue) > velocity)
+      {
+        velocity = abs(piezoValue - sensorValue);
+      }
+      if (sensorValue > firstSensorValue && loopTimes < 5)
+      {
+        firstSensorValue = sensorValue;
+      }
+      loopTimes = ++loopTimes;
+    }
 
-    if (flag == false) {
-      for (int i = 0; i < scan; i++) {  //peak scan
-        int peak = rawValue[pin_1];
-        if (peak > velo) {
-          velo = peak;
-        }
-        while (millis() - time_hit < 1);
+    //scan end
+    if (loopTimes == scan)
+    {
+      lastSensorValue = sensorValue;
+      velocity = map(velocity, thre1Raw, sensRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
       }
 
       //bow
-      if (sensorValue < 50) {
-        velo = map(velo, thre1, sens , 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
+      if (firstSensorValue < edgeThreshold && lastSensorValue < edgeThreshold)
+      {
         flag = true;
         hit = true;
       }
 
       //edge
-      else if (sensorValue > 500) {
-        if (velo > 500) {
-          velo = velo - 500;
-        }
-        else {
-          velo = 500 - velo;
-        }
-        velo = map(velo, thre1, sens, 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
-        flag = true;
+      else if (firstSensorValue > edgeThreshold && lastSensorValue < edgeThreshold)
+      {
         hitRim = true;
+        flag = true;
       }
+
+      //choke
+      else if (lastSensorValue > edgeThreshold && firstSensorValue > edgeThreshold)
+      {
+        choke = true;
+        flag = true;
+      }
+      loopTimes = 0;
     }
   }
 
-  if (flag == true && piezoValue < thre1 && sensorValue < 10) {
+  if (flag == true)
+  {
     time_end = millis();
     flag = false;
   }
-
-  if (chokeFlag == false && sensorValue > 500 && sensorValue < 900  && abs(piezoValue - sensorValue) < 10) {
-    time_choke = millis();
-    if (time_choke - time_end < 10) {
-      chokeFlag = true;
-
-    }
-    else {
-      choke = true;
-      chokeFlag = true;
-    }
-  }
-
-  if (flag == true &&  sensorValue < 10) {
-    time_end = millis();
-    chokeFlag = false;
-  }
 }
 
-void HelloDrum::cymbal3zoneMUX(int sens, int thre1, int scan, int mask) {
+void HelloDrum::cymbal3zoneMUX(int sens, int thre1, int scan, int mask)
+{
+#ifdef __AVR__
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+  int edgeThreshold = 50;
+  int cupThreshold = 520;
+  int loopTimesCup = 10; //?
+#endif
+#ifdef ESP32
+  int thre1Raw = thre1 * 40;
+  int sensRaw = sens * 40;
+  int edgeThreshold = 200;
+  int cupThreshold = 2000;
+  int loopTimesCup = 25;
+#endif
 
-  int velo = 0;
   hit = false;
   hitRim = false;
   hitCup = false;
   choke = false;
 
-  int piezoValue = rawValue[pin_1];
-  int sensorValue = rawValue[pin_2];
+  piezoValue = rawValue[pin_1];
+  sensorValue = rawValue[pin_2];
 
-  //入り口でエッヂとボウ分けるか？
-  //  if (abs(analogRead(pin_1) - analogRead(pin_2)) > thre1) {
-  if (rawValue[pin_2] > thre1 || rawValue[pin_1] > thre1) {
-    time_hit = millis();
+  //when the value > threshold
+  if ((piezoValue > thre1Raw && loopTimes == 0) || (sensorValue > edgeThreshold && loopTimes == 0))
+  {
+    time_hit = millis(); //check the time pad hitted
 
-    if (time_hit - time_end < mask) { //retrigger cancel
+    if (time_hit - time_end < mask)
+    {
       flag = true;
     }
+    else
+    {
+      velocity = abs(piezoValue - sensorValue); //first peak //ここコメント化ありうる。
+      firstSensorValue = sensorValue;
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
 
-    //    if (analogRead(pin_1) - exValue > thre2) {
-    //      flag = false;
-    //    }
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scan)
+    {
+      if (loopTimes == loopTimesCup)
+      {
+        velocityCup = 1;
+      }
+      if (abs(piezoValue - sensorValue) > velocity)
+      {
+        velocity = abs(piezoValue - sensorValue);
+        velocityCup = velocity;
+      }
+      if (sensorValue > firstSensorValue && loopTimes < 5)
+      {
+        firstSensorValue = sensorValue;
+      }
+      loopTimes = ++loopTimes;
+    }
 
-    if (flag == false) {
-      for (int i = 0; i < scan; i++) {  //peak scan
-        int peak = rawValue[pin_1];
-        if (peak > velo) {
-          velo = peak;
-        }
-        while (millis() - time_hit < 1);
+    //scan end
+    if (loopTimes == scan)
+    {
+      lastSensorValue = sensorValue;
+      velocity = map(velocity, thre1Raw, sensRaw, 1, 127);
+      velocityCup = map(velocityCup, thre1Raw, sensRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
+      }
+
+      if (velocityCup <= 1)
+      {
+        velocityCup = 1;
+      }
+
+      if (velocityCup > 127)
+      {
+        velocityCup = 127;
       }
 
       //bow
-      if (sensorValue < 50) {
-        velo = map(velo, thre1, sens , 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
+      if (firstSensorValue < edgeThreshold && lastSensorValue < edgeThreshold)
+      {
         flag = true;
         hit = true;
       }
 
       //edge
-      else if (sensorValue > 500 && sensorValue < 520) {
-        if (velo > 500) {
-          velo = velo - 500;
-        }
-        else {
-          velo = 500 - velo;
-        }
-        velo = map(velo, thre1, sens, 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
+      else if (firstSensorValue > edgeThreshold && firstSensorValue < cupThreshold && lastSensorValue < edgeThreshold)
+      {
         hitRim = true;
         flag = true;
       }
 
       //cup
-      else if (sensorValue > 520) {
-        //MIDI.sendNoteOn(53, 100, 10);   //(note, velocity, channel) cup note is 53
-        //MIDI.sendNoteOff(53, 0, 10);
-        velocity = 100;
+      else if (firstSensorValue > cupThreshold && lastSensorValue < edgeThreshold)
+      {
+        velocity = velocityCup;
         hitCup = true;
         flag = true;
       }
+
+      //choke
+      else if (lastSensorValue > edgeThreshold && firstSensorValue > edgeThreshold)
+      {
+        choke = true;
+        flag = true;
+      }
+      loopTimes = 0;
     }
   }
 
-  if (flag == true && piezoValue < thre1 && sensorValue < 10) {
+  if (flag == true)
+  {
     time_end = millis();
     flag = false;
   }
-
-  if (chokeFlag == false && sensorValue > 500 && sensorValue < 900  && abs(piezoValue - sensorValue) < 10) {
-    time_choke = millis();
-    if (time_choke - time_end < 10) {
-      chokeFlag = true;
-
-    }
-    else {
-      choke = true;
-      chokeFlag = true;
-    }
-  }
-
-  if (flag == true &&  sensorValue < 10) {
-    time_end = millis();
-    chokeFlag = false;
-  }
 }
 
-void HelloDrum::TCRT5000MUX(int sens, int thre1, int thre2, int scan) {
-
-  int velo = 0;
-  openHH = false;
-  closeHH = false;
+void HelloDrum::TCRT5000MUX(int sens, int thre1, int thre2, int scan)
+{
   int TCRT = rawValue[pin_1];
 
-  if (TCRT < thre1 && closeHH == false && pedalVelocityFlag == false && pedalFlag == false) {
+#ifdef __AVR__
+  int thre1Raw = thre1 * 10;
+  int thre2Raw = thre2 * 10;
+  int sensRaw = sens * 10;
+  TCRT = 1024 - TCRT;
+#endif
+#ifdef ESP32
+  int thre1Raw = thre1 * 40;
+  int thre2Raw = thre2 * 40;
+  int sensRaw = sens * 40;
+  TCRT = 4096 - TCRT;
+#endif
+
+  HHCnum = padNum;
+  velocity = 0;
+  openHH = false;
+  closeHH = false;
+
+  if (TCRT > thre2Raw && closeHH == false && pedalVelocityFlag == false && pedalFlag == false)
+  {
     time_hit_pedal_1 = millis();
     pedalVelocityFlag = true;
   }
 
-  if (TCRT < thre2 && pedalFlag == false) {
+  else if (TCRT > sens && pedalFlag == false)
+  {
     time_hit_pedal_2 = millis();
 
-    velo = time_hit_pedal_2 - time_hit_pedal_1;
-    velo = map(velo, scan, 0, 1, 127);
+    velocity = time_hit_pedal_2 - time_hit_pedal_1;
+    velocity = map(velocity, scan * 100, 0, 1, 127);
 
-    if (velo <= 1) {
-      velo = 1;
+    if (velocity <= 1)
+    {
+      velocity = 1;
     }
 
-    if (velo > 127) {
-      velo = 127;
+    if (velocity > 127)
+    {
+      velocity = 127;
     }
 
-    velocity = velo;
     closeHH = true;
     openHH = false;
     pedalFlag = true;
     pedalVelocityFlag = false;
   }
 
-
-  if (TCRT > thre1 && closeHH == true) {
+  if (TCRT < thre2Raw && pedalFlag == true)
+  {
+    pedalFlag = false;
     closeHH = false;
     openHH = true;
   }
 
   /////////////////////// HIHAT PEDAL CC
-  #ifdef _AVR_
-  TCRT = map(TCRT, sens, 100, 0, 127);
-  
-  if (TCRT > 127) {
+
+  /* 
+#ifdef __AVR__
+  TCRT = map(TCRT, thre1Raw, sensRaw, 0, 127);
+
+  if (TCRT > 127)
+  {
     TCRT = 127;
   }
-  if (TCRT < 0) {
+  if (TCRT < 0)
+  {
     TCRT = 0;
   }
-  #endif
+#endif
+*/
 
-  #ifdef ESP32
-  TCRT = map(TCRT, 4000, 100, 0, 127);
+  //#ifdef ESP32
+  TCRT = map(TCRT, thre1Raw, sensRaw, 0, 127);
   //6段階に分ける
 
-  if(TCRT < 20){
+  if (TCRT < 20)
+  {
     TCRT = 0;
   }
 
-  else if(TCRT >= 20 && TCRT < 40){
+  else if (TCRT >= 20 && TCRT < 40)
+  {
     TCRT = 20;
   }
 
-  else if(TCRT >= 40 && TCRT < 60){
+  else if (TCRT >= 40 && TCRT < 60)
+  {
     TCRT = 40;
   }
 
-  else if(TCRT >= 60 && TCRT < 80){
+  else if (TCRT >= 60 && TCRT < 80)
+  {
     TCRT = 60;
   }
 
-  else if(TCRT >= 80 && TCRT < 100){
+  else if (TCRT >= 80 && TCRT < 100)
+  {
     TCRT = 80;
   }
 
-  else if(TCRT >= 100 && TCRT < 120){
+  else if (TCRT >= 100 && TCRT < 120)
+  {
     TCRT = 100;
   }
 
-  else if (TCRT >= 120) {
+  else if (TCRT >= 120)
+  {
     TCRT = 127;
   }
+  //#endif
 
-  #endif
-
-  if (exTCRT != TCRT) {
+  if (exTCRT != TCRT)
+  {
     pedalCC = TCRT;
     moving = true;
     exTCRT = TCRT;
   }
 
-  else {
+  else
+  {
     moving = false;
   }
 }
 
 //with EEPROM と比較！
-void HelloDrum::FSRMUX(int sens, int thre1, int thre2, int scan) {
+void HelloDrum::FSRMUX(int sens, int thre1, int thre2, int scan)
+{
+#ifdef __AVR__
+  int thre1Raw = thre1 * 10;
+  int thre2Raw = thre2 * 10;
+  int sensRaw = sens * 10;
+#endif
+#ifdef ESP32
+  int thre1Raw = thre1 * 40;
+  int thre2Raw = thre2 * 40;
+  int sensRaw = sens * 40;
+#endif
 
-  int velo = 0;
+  HHCnum = padNum;
+  velocity = 0;
   openHH = false;
   closeHH = false;
   int FSR = rawValue[pin_1];
 
-  if (FSR < thre1 && closeHH == false && pedalVelocityFlag == false && pedalFlag == false) {
+  if (FSR > thre2Raw && closeHH == false && pedalVelocityFlag == false && pedalFlag == false)
+  {
     time_hit_pedal_1 = millis();
     pedalVelocityFlag = true;
   }
 
-  if (FSR < thre2 && pedalFlag == false) {
+  else if (FSR > sens && pedalFlag == false)
+  {
     time_hit_pedal_2 = millis();
 
-    velo = time_hit_pedal_2 - time_hit_pedal_1;
-    velo = map(velo, scan, 0, 1, 127);
+    velocity = time_hit_pedal_2 - time_hit_pedal_1;
+    velocity = map(velocity, scan * 100, 0, 1, 127);
 
-    if (velo <= 1) {
-      velo = 1;
+    if (velocity <= 1)
+    {
+      velocity = 1;
     }
 
-    if (velo > 127) {
-      velo = 127;
+    if (velocity > 127)
+    {
+      velocity = 127;
     }
 
-    velocity = velo;
     closeHH = true;
     openHH = false;
     pedalFlag = true;
     pedalVelocityFlag = false;
   }
 
-
-  if (FSR > thre1 && closeHH == true) {
+  if (FSR < thre2Raw && pedalFlag == true)
+  {
+    pedalFlag = false;
     closeHH = false;
     openHH = true;
   }
 
   /////////////////////// HIHAT PEDAL CC
 
-  FSR = map(FSR, sens, 100, 0, 127);
-  if (FSR > 127) {
+  /* 
+#ifdef __AVR__
+  FSR = map(FSR, thre1Raw, sensRaw, 0, 127);
+
+  if (FSR > 127)
+  {
     FSR = 127;
   }
-  if (FSR < 0) {
+  if (FSR < 0)
+  {
+    FSR = 0;
+  }
+#endif
+*/
+
+  //#ifdef ESP32
+  FSR = map(FSR, thre1Raw, sensRaw, 0, 127);
+  //6段階に分ける
+
+  if (FSR < 20)
+  {
     FSR = 0;
   }
 
-  if (exFSR != FSR) {
+  else if (FSR >= 20 && FSR < 40)
+  {
+    FSR = 20;
+  }
+
+  else if (FSR >= 40 && FSR < 60)
+  {
+    FSR = 40;
+  }
+
+  else if (FSR >= 60 && FSR < 80)
+  {
+    FSR = 60;
+  }
+
+  else if (FSR >= 80 && FSR < 100)
+  {
+    FSR = 80;
+  }
+
+  else if (FSR >= 100 && FSR < 120)
+  {
+    FSR = 100;
+  }
+
+  else if (FSR >= 120)
+  {
+    FSR = 127;
+  }
+  //#endif
+
+  if (exFSR != FSR)
+  {
     pedalCC = FSR;
     moving = true;
     exFSR = FSR;
   }
 
-  else {
+  else
+  {
     moving = false;
   }
 }
 
-//////////////////////// 5. MUX SENSING with EEPROM ////////////////////////// 
+//////////////////////// 5. MUX SENSING with EEPROM //////////////////////////
 
-void HelloDrum::singlePiezoMUX() {
-  int velo = 0;
+void HelloDrum::singlePiezoMUX()
+{
+#ifdef __AVR__
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+#endif
+#ifdef ESP32
+  int threshold1Raw = threshold1 * 40;
+  int sensitivityRaw = sensitivity * 40;
+#endif
+
   hit = false;
   piezoValue = rawValue[pin_1];
 
-//when the value > threshold
-  if (rawValue[pin_1] > threshold1) {
+  //when the value > threshold
+  if (piezoValue > threshold1Raw && loopTimes == 0)
+  {
     time_hit = millis(); //check the time pad hitted
 
     //compare time to cancel retrigger
-    if (time_hit - time_end < masktime) {
+    if (time_hit - time_end < masktime)
+    {
       flag = true;
     }
+    else
+    {
+      velocity = piezoValue; //first peak
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
 
-    if (flag == false) {
-      for (int i = 0; i < scantime; i++) {
-        int peak = rawValue[pin_1];
-        if (peak > velo) {
-          velo = peak; //peak is max value of 5 times scan.
-        }
-        while (millis() - time_hit < 1);
-        //delay 1 milisecond.
-        //scan the piezo value 5 times.
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scantime)
+    {
+      if (piezoValue > velocity)
+      {
+        velocity = piezoValue;
+      }
+      loopTimes = ++loopTimes;
+    }
+
+    //scan end
+    if (loopTimes == scantime)
+    {
+      velocity = map(velocity, threshold1Raw, sensitivityRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
       }
 
-      velo = map(velo, threshold1, sensitivity * 10, 1, 127);
-
-      if (velo <= 1) {
-        velo = 1;
-      }
-
-      if (velo > 127) {
-        velo = 127;
+      if (velocity > 127)
+      {
+        velocity = 127;
       }
 
       //velo = (velo * velo) / 126 + 1;
 
-
-      velocity = velo;
       showVelocity = velocity;
-      flag = true; //ここの位置を検証すべき。showLCDとhitの下だと何か変わるか。
       showLCD = true;
       hit = true;
       padIndex = padNum;
+      loopTimes = 0;
+      flag = true;
     }
   }
 
-  //scantime伸びてるのでは？？？
-  if (flag == true) {
+  if (flag == true)
+  {
     time_end = millis();
-    exValue = rawValue[pin_1];
     flag = false;
   }
 }
 
-void HelloDrum::dualPiezoMUX() {
+void HelloDrum::dualPiezoMUX()
+{
+#ifdef __AVR__
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+#endif
+#ifdef ESP32
+  int threshold1Raw = threshold1 * 40;
+  int sensitivityRaw = sensitivity * 40;
+#endif
 
-  int velo = 0;
-  int veloRim = 0;
   hit = false;
   hitRim = false;
   piezoValue = rawValue[pin_1];
   RimPiezoValue = rawValue[pin_2];
 
-  if (rawValue[pin_1] > threshold1) {
+  //when the value > threshold
+  if ((piezoValue > threshold1Raw && loopTimes == 0) || (RimPiezoValue > threshold1Raw && loopTimes == 0))
+  {
     time_hit = millis();
 
-    if (time_hit - time_end < masktime) {
+    if (time_hit - time_end < masktime)
+    {
       flag = true;
     }
-
-    //        if (piezoValue - exValue > thre2) {
-    //          flag = false;
-    //        }
-
-    if (flag == false) {
-
-    for (int i = 0; i < scantime; i++) {
-      int peak = rawValue[pin_1];
-      int peakRim = rawValue[pin_2];
-
-      if (peak > velo) {
-        velo = peak;
-      }
-      if (peakRim > veloRim) {
-        veloRim = peakRim;
-      }
-      while (millis() - time_hit < 1);
+    else
+    {
+      velocity = piezoValue; //first peak
+      velocityRim = RimPiezoValue;
+      loopTimes = ++loopTimes;
+      flag = false;
     }
-
-    if(veloRim > velo){
-      veloRim = map(veloRim, threshold1, sensitivity*10, 1, 127);
-
-      if (veloRim <= 1) {
-        veloRim = 1;
-      }
-
-      if (veloRim > 127) {
-        veloRim = 127;
-      }
-
-      velocity = veloRim;
-      showVelocity = velocity;
-      flag = true;
-      showLCD = true;
-      hitRim = true;
-      padIndex = padNum;
-
-    }
-
-    else if(veloRim <= velo){
-
-    velo = map(velo, threshold1, sensitivity*10, 1, 127);
-
-    if (velo <= 1) {
-      velo = 1;
-    }
-
-    if (velo > 127) {
-      velo = 127;
-    }
-
-      //velo = (velo * velo) / 126 + 1;
-
-      velocity = velo;
-      showVelocity = velocity;
-      flag = true;
-      showLCD = true;
-      hit = true;
-      padIndex = padNum;
-    }
-
   }
 
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scantime)
+    {
+      piezoValueSUM = piezoValueSUM + piezoValue;
+      RimPiezoValueSUM = RimPiezoValueSUM + RimPiezoValue;
+
+      if (piezoValue > velocity)
+      {
+        velocity = piezoValue;
+      }
+      if (RimPiezoValue > velocityRim)
+      {
+        velocityRim = RimPiezoValue;
+      }
+      loopTimes = ++loopTimes;
+    }
+
+    //scan end
+    if (loopTimes == scantime)
+    {
+
+      bool Rimjudge;
+
+      if (velocity >= velocityRim)
+      {
+        Rimjudge = false;
+      }
+      else if (velocity < velocityRim)
+      {
+        Rimjudge = true;
+      }
+
+      velocity = map(velocity, threshold1Raw, sensitivityRaw, 1, 127);
+      velocityRim = map(velocityRim, threshold1Raw, sensitivityRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
+      }
+
+      if (velocityRim <= 1)
+      {
+        velocityRim = 1;
+      }
+
+      if (velocityRim > 127)
+      {
+        velocityRim = 127;
+      }
+
+      //if (piezoValueSUM > RimPiezoValueSUM)
+      if (Rimjudge == false)
+      {
+        showVelocity = velocity;
+        showLCD = true;
+        hit = true;
+        padIndex = padNum;
+        loopTimes = 0;
+        flag = true;
+      }
+      //else if (piezoValueSUM <= RimPiezoValueSUM)
+      else if (Rimjudge == true)
+      {
+        velocity = velocityRim;
+        showVelocity = velocity;
+        showLCD = true;
+        hitRim = true;
+        padIndex = padNum;
+        loopTimes = 0;
+        flag = true;
+      }
+    }
   }
 
-  if (flag == true) {
+  if (flag == true)
+  {
     time_end = millis();
-    exValue = rawValue[pin_1];
     flag = false;
   }
 }
 
-void HelloDrum::HHMUX() {
+void HelloDrum::HHMUX()
+{
+#ifdef __AVR__
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+#endif
+#ifdef ESP32
+  int threshold1Raw = threshold1 * 40;
+  int sensitivityRaw = sensitivity * 40;
+#endif
+
   HHnum = padNum;
-  int velo = 0;
   hit = false;
   piezoValue = rawValue[pin_1];
 
-//when the value > threshold
-  if (rawValue[pin_1] > threshold1) {
+  //when the value > threshold
+  if (piezoValue > threshold1Raw && loopTimes == 0)
+  {
     time_hit = millis(); //check the time pad hitted
 
     //compare time to cancel retrigger
-    if (time_hit - time_end < masktime) {
+    if (time_hit - time_end < masktime)
+    {
       flag = true;
     }
+    else
+    {
+      velocity = piezoValue; //first peak
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
 
-    if (flag == false) {
-      for (int i = 0; i < scantime; i++) {
-        int peak = rawValue[pin_1];
-        if (peak > velo) {
-          velo = peak; //peak is max value of 5 times scan.
-        }
-        while (millis() - time_hit < 1);
-        //delay 1 milisecond.
-        //scan the piezo value 5 times.
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scantime)
+    {
+      if (piezoValue > velocity)
+      {
+        velocity = piezoValue;
+      }
+      loopTimes = ++loopTimes;
+    }
+
+    //scan end
+    if (loopTimes == scantime)
+    {
+      velocity = map(velocity, threshold1Raw, sensitivityRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
       }
 
-      velo = map(velo, threshold1, sensitivity * 10, 1, 127);
-
-      if (velo <= 1) {
-        velo = 1;
-      }
-
-      if (velo > 127) {
-        velo = 127;
+      if (velocity > 127)
+      {
+        velocity = 127;
       }
 
       //velo = (velo * velo) / 126 + 1;
 
-
-      velocity = velo;
       showVelocity = velocity;
-      flag = true; //ここの位置を検証すべき。showLCDとhitの下だと何か変わるか。
       showLCD = true;
       hit = true;
       padIndex = padNum;
+      loopTimes = 0;
+      flag = true;
     }
   }
 
-  //scantime伸びてるのでは？？？
-  if (flag == true) {
+  if (flag == true)
+  {
     time_end = millis();
-    exValue = rawValue[pin_1];
     flag = false;
   }
 }
 
-void HelloDrum::HH2zoneMUX() {
+void HelloDrum::HH2zoneMUX()
+{
+#ifdef __AVR__
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+  int edgeThreshold = 50;
+#endif
+#ifdef ESP32
+  int threshold1Raw = threshold1 * 40;
+  int sensitivityRaw = sensitivity * 40;
+  int edgeThreshold = 200;
+#endif
 
   HHnum = padNum;
-  int velo = 0;
-  hit = false;
-  hitRim = false;
-  choke = false;
-  int piezoValue = rawValue[pin_1];
-  int sensorValue = rawValue[pin_2];
-
-  //入り口でエッヂとボウ分けるか？
-  //  if (abs(analogRead(pin_1) - analogRead(pin_2)) > thre1) {
-  if (rawValue[pin_2] > threshold1 || rawValue[pin_1] > threshold1) {
-    time_hit = millis();
-
-    if (time_hit - time_end < masktime) { //retrigger cancel
-      flag = true;
-    }
-
-    //    if (analogRead(pin_1) - exValue > thre2) {
-    //      flag = false;
-    //    }
-
-    if (flag == false) {
-      for (int i = 0; i < scantime; i++) {  //peak scan
-        int peak = rawValue[pin_1];
-        if (peak > velo) {
-          velo = peak;
-        }
-        while (millis() - time_hit < 1);
-      }
-
-      //bow
-      if (sensorValue < 50) {
-        velo = map(velo, threshold1, sensitivity , 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
-        showVelocity = velocity;
-        flag = true;
-        showLCD = true;
-        hit = true;
-        padIndex = padNum;
-      }
-
-      //edge
-      else if (sensorValue > 50) {
-        if (velo > 500) {
-          velo = velo - 500;
-        }
-        else {
-          velo = 500 - velo;
-        }
-        velo = map(velo, threshold1, sensitivity, 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
-        showVelocity = velocity;
-        flag = true;
-        showLCD = true;
-        hitRim = true;
-        padIndex = padNum;
-      }
-    }
-  }
-
-  if (flag == true && piezoValue < threshold1 && sensorValue < 10) {
-    time_end = millis();
-    flag = false;
-  }
-
-  if (chokeFlag == false && sensorValue > 500 && sensorValue < 900  && abs(piezoValue - sensorValue) < 10) {
-    time_choke = millis();
-    if (time_choke - time_end < 10) {
-      chokeFlag = true;
-
-    }
-    else {
-      choke = true;
-      chokeFlag = true;
-    }
-  }
-
-  if (flag == true &&  sensorValue < 10) {
-    time_end = millis();
-    chokeFlag = false;
-  }
-}
-
-////////////////////////////////////////////
-
-void HelloDrum::cymbal2zoneMUX() {
-
-  int velo = 0;
-  hit = false;
-  hitRim = false;
-  choke = false;
-  int piezoValue = rawValue[pin_1];
-  int sensorValue = rawValue[pin_2];
-
-  //入り口でエッヂとボウ分けるか？
-  //  if (abs(analogRead(pin_1) - analogRead(pin_2)) > thre1) {
-  if (rawValue[pin_2] > threshold1 || rawValue[pin_1] > threshold1) {
-    time_hit = millis();
-
-    if (time_hit - time_end < masktime) { //retrigger cancel
-      flag = true;
-    }
-
-    //    if (analogRead(pin_1) - exValue > thre2) {
-    //      flag = false;
-    //    }
-
-    if (flag == false) {
-      for (int i = 0; i < scantime; i++) {  //peak scan
-        int peak = rawValue[pin_1];
-        if (peak > velo) {
-          velo = peak;
-        }
-        while (millis() - time_hit < 1);
-      }
-
-      //bow
-      if (sensorValue < 50) {
-        velo = map(velo, threshold1, sensitivity , 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
-        showVelocity = velocity;
-        flag = true;
-        showLCD = true;
-        hit = true;
-        padIndex = padNum;
-      }
-
-      //edge
-      else if (sensorValue > 50) {
-        if (velo > 500) {
-          velo = velo - 500;
-        }
-        else {
-          velo = 500 - velo;
-        }
-        velo = map(velo, threshold1, sensitivity, 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
-        showVelocity = velocity;
-        flag = true;
-        showLCD = true;
-        hitRim = true;
-        padIndex = padNum;
-      }
-    }
-  }
-
-  if (flag == true && piezoValue < threshold1 && sensorValue < 10) {
-    time_end = millis();
-    flag = false;
-  }
-
-  if (chokeFlag == false && sensorValue > 500 && sensorValue < 900  && abs(piezoValue - sensorValue) < 10) {
-    time_choke = millis();
-    if (time_choke - time_end < 10) {
-      chokeFlag = true;
-
-    }
-    else {
-      choke = true;
-      chokeFlag = true;
-    }
-  }
-
-  if (flag == true &&  sensorValue < 10) {
-    time_end = millis();
-    chokeFlag = false;
-  }
-}
-
-void HelloDrum::cymbal3zoneMUX() {
-
-  int velo = 0;
   hit = false;
   hitRim = false;
   hitCup = false;
   choke = false;
 
-  int piezoValue = rawValue[pin_1];
-  int sensorValue = rawValue[pin_2];
+  piezoValue = rawValue[pin_1];
+  sensorValue = rawValue[pin_2];
 
-  //入り口でエッヂとボウ分けるか？
-  //  if (abs(analogRead(pin_1) - analogRead(pin_2)) > thre1) {
-  if (rawValue[pin_2] > threshold1 || rawValue[pin_1] > threshold1) {
-    time_hit = millis();
+  //when the value > threshold
+  if ((piezoValue > threshold1Raw && loopTimes == 0) || (sensorValue > edgeThreshold && loopTimes == 0))
+  {
+    time_hit = millis(); //check the time pad hitted
 
-    if (time_hit - time_end < masktime) { //retrigger cancel
+    if (time_hit - time_end < masktime)
+    {
       flag = true;
     }
+    else
+    {
+      velocity = abs(piezoValue - sensorValue); //first peak
+      firstSensorValue = sensorValue;
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
 
-    //    if (analogRead(pin_1) - exValue > thre2) {
-    //      flag = false;
-    //    }
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scantime)
+    {
+      if (abs(piezoValue - sensorValue) > velocity)
+      {
+        velocity = abs(piezoValue - sensorValue);
+      }
+      if (sensorValue > firstSensorValue && loopTimes < 5)
+      {
+        firstSensorValue = sensorValue;
+      }
+      loopTimes = ++loopTimes;
+    }
 
-    if (flag == false) {
-      for (int i = 0; i < scantime; i++) {  //peak scan
-        int peak = rawValue[pin_1];
-        if (peak > velo) {
-          velo = peak;
-        }
-        while (millis() - time_hit < 1);
+    //scan end
+    if (loopTimes == scantime)
+    {
+      lastSensorValue = sensorValue;
+      velocity = map(velocity, threshold1Raw, sensitivityRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
       }
 
       //bow
-      if (sensorValue < 50) {
-        velo = map(velo, threshold1, sensitivity , 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
+      if (firstSensorValue < edgeThreshold && lastSensorValue < edgeThreshold)
+      {
         showVelocity = velocity;
-        flag = true;
         showLCD = true;
+        flag = true;
         hit = true;
         padIndex = padNum;
       }
 
       //edge
-      else if (sensorValue > 500 && sensorValue < 520) {
-        if (velo > 500) {
-          velo = velo - 500;
-        }
-        else {
-          velo = 500 - velo;
-        }
-        velo = map(velo, threshold1, sensitivity, 1, 127);
-
-        if (velo <= 1) {
-          velo = 1;
-        }
-
-        if (velo > 127) {
-          velo = 127;
-        }
-
-        velocity = velo;
+      else if (firstSensorValue > edgeThreshold && lastSensorValue < edgeThreshold)
+      {
         showVelocity = velocity;
-        flag = true;
         showLCD = true;
         hitRim = true;
+        flag = true;
+        padIndex = padNum;
+      }
+
+      //choke
+      else if (lastSensorValue > edgeThreshold && firstSensorValue > edgeThreshold)
+      {
+        choke = true;
+        flag = true;
+      }
+      loopTimes = 0;
+    }
+  }
+
+  if (flag == true)
+  {
+    time_end = millis();
+    flag = false;
+  }
+}
+
+////////////////////////////////////////////
+
+void HelloDrum::cymbal2zoneMUX()
+{
+#ifdef __AVR__
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+  int edgeThreshold = 50;
+#endif
+#ifdef ESP32
+  int threshold1Raw = threshold1 * 40;
+  int sensitivityRaw = sensitivity * 40;
+  int edgeThreshold = 200;
+#endif
+
+  hit = false;
+  hitRim = false;
+  hitCup = false;
+  choke = false;
+
+  piezoValue = rawValue[pin_1];
+  sensorValue = rawValue[pin_2];
+
+  //when the value > threshold
+  if ((piezoValue > threshold1Raw && loopTimes == 0) || (sensorValue > edgeThreshold && loopTimes == 0))
+  {
+    time_hit = millis(); //check the time pad hitted
+
+    if (time_hit - time_end < masktime)
+    {
+      flag = true;
+    }
+    else
+    {
+      velocity = abs(piezoValue - sensorValue); //first peak
+      firstSensorValue = sensorValue;
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
+
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scantime)
+    {
+      if (abs(piezoValue - sensorValue) > velocity)
+      {
+        velocity = abs(piezoValue - sensorValue);
+      }
+      if (sensorValue > firstSensorValue && loopTimes < 5)
+      {
+        firstSensorValue = sensorValue;
+      }
+      loopTimes = ++loopTimes;
+    }
+
+    //scan end
+    if (loopTimes == scantime)
+    {
+      lastSensorValue = sensorValue;
+      velocity = map(velocity, threshold1Raw, sensitivityRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
+      }
+
+      //bow
+      if (firstSensorValue < edgeThreshold && lastSensorValue < edgeThreshold)
+      {
+        showVelocity = velocity;
+        showLCD = true;
+        flag = true;
+        hit = true;
+        padIndex = padNum;
+      }
+
+      //edge
+      else if (firstSensorValue > edgeThreshold && lastSensorValue < edgeThreshold)
+      {
+        showVelocity = velocity;
+        showLCD = true;
+        hitRim = true;
+        flag = true;
+        padIndex = padNum;
+      }
+
+      //choke
+      else if (lastSensorValue > edgeThreshold && firstSensorValue > edgeThreshold)
+      {
+        choke = true;
+        flag = true;
+      }
+      loopTimes = 0;
+    }
+  }
+
+  if (flag == true)
+  {
+    time_end = millis();
+    flag = false;
+  }
+}
+
+void HelloDrum::cymbal3zoneMUX()
+{
+#ifdef __AVR__
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+  int edgeThreshold = 50;
+  int cupThreshold = 520;
+  int loopTimesCup = 10; //?
+#endif
+#ifdef ESP32
+  int threshold1Raw = threshold1 * 40;
+  int sensitivityRaw = sensitivity * 40;
+  int edgeThreshold = 200;
+  int cupThreshold = 2000;
+  int loopTimesCup = 25;
+#endif
+
+  hit = false;
+  hitRim = false;
+  hitCup = false;
+  choke = false;
+
+  piezoValue = rawValue[pin_1];
+  sensorValue = rawValue[pin_2];
+
+  //when the value > threshold
+  if ((piezoValue > threshold1Raw && loopTimes == 0) || (sensorValue > edgeThreshold && loopTimes == 0))
+  {
+    time_hit = millis(); //check the time pad hitted
+
+    if (time_hit - time_end < masktime)
+    {
+      flag = true;
+    }
+    else
+    {
+      velocity = abs(piezoValue - sensorValue); //first peak
+      firstSensorValue = sensorValue;
+      loopTimes = ++loopTimes;
+      flag = false;
+    }
+  }
+
+  //peak scan start
+  if (flag == false && loopTimes > 0)
+  {
+    if (loopTimes != scantime)
+    {
+      if (loopTimes == loopTimesCup)
+      {
+        velocityCup = 1;
+      }
+      if (abs(piezoValue - sensorValue) > velocity || abs(piezoValue - sensorValue) > velocityCup)
+      {
+        velocity = abs(piezoValue - sensorValue);
+        velocityCup = velocity;
+      }
+      if (sensorValue > firstSensorValue && loopTimes < 5)
+      {
+        firstSensorValue = sensorValue;
+      }
+      loopTimes = ++loopTimes;
+    }
+
+    //scan end
+    if (loopTimes == scantime)
+    {
+      lastSensorValue = sensorValue;
+      velocity = map(velocity, threshold1Raw, sensitivityRaw, 1, 127);
+      velocityCup = map(velocityCup, threshold1Raw, sensitivityRaw, 1, 127);
+
+      if (velocity <= 1)
+      {
+        velocity = 1;
+      }
+
+      if (velocity > 127)
+      {
+        velocity = 127;
+      }
+
+      if (velocityCup <= 1)
+      {
+        velocityCup = 1;
+      }
+
+      if (velocityCup > 127)
+      {
+        velocityCup = 127;
+      }
+
+      //bow
+      if (firstSensorValue < edgeThreshold && lastSensorValue < edgeThreshold)
+      {
+        showVelocity = velocity;
+        showLCD = true;
+        flag = true;
+        hit = true;
+        padIndex = padNum;
+      }
+
+      //edge
+      else if (firstSensorValue > edgeThreshold && firstSensorValue < cupThreshold && lastSensorValue < edgeThreshold)
+      {
+        showVelocity = velocity;
+        showLCD = true;
+        hitRim = true;
+        flag = true;
         padIndex = padNum;
       }
 
       //cup
-      else if (sensorValue > 520) {
-        velocity = 100;
+      else if (firstSensorValue > cupThreshold && lastSensorValue < edgeThreshold)
+      {
+        velocity = velocityCup;
         showVelocity = velocity;
-        flag = true;
         showLCD = true;
         hitCup = true;
+        flag = true;
         padIndex = padNum;
       }
+
+      //choke
+      else if (lastSensorValue > edgeThreshold && firstSensorValue > edgeThreshold)
+      {
+        choke = true;
+        flag = true;
+      }
+      loopTimes = 0;
     }
   }
 
-  if (flag == true && piezoValue < threshold1 && sensorValue < 10) {
+  if (flag == true)
+  {
     time_end = millis();
     flag = false;
   }
-
-  if (chokeFlag == false && sensorValue > 500 && sensorValue < 900  && abs(piezoValue - sensorValue) < 10) {
-    time_choke = millis();
-    if (time_choke - time_end < 10) {
-      chokeFlag = true;
-
-    }
-    else {
-      choke = true;
-      chokeFlag = true;
-    }
-  }
-
-  if (flag == true &&  sensorValue < 10) {
-    time_end = millis();
-    chokeFlag = false;
-  }
 }
 
-void HelloDrum::TCRT5000MUX() {
-
-  threshold2 = scantime;
-  scantime = masktime;
-  
-  HHCnum = padNum;
-  int velo = 0;
+void HelloDrum::TCRT5000MUX()
+{
   int TCRT = rawValue[pin_1];
-  closeHH = false;
-  settingHHC = true;
 
-  if (TCRT < threshold1 * 10 && pedalVelocityFlag == false && pedalFlag == false) {
+#ifdef __AVR__
+  int threshold1Raw = threshold1 * 10;
+  int threshold2Raw = threshold2 * 10;
+  int sensitivityRaw = sensitivity * 10;
+  TCRT = 1024 - TCRT;
+#endif
+#ifdef ESP32
+  int threshold1Raw = threshold1 * 40;
+  int threshold2Raw = threshold2 * 40;
+  int sensitivityRaw = sensitivity * 40;
+  TCRT = 4096 - TCRT;
+#endif
+
+  HHCnum = padNum;
+  velocity = 0;
+  openHH = false;
+  closeHH = false;
+
+  if (TCRT > threshold2Raw && closeHH == false && pedalVelocityFlag == false && pedalFlag == false)
+  {
     time_hit_pedal_1 = millis();
     pedalVelocityFlag = true;
   }
 
-  if (TCRT < threshold2 * 10 && pedalFlag == false) {
+  else if (TCRT > sensitivity && pedalFlag == false)
+  {
     time_hit_pedal_2 = millis();
 
-    //傾き＝VELOCITY
-    velo = time_hit_pedal_2 - time_hit_pedal_1;
-    velo = map(velo, scantime, 0, 1, 127);
-    //velo = map(velo, 50, 0, 1, 127);
+    velocity = time_hit_pedal_2 - time_hit_pedal_1;
+    velocity = map(velocity, scantime * 100, 0, 1, 127);
 
-    if (velo <= 1) {
-      velo = 1;
+    if (velocity <= 1)
+    {
+      velocity = 1;
     }
 
-    if (velo > 127) {
-      velo = 127;
+    if (velocity > 127)
+    {
+      velocity = 127;
     }
 
-    velocity = velo;
-    showVelocity = velocity;
     closeHH = true;
-    showLCD = true;
-    padIndex = padNum;
+    openHH = false;
     pedalFlag = true;
     pedalVelocityFlag = false;
   }
 
-
-  if (TCRT > threshold1 * 10 && pedalFlag == true) {
+  if (TCRT < threshold2Raw && pedalFlag == true)
+  {
     pedalFlag = false;
+    closeHH = false;
+    openHH = true;
   }
 
-  //HIHAT PEDAL CC
-  TCRT = map(TCRT, sensitivity * 10, 100, 0, 127);
-  //TCRT = map(TCRT, 900, 100, 0, 127);
-  if (TCRT > 127) {
+  /////////////////////// HIHAT PEDAL CC
+
+  /* 
+#ifdef __AVR__
+  TCRT = map(TCRT, thre1Raw, sensRaw, 0, 127);
+
+  if (TCRT > 127)
+  {
     TCRT = 127;
   }
-  if (TCRT < 0) {
+  if (TCRT < 0)
+  {
+    TCRT = 0;
+  }
+#endif
+*/
+
+  //#ifdef ESP32
+  TCRT = map(TCRT, threshold1Raw, sensitivityRaw, 0, 127);
+  //6段階に分ける
+
+  if (TCRT < 20)
+  {
     TCRT = 0;
   }
 
-  if (exTCRT != TCRT) {
+  else if (TCRT >= 20 && TCRT < 40)
+  {
+    TCRT = 20;
+  }
+
+  else if (TCRT >= 40 && TCRT < 60)
+  {
+    TCRT = 40;
+  }
+
+  else if (TCRT >= 60 && TCRT < 80)
+  {
+    TCRT = 60;
+  }
+
+  else if (TCRT >= 80 && TCRT < 100)
+  {
+    TCRT = 80;
+  }
+
+  else if (TCRT >= 100 && TCRT < 120)
+  {
+    TCRT = 100;
+  }
+
+  else if (TCRT >= 120)
+  {
+    TCRT = 127;
+  }
+  //#endif
+
+  if (exTCRT != TCRT)
+  {
     pedalCC = TCRT;
     moving = true;
     exTCRT = TCRT;
   }
 
-  else {
+  else
+  {
     moving = false;
   }
 }
 
-void HelloDrum::FSRMUX() {
+void HelloDrum::FSRMUX()
+{
+#ifdef __AVR__
+  int threshold1Raw = threshold1 * 10;
+  int threshold2Raw = threshold2 * 10;
+  int sensitivityRaw = sensitivity * 10;
+#endif
+#ifdef ESP32
+  int threshold1Raw = threshold1 * 40;
+  int threshold2Raw = threshold2 * 40;
+  int sensitivityRaw = sensitivity * 40;
+#endif
 
-  threshold2 = scantime;
-  scantime = masktime;
-  
   HHCnum = padNum;
-  int velo = 0;
-  int FSR = rawValue[pin_1];
+  velocity = 0;
+  openHH = false;
   closeHH = false;
+  int FSR = rawValue[pin_1];
 
-  if (FSR < threshold1 * 10 && pedalVelocityFlag == false && pedalFlag == false) {
+  if (FSR > threshold2Raw && closeHH == false && pedalVelocityFlag == false && pedalFlag == false)
+  {
     time_hit_pedal_1 = millis();
     pedalVelocityFlag = true;
   }
 
-  if (FSR < threshold2 * 10 && pedalFlag == false) {
+  else if (FSR > sensitivity && pedalFlag == false)
+  {
     time_hit_pedal_2 = millis();
 
-    velo = time_hit_pedal_2 - time_hit_pedal_1;
-    velo = map(velo, scantime, 0, 1, 127);
-    //velo = map(velo, 50, 0, 1, 127);
+    velocity = time_hit_pedal_2 - time_hit_pedal_1;
+    velocity = map(velocity, scantime * 100, 0, 1, 127);
 
-    if (velo <= 1) {
-      velo = 1;
+    if (velocity <= 1)
+    {
+      velocity = 1;
     }
 
-    if (velo > 127) {
-      velo = 127;
+    if (velocity > 127)
+    {
+      velocity = 127;
     }
 
-    velocity = velo;
-    showVelocity = velocity;
     closeHH = true;
-    showLCD = true;
-    padIndex = padNum;
+    openHH = false;
     pedalFlag = true;
     pedalVelocityFlag = false;
   }
 
-
-  if (FSR > threshold1 * 10 && pedalFlag == true) {
+  if (FSR < threshold2Raw && pedalFlag == true)
+  {
     pedalFlag = false;
+    closeHH = false;
+    openHH = true;
   }
 
-  //HIHAT PEDAL CC
-  FSR = map(FSR, sensitivity * 10, 100, 0, 127);
-  //TCRT = map(TCRT, 900, 100, 0, 127);
-  if (FSR > 127) {
+  /////////////////////// HIHAT PEDAL CC
+
+  /* 
+#ifdef __AVR__
+  FSR = map(FSR, thre1Raw, sensRaw, 0, 127);
+
+  if (FSR > 127)
+  {
     FSR = 127;
   }
-  if (FSR < 0) {
+  if (FSR < 0)
+  {
+    FSR = 0;
+  }
+#endif
+*/
+
+  //#ifdef ESP32
+  FSR = map(FSR, threshold1Raw, sensitivityRaw, 0, 127);
+  //6段階に分ける
+
+  if (FSR < 20)
+  {
     FSR = 0;
   }
 
-  if (exFSR != FSR) {
+  else if (FSR >= 20 && FSR < 40)
+  {
+    FSR = 20;
+  }
+
+  else if (FSR >= 40 && FSR < 60)
+  {
+    FSR = 40;
+  }
+
+  else if (FSR >= 60 && FSR < 80)
+  {
+    FSR = 60;
+  }
+
+  else if (FSR >= 80 && FSR < 100)
+  {
+    FSR = 80;
+  }
+
+  else if (FSR >= 100 && FSR < 120)
+  {
+    FSR = 100;
+  }
+
+  else if (FSR >= 120)
+  {
+    FSR = 127;
+  }
+  //#endif
+
+  if (exFSR != FSR)
+  {
     pedalCC = FSR;
     moving = true;
     exFSR = FSR;
   }
 
-  else {
+  else
+  {
     moving = false;
   }
 }
@@ -2752,53 +3610,85 @@ void HelloDrum::FSRMUX() {
 
 #ifdef __AVR__
 
-void HelloDrum::settingEnable(){
+void HelloDrum::settingEnable()
+{
 
   //When EDIT button pushed
-  if(padNum == nameIndex){
+  if (padNum == nameIndex)
+  {
 
     //When UP button pushed
-    if(button_up == LOW && buttonState == true  && editCheck == true){
+    if (button_up == LOW && buttonState == true && editCheck == true)
+    {
 
-	switch (itemNumber){
-    	 case 0:
-    	 sensitivity = sensitivity + UP[itemNumber];
-       EEPROM.write(padNum*7, sensitivity);
-    	 break;
+      switch (itemNumber)
+      {
+      case 0:
+        sensitivity = sensitivity + UP[itemNumber];
+        if (sensitivity > 10)
+        {
+          sensitivity = 10;
+        }
+        EEPROM.write(padNum * 7, sensitivity);
+        break;
 
-    	 case 1:
-    	 threshold1 = threshold1 + UP[itemNumber];
-       EEPROM.write((padNum*7) + 1, threshold1);
-    	 break;
+      case 1:
+        threshold1 = threshold1 + UP[itemNumber];
+        if (threshold1 > 10)
+        {
+          threshold1 = 10;
+        }
+        EEPROM.write((padNum * 7) + 1, threshold1);
+        break;
 
-    	 case 2:
-    	 scantime = scantime + UP[itemNumber];
-       EEPROM.write((padNum*7) + 2, scantime);
-    	 break;
+      case 2:
+        scantime = scantime + UP[itemNumber];
+        if (scantime > 250)
+        {
+          scantime = 250;
+        }
+        EEPROM.write((padNum * 7) + 2, scantime);
+        break;
 
-    	 case 3:
-    	 masktime = masktime + UP[itemNumber];
-       EEPROM.write((padNum*7) + 3, masktime);
-    	 break;
+      case 3:
+        masktime = masktime + UP[itemNumber];
+        if (masktime > 250)
+        {
+          masktime = 250;
+        }
+        EEPROM.write((padNum * 7) + 3, masktime);
+        break;
 
-    	 case 4:
-    	 note = note + UP[itemNumber];
-       EEPROM.write((padNum*7) + 4, note);
-       noteOpen = note;
-    	 break;
+      case 4:
+        note = note + UP[itemNumber];
+        if (note > 127)
+        {
+          note = 127;
+        }
+        EEPROM.write((padNum * 7) + 4, note);
+        noteOpen = note;
+        break;
 
-       case 5:
-       noteRim = noteRim + UP[itemNumber];
-       EEPROM.write((padNum*7) + 5, noteRim);
-       noteClose = noteRim;
-       noteOpenEdge = noteRim;
-       break;
+      case 5:
+        noteRim = noteRim + UP[itemNumber];
+        if (noteRim > 127)
+        {
+          noteRim = 127;
+        }
+        EEPROM.write((padNum * 7) + 5, noteRim);
+        noteClose = noteRim;
+        noteOpenEdge = noteRim;
+        break;
 
-       case 6:
-       noteCup = noteCup + UP[itemNumber];
-       EEPROM.write((padNum*7) + 6, noteCup);
-       noteCloseEdge = noteCup;
-       break;
+      case 6:
+        noteCup = noteCup + UP[itemNumber];
+        if (noteCup > 127)
+        {
+          noteCup = 127;
+        }
+        EEPROM.write((padNum * 7) + 6, noteCup);
+        noteCloseEdge = noteCup;
+        break;
       }
       change = true;
       push = true;
@@ -2807,47 +3697,77 @@ void HelloDrum::settingEnable(){
     }
 
     //When Down button pushed
-    if(button_down == LOW && buttonState == true  && editCheck == true){
+    if (button_down == LOW && buttonState == true && editCheck == true)
+    {
 
-      switch (itemNumber){
-    	 case 0:
-    	 sensitivity = sensitivity - UP[itemNumber];
-       EEPROM.write(padNum*7, sensitivity);
-    	 break;
+      switch (itemNumber)
+      {
+      case 0:
+        sensitivity = sensitivity - UP[itemNumber];
+        if (sensitivity < 1)
+        {
+          sensitivity = 1;
+        }
+        EEPROM.write(padNum * 7, sensitivity);
+        break;
 
-    	 case 1:
-    	 threshold1 = threshold1 - UP[itemNumber];
-       EEPROM.write((padNum*7) + 1, threshold1);
-    	 break;
+      case 1:
+        threshold1 = threshold1 - UP[itemNumber];
+        if (threshold1 < 1)
+        {
+          threshold1 = 1;
+        }
+        EEPROM.write((padNum * 7) + 1, threshold1);
+        break;
 
-    	 case 2:
-    	 scantime = scantime - UP[itemNumber];
-       EEPROM.write((padNum*7) + 2, scantime);
-    	 break;
+      case 2:
+        scantime = scantime - UP[itemNumber];
+        if (scantime < 1)
+        {
+          scantime = 1;
+        }
+        EEPROM.write((padNum * 7) + 2, scantime);
+        break;
 
-    	 case 3:
-    	 masktime = masktime - UP[itemNumber];
-       EEPROM.write((padNum*7) + 3, masktime);
-    	 break;
+      case 3:
+        masktime = masktime - UP[itemNumber];
+        if (masktime < 1)
+        {
+          masktime = 1;
+        }
+        EEPROM.write((padNum * 7) + 3, masktime);
+        break;
 
-    	 case 4:
-    	 note = note - UP[itemNumber];
-       EEPROM.write((padNum*7) + 4, note);
-       noteOpen = note;
-    	 break;
+      case 4:
+        note = note - UP[itemNumber];
+        if (note < 0)
+        {
+          note = 0;
+        }
+        EEPROM.write((padNum * 7) + 4, note);
+        noteOpen = note;
+        break;
 
-       case 5:
-       noteRim = noteRim - UP[itemNumber];
-       EEPROM.write((padNum*7) + 5, noteRim);
-       noteClose = noteRim;
-       noteOpenEdge = noteRim;
-       break;
+      case 5:
+        noteRim = noteRim - UP[itemNumber];
+        if (noteRim < 0)
+        {
+          noteRim = 0;
+        }
+        EEPROM.write((padNum * 7) + 5, noteRim);
+        noteClose = noteRim;
+        noteOpenEdge = noteRim;
+        break;
 
-       case 6:
-       noteCup = noteCup - UP[itemNumber];
-       EEPROM.write((padNum*7) + 6, noteCup);
-       noteCloseEdge = noteCup;
-       break;
+      case 6:
+        noteCup = noteCup - UP[itemNumber];
+        if (noteCup < 0)
+        {
+          noteCup = 0;
+        }
+        EEPROM.write((padNum * 7) + 6, noteCup);
+        noteCloseEdge = noteCup;
+        break;
       }
       change = true;
       push = true;
@@ -2855,77 +3775,348 @@ void HelloDrum::settingEnable(){
       delay(30);
     }
 
+    if (itemNumber == 0)
+    {
+      value = sensitivity;
+    }
 
-    if(itemNumber == 0){
-		  value = sensitivity;
-	  }
+    else if (itemNumber == 1)
+    {
+      value = threshold1;
+    }
 
-	  else if (itemNumber == 1){
-		  value = threshold1;
-	  }
-
-    else if (itemNumber == 2){
+    else if (itemNumber == 2)
+    {
       value = scantime;
     }
 
-    else if (itemNumber == 3){
+    else if (itemNumber == 3)
+    {
       value = masktime;
     }
 
-    else if (itemNumber == 4){
+    else if (itemNumber == 4)
+    {
       value = note;
     }
 
-    else if (itemNumber == 5){
+    else if (itemNumber == 5)
+    {
       value = noteRim;
     }
 
-    else if (itemNumber == 6){
+    else if (itemNumber == 6)
+    {
       value = noteCup;
     }
 
     showValue = value;
   }
 }
+#endif
 
-void HelloDrum::settingName(char *instrumentName){
+#ifdef ESP32
+
+void HelloDrum::settingEnable()
+{
+
+  //When EDIT button pushed
+  if (padNum == nameIndex)
+  {
+
+    //When UP button pushed
+    if (button_up == LOW && buttonState == true && editCheck == true)
+    {
+
+      switch (itemNumber)
+      {
+      case 0:
+        sensitivity = sensitivity + UP[itemNumber];
+        if (sensitivity > 100)
+        {
+          sensitivity = 100;
+        }
+        EEPROM_ESP.write(padNum * 7, sensitivity);
+        break;
+
+      case 1:
+        threshold1 = threshold1 + UP[itemNumber];
+        if (threshold1 > 100)
+        {
+          threshold1 = 100;
+        }
+        EEPROM_ESP.write((padNum * 7) + 1, threshold1);
+        break;
+
+      case 2:
+        scantime = scantime + UP[itemNumber];
+        if (scantime > 250)
+        {
+          scantime = 250;
+        }
+        EEPROM_ESP.write((padNum * 7) + 2, scantime);
+        break;
+
+      case 3:
+        masktime = masktime + UP[itemNumber];
+        if (masktime > 250)
+        {
+          masktime = 250;
+        }
+        EEPROM_ESP.write((padNum * 7) + 3, masktime);
+        break;
+
+      case 4:
+        note = note + UP[itemNumber];
+        if (note > 127)
+        {
+          note = 127;
+        }
+        EEPROM_ESP.write((padNum * 7) + 4, note);
+        noteOpen = note;
+        break;
+
+      case 5:
+        noteRim = noteRim + UP[itemNumber];
+        if (noteRim > 127)
+        {
+          noteRim = 127;
+        }
+        EEPROM_ESP.write((padNum * 7) + 5, noteRim);
+        noteClose = noteRim;
+        noteOpenEdge = noteRim;
+        break;
+
+      case 6:
+        noteCup = noteCup + UP[itemNumber];
+        if (noteCup > 127)
+        {
+          noteCup = 127;
+        }
+        EEPROM_ESP.write((padNum * 7) + 6, noteCup);
+        noteCloseEdge = noteCup;
+        break;
+      }
+      EEPROM_ESP.commit();
+      change = true;
+      push = true;
+      buttonState = false;
+      delay(30);
+    }
+
+    //When Down button pushed
+    if (button_down == LOW && buttonState == true && editCheck == true)
+    {
+
+      switch (itemNumber)
+      {
+      case 0:
+        sensitivity = sensitivity - UP[itemNumber];
+        if (sensitivity < 1)
+        {
+          sensitivity = 1;
+        }
+        EEPROM_ESP.write(padNum * 7, sensitivity);
+        break;
+
+      case 1:
+        threshold1 = threshold1 - UP[itemNumber];
+        if (threshold1 < 1)
+        {
+          threshold1 = 1;
+        }
+        EEPROM_ESP.write((padNum * 7) + 1, threshold1);
+        break;
+
+      case 2:
+        scantime = scantime - UP[itemNumber];
+        if (scantime < 1)
+        {
+          scantime = 1;
+        }
+        EEPROM_ESP.write((padNum * 7) + 2, scantime);
+        break;
+
+      case 3:
+        masktime = masktime - UP[itemNumber];
+        if (masktime < 1)
+        {
+          masktime = 1;
+        }
+        EEPROM_ESP.write((padNum * 7) + 3, masktime);
+        break;
+
+      case 4:
+        note = note - UP[itemNumber];
+        if (note < 0)
+        {
+          note = 0;
+        }
+        EEPROM_ESP.write((padNum * 7) + 4, note);
+        noteOpen = note;
+        break;
+
+      case 5:
+        noteRim = noteRim - UP[itemNumber];
+        if (noteRim < 0)
+        {
+          noteRim = 0;
+        }
+        EEPROM_ESP.write((padNum * 7) + 5, noteRim);
+        noteClose = noteRim;
+        noteOpenEdge = noteRim;
+        break;
+
+      case 6:
+        noteCup = noteCup - UP[itemNumber];
+        if (noteCup < 0)
+        {
+          noteCup = 0;
+        }
+        EEPROM_ESP.write((padNum * 7) + 6, noteCup);
+        noteCloseEdge = noteCup;
+        break;
+      }
+      EEPROM_ESP.commit();
+      change = true;
+      push = true;
+      buttonState = false;
+      delay(30);
+    }
+
+    if (itemNumber == 0)
+    {
+      value = sensitivity;
+    }
+
+    else if (itemNumber == 1)
+    {
+      value = threshold1;
+    }
+
+    else if (itemNumber == 2)
+    {
+      value = scantime;
+    }
+
+    else if (itemNumber == 3)
+    {
+      value = masktime;
+    }
+
+    else if (itemNumber == 4)
+    {
+      value = note;
+    }
+
+    else if (itemNumber == 5)
+    {
+      value = noteRim;
+    }
+
+    else if (itemNumber == 6)
+    {
+      value = noteCup;
+    }
+
+    showValue = value;
+  }
+}
+#endif
+
+void HelloDrum::settingName(char *instrumentName)
+{
   //Store the name of the pad in the array.
   showInstrument[nameIndex] = instrumentName;
   nameIndexMax = nameIndex;
   nameIndex = ++nameIndex;
 }
 
-void HelloDrum::loadMemory(){
+#ifdef __AVR__
+
+void HelloDrum::loadMemory()
+{
   //Read values from EEPROM.
-  sensitivity = EEPROM.read(padNum*7);
-  threshold1 = EEPROM.read((padNum*7) + 1);
-  scantime = EEPROM.read((padNum*7) + 2);
-  masktime = EEPROM.read((padNum*7) + 3);
-  note = EEPROM.read((padNum*7) + 4);
-  noteOpen = EEPROM.read((padNum*7) + 4);
-  noteRim = EEPROM.read((padNum*7) + 5);
-  noteClose = EEPROM.read((padNum*7) + 5);
-  noteOpenEdge = EEPROM.read((padNum*7) + 5);
-  noteCup = EEPROM.read((padNum*7) + 6);
-  noteCloseEdge = EEPROM.read((padNum*7) + 6);
+  sensitivity = EEPROM.read(padNum * 7);
+  threshold1 = EEPROM.read((padNum * 7) + 1);
+  scantime = EEPROM.read((padNum * 7) + 2);
+  masktime = EEPROM.read((padNum * 7) + 3);
+  note = EEPROM.read((padNum * 7) + 4);
+  noteOpen = EEPROM.read((padNum * 7) + 4);
+  noteRim = EEPROM.read((padNum * 7) + 5);
+  noteClose = EEPROM.read((padNum * 7) + 5);
+  noteOpenEdge = EEPROM.read((padNum * 7) + 5);
+  noteCup = EEPROM.read((padNum * 7) + 6);
+  noteCloseEdge = EEPROM.read((padNum * 7) + 6);
 }
 
-void HelloDrum::initMemory(){
+void HelloDrum::initMemory()
+{
   //Write initial value to EEPROM.
-  EEPROM.write(padNum*7, sensitivity);
-  EEPROM.write((padNum*7) + 1, threshold1);
-  EEPROM.write((padNum*7) + 2, scantime);
-  EEPROM.write((padNum*7) + 3, masktime);
-  EEPROM.write((padNum*7) + 4, note);
-  EEPROM.write((padNum*7) + 5, noteRim);
-  EEPROM.write((padNum*7) + 6, noteCup);
+  EEPROM.write(padNum * 7, sensitivity);
+  EEPROM.write((padNum * 7) + 1, threshold1);
+  EEPROM.write((padNum * 7) + 2, scantime);
+  EEPROM.write((padNum * 7) + 3, masktime);
+  EEPROM.write((padNum * 7) + 4, note);
+  EEPROM.write((padNum * 7) + 5, noteRim);
+  EEPROM.write((padNum * 7) + 6, noteCup);
+}
+
+#endif
+
+#ifdef ESP32
+
+void HelloDrum::loadMemory()
+{
+  //EEPROM_ESP.begin(1024);
+  //どっかで一回入れる必要がある。
+
+  //Read values from EEPROM.
+  sensitivity = EEPROM_ESP.read((padNum * 7));
+  threshold1 = EEPROM_ESP.read((padNum * 7) + 1);
+  scantime = EEPROM_ESP.read((padNum * 7) + 2);
+  masktime = EEPROM_ESP.read((padNum * 7) + 3);
+  note = EEPROM_ESP.read((padNum * 7) + 4);
+  noteOpen = EEPROM_ESP.read((padNum * 7) + 4);
+  noteRim = EEPROM_ESP.read((padNum * 7) + 5);
+  noteClose = EEPROM_ESP.read((padNum * 7) + 5);
+  noteOpenEdge = EEPROM_ESP.read((padNum * 7) + 5);
+  noteCup = EEPROM_ESP.read((padNum * 7) + 6);
+  noteCloseEdge = EEPROM_ESP.read((padNum * 7) + 6);
+  /*
+  EEPROM_ESP.get((padNum * 7), sensitivity);
+  EEPROM_ESP.get((padNum * 7) + 1, threshold1);
+  EEPROM_ESP.get((padNum * 7) + 2, scantime);
+  EEPROM_ESP.get((padNum * 7) + 3, masktime);
+  EEPROM_ESP.get((padNum * 7) + 4, note);
+  EEPROM_ESP.get((padNum * 7) + 4, noteOpen);
+  EEPROM_ESP.get((padNum * 7) + 5, noteRim);
+  EEPROM_ESP.get((padNum * 7) + 5, noteClose);
+  EEPROM_ESP.get((padNum * 7) + 5, noteOpenEdge);
+  EEPROM_ESP.get((padNum * 7) + 6, noteCup);
+  EEPROM_ESP.get((padNum * 7) + 6, noteCloseEdge);
+   */
+}
+
+void HelloDrum::initMemory()
+{
+  //Write initial value to EEPROM.
+  EEPROM_ESP.write(padNum * 7, sensitivity);
+  EEPROM_ESP.write((padNum * 7) + 1, threshold1);
+  EEPROM_ESP.write((padNum * 7) + 2, scantime);
+  EEPROM_ESP.write((padNum * 7) + 3, masktime);
+  EEPROM_ESP.write((padNum * 7) + 4, note);
+  EEPROM_ESP.write((padNum * 7) + 5, noteRim);
+  EEPROM_ESP.write((padNum * 7) + 6, noteCup);
+  EEPROM_ESP.commit();
 }
 
 #endif
 
 ///////////////////// 4. BUTONN //////////////////////////
 
-void HelloDrumButton::readButtonState() {
+void HelloDrumButton::readButtonState()
+{
 
   pinMode(pin_1, INPUT_PULLUP);
   pinMode(pin_2, INPUT_PULLUP);
@@ -2941,7 +4132,8 @@ void HelloDrumButton::readButtonState() {
 
   ////////////////////////////// EDIT START////////////////////////////////
 
-  if (button_set == LOW && buttonState == true && editCheck == false) {
+  if (button_set == LOW && buttonState == true && editCheck == false)
+  {
     editCheck = true;
     edit = true;
     buttonState = false;
@@ -2949,7 +4141,8 @@ void HelloDrumButton::readButtonState() {
     delay(30);
   }
 
-  if (button_set == LOW && buttonState == true && editCheck == true) {
+  if (button_set == LOW && buttonState == true && editCheck == true)
+  {
     editCheck = false;
     editdone = true;
     buttonState = false;
@@ -2957,20 +4150,24 @@ void HelloDrumButton::readButtonState() {
     delay(30);
   }
 
-  if (button_set == HIGH){
+  if (button_set == HIGH)
+  {
     edit = false;
-    editdone =false;
+    editdone = false;
   }
 
   /////////////////////////// UP DOWN ///////////////////////////////////////
 
-  if (button_up == LOW && buttonState == true && editCheck == false) {
+  if (button_up == LOW && buttonState == true && editCheck == false)
+  {
     UPDOWN = ++UPDOWN;
 
-    if (UPDOWN < 0) {
+    if (UPDOWN < 0)
+    {
       UPDOWN = nameIndexMax;
     }
-    if (UPDOWN > nameIndexMax) {
+    if (UPDOWN > nameIndexMax)
+    {
       UPDOWN = 0;
     }
 
@@ -2980,13 +4177,16 @@ void HelloDrumButton::readButtonState() {
     delay(30);
   }
 
-  if (button_down == LOW && buttonState == true && editCheck == false) {
+  if (button_down == LOW && buttonState == true && editCheck == false)
+  {
     UPDOWN = --UPDOWN;
 
-    if (UPDOWN < 0) {
+    if (UPDOWN < 0)
+    {
       UPDOWN = nameIndexMax;
     }
-    if (UPDOWN > nameIndexMax) {
+    if (UPDOWN > nameIndexMax)
+    {
       UPDOWN = 0;
     }
     nameIndex = UPDOWN;
@@ -2997,13 +4197,16 @@ void HelloDrumButton::readButtonState() {
 
   ///////////////////////////// NEXT BACK ////////////////////////////////
 
-  if (button_next == LOW && buttonState == true && editCheck == false) {
+  if (button_next == LOW && buttonState == true && editCheck == false)
+  {
     NEXTBACK = ++NEXTBACK;
 
-    if (NEXTBACK < 0) {
+    if (NEXTBACK < 0)
+    {
       NEXTBACK = 6;
     }
-    if (NEXTBACK > 6) {
+    if (NEXTBACK > 6)
+    {
       NEXTBACK = 0;
     }
     itemNumber = NEXTBACK;
@@ -3013,13 +4216,16 @@ void HelloDrumButton::readButtonState() {
     delay(30);
   }
 
-  if (button_back == LOW && buttonState == true && editCheck == false) {
+  if (button_back == LOW && buttonState == true && editCheck == false)
+  {
     NEXTBACK = --NEXTBACK;
 
-    if (NEXTBACK < 0) {
+    if (NEXTBACK < 0)
+    {
       NEXTBACK = 6;
     }
-    if (NEXTBACK > 6) {
+    if (NEXTBACK > 6)
+    {
       NEXTBACK = 0;
     }
     itemNumber = NEXTBACK;
@@ -3030,7 +4236,8 @@ void HelloDrumButton::readButtonState() {
   }
 
   //When you take your hand off the button
-  if (buttonState == false && button_up == HIGH && button_down == HIGH && button_next == HIGH && button_back == HIGH && button_set == HIGH) {
+  if (buttonState == false && button_up == HIGH && button_down == HIGH && button_next == HIGH && button_back == HIGH && button_set == HIGH)
+  {
     push = false;
     buttonState = true;
     change = false;
@@ -3039,26 +4246,31 @@ void HelloDrumButton::readButtonState() {
 
 /////////////////////// 5. LCD  //////////////////////////
 
-void HelloDrumLCD::show(){
+void HelloDrumLCD::show()
+{
 
   //Button Push
-  if(push == true){
+  if (push == true)
+  {
     lcd.clear();
     lcd.print(showInstrument[nameIndex]);
     lcd.setCursor(0, 1);
-    if(nameIndex == HHCnum){
+    if (nameIndex == HHCnum)
+    {
       lcd.print(itemHHC[itemNumber]);
       lcd.setCursor(13, 1);
       lcd.print(showValue);
     }
 
-    else if(nameIndex == HHnum){
+    else if (nameIndex == HHnum)
+    {
       lcd.print(itemHH[itemNumber]);
       lcd.setCursor(13, 1);
       lcd.print(showValue);
     }
 
-    else{
+    else
+    {
       lcd.print(item[itemNumber]);
       lcd.setCursor(13, 1);
       lcd.print(showValue);
@@ -3066,7 +4278,8 @@ void HelloDrumLCD::show(){
   }
 
   //Pad hit
-  if(showLCD == true){
+  if (showLCD == true)
+  {
     lcd.clear();
     lcd.print(showInstrument[padIndex]);
     lcd.setCursor(0, 1);
@@ -3075,7 +4288,8 @@ void HelloDrumLCD::show(){
   }
 
   //EDIT
-  if(edit == true){
+  if (edit == true)
+  {
     lcd.clear();
     lcd.print("EDIT");
     delay(500);
@@ -3085,11 +4299,11 @@ void HelloDrumLCD::show(){
     lcd.print(item[itemNumber]);
     lcd.setCursor(13, 1);
     lcd.print(showValue);
-
   }
 
   //EDIT DONE
-  if(editdone == true){
+  if (editdone == true)
+  {
     lcd.clear();
     lcd.print("EDIT DONE");
     delay(500);
@@ -3105,21 +4319,48 @@ void HelloDrumLCD::show(){
 //////////////////////////////////////////////////////////
 
 //For debug.
-char* HelloDrum::GetItem(int i) {
-  return item[i];
+
+int HelloDrumButton::GetVelocity()
+{
+  return showVelocity;
 }
-int HelloDrumButton::GetItemNumber(){
+int HelloDrumButton::GetSettingValue()
+{
+  return showValue;
+}
+int HelloDrumButton::GetItemNumber()
+{
   return itemNumber;
 }
-int HelloDrumButton::GetEditState(){
+bool HelloDrumButton::GetEditState()
+{
   return edit;
 }
-int HelloDrumButton::GetEditdoneState(){
+int HelloDrumButton::GetEditdoneState()
+{
   return editdone;
 }
-int HelloDrumButton::GetPushState(){
+bool HelloDrumButton::GetPushState()
+{
   return push;
 }
-int HelloDrumButton::GetChangeState(){
+int HelloDrumButton::GetChangeState()
+{
   return change;
 }
+char *HelloDrumButton::GetPadName()
+{
+  return showInstrument[nameIndex];
+}
+char *HelloDrumButton::GetSettingItem()
+{
+  return item[itemNumber];
+}
+char *HelloDrumButton::GetHitPad()
+{
+  return showInstrument[padIndex];
+}
+
+//char* HelloDrum::GetItem(int i) {
+//  return item[i];
+//}
