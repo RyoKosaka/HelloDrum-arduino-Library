@@ -6,7 +6,7 @@ This is a library for making E-Drum with Arduino.
 
 This is a library for making E-Drum with Arduino.  
 By using it with Arduino MIDI Library, you can make E-drum.  
-Blog :[https://open-e-drums.tumblr.com/](https://open-e-drums.tumblr.com/)
+Blog :[https://open-e-drums.tumblr.com/](https://open-e-drums.tumblr.com/)  
 YouTube :[https://www.youtube.com/channel/UCNCDcIO26xL_NhI04QY-v4A](https://www.youtube.com/channel/UCNCDcIO26xL_NhI04QY-v4A)
 
 This software is an alpha version, and is unsupported.
