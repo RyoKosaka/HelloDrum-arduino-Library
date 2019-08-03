@@ -14,14 +14,11 @@
 #define HelloDrum_h
 
 #include "Arduino.h"
-#include "LiquidCrystal.h"
-
-#ifdef __AVR__
-#include "EEPROM.h"
-#endif
 
 #ifdef ESP32
 #include "EEPROM_ESP.h"
+#else
+#include "EEPROM.h"
 #endif
 
 static char *item[] = {
@@ -75,14 +72,15 @@ static char *showInstrument[] = {
 
 static bool push;
 static bool showLCD;
+static bool showFlag;
 static int showVelocity;
 static int nameIndex;
 static int nameIndexMax;
 static int showValue = 0;
 static int padIndex = 0;
 static int muxIndex = -1;
-static int HHCnum;
-static int HHnum;
+static int HHCnum = -1;
+static int HHnum = -1;
 static bool edit;
 static bool editCheck;
 static bool editdone;
@@ -161,16 +159,10 @@ public:
   bool choke;
   bool sensorFlag;
   bool moving;
-  bool flag;
   bool pedalVelocityFlag = false;
   bool pedalFlag = false;
   bool settingHHC = false;
   bool chokeFlag;
-  unsigned long time_hit;
-  unsigned long time_end;
-  unsigned long time_choke;
-  unsigned long time_hit_pedal_1;
-  unsigned long time_hit_pedal_2;
 
   char *GetItem(int i);
 
@@ -189,7 +181,6 @@ public:
   int scantime;
   int masktime;
   int sensitivity;
-  int loopTimes = 0;
 
   //int initialValue[5];
 
@@ -203,12 +194,19 @@ private:
   int lastSensorValue;
   int piezoValueSUM;
   int RimPiezoValueSUM;
+  int loopTimes = 0;
+  bool flag;
+  unsigned long time_hit;
+  unsigned long time_end;
+  unsigned long time_choke;
+  unsigned long time_hit_pedal_1;
+  unsigned long time_hit_pedal_2;
 };
 
-class HelloDrumMUX
+class HelloDrumMUX_4051
 {
 public:
-  HelloDrumMUX(int pin1, int pin2, int pin3, int pinA);
+  HelloDrumMUX_4051(int pin1, int pin2, int pin3, int pinA);
   void scan();
   int selectPins[3];
   int muxNum;
@@ -217,6 +215,22 @@ private:
   int pin_1;
   int pin_2;
   int pin_3;
+  int pin_A;
+};
+
+class HelloDrumMUX_4067
+{
+public:
+  HelloDrumMUX_4067(int pin1, int pin2, int pin3, int pin4, int pinA);
+  void scan();
+  int selectPins[4];
+  int muxNum;
+
+private:
+  int pin_1;
+  int pin_2;
+  int pin_3;
+  int pin_4;
   int pin_A;
 };
 
@@ -229,11 +243,10 @@ public:
 
   int GetSettingValue();
   int GetVelocity();
-  int GetItemNumber();
   bool GetEditState();
   int GetEditdoneState();
   bool GetPushState();
-  int GetChangeState();
+  bool GetDisplayState();
   char *GetPadName();
   char *GetSettingItem();
   char *GetHitPad();
@@ -249,6 +262,7 @@ private:
   int pin_5;
 };
 
+/* 
 class HelloDrumLCD
 {
 public:
@@ -266,5 +280,6 @@ private:
   int pin_5;
   int pin_6;
 };
+*/
 
 #endif

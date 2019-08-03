@@ -12,14 +12,11 @@
 
 #include "hellodrum.h"
 #include "Arduino.h"
-#include "LiquidCrystal.h"
-
-#ifdef __AVR__
-#include "EEPROM.h"
-#endif
 
 #ifdef ESP32
 #include "EEPROM_ESP.h"
+#else
+#include "EEPROM.h"
 #endif
 
 //Pad with 2 sensors.
@@ -61,8 +58,8 @@ HelloDrum::HelloDrum(int pin1)
   padIndex = ++padIndex;
 }
 
-//MUX pin define
-HelloDrumMUX::HelloDrumMUX(int pin1, int pin2, int pin3, int pinA) //s0,s1,s2, analogPin
+//MUX(4051) pin define
+HelloDrumMUX_4051::HelloDrumMUX_4051(int pin1, int pin2, int pin3, int pinA) //s0,s1,s2, analogPin
 {
   pin_1 = pin1;
   pin_2 = pin2;
@@ -81,6 +78,28 @@ HelloDrumMUX::HelloDrumMUX(int pin1, int pin2, int pin3, int pinA) //s0,s1,s2, a
   muxNum = muxIndex;
 }
 
+//MUX(4067) pin define
+HelloDrumMUX_4067::HelloDrumMUX_4067(int pin1, int pin2, int pin3, int pin4, int pinA) //s0,s1,s2,s3,analogPin
+{
+  pin_1 = pin1;
+  pin_2 = pin2;
+  pin_3 = pin3;
+  pin_4 = pin4;
+  pin_A = pinA;
+  selectPins[0] = pin_1;
+  selectPins[1] = pin_2;
+  selectPins[2] = pin_3;
+  selectPins[3] = pin_4;
+
+  for (int i = 0; i < 4; i++)
+  {
+    pinMode(selectPins[i], OUTPUT);
+    digitalWrite(selectPins[i], HIGH);
+  }
+  muxIndex = ++muxIndex;
+  muxNum = muxIndex;
+}
+
 //control button
 HelloDrumButton::HelloDrumButton(int pin1, int pin2, int pin3, int pin4, int pin5)
 {
@@ -91,35 +110,16 @@ HelloDrumButton::HelloDrumButton(int pin1, int pin2, int pin3, int pin4, int pin
   pin_5 = pin5; //BACK
 }
 
-//LCD pin define
-HelloDrumLCD::HelloDrumLCD(int pin1, int pin2, int pin3, int pin4, int pin5, int pin6)
-{
-  pin_1 = pin1; //RS
-  pin_2 = pin2; //Enable
-  pin_3 = pin3; //D4
-  pin_4 = pin4; //D5
-  pin_5 = pin5; //D6
-  pin_6 = pin6; //D7
-
-  lcd = LiquidCrystal(pin_1, pin_2, pin_3, pin_4, pin_5, pin_6);
-  lcd.begin(16, 2);
-  lcd.clear();
-  lcd.print("hello, world!");
-  lcd.setCursor(0, 1);
-  lcd.print("hello, drum!");
-}
-
 ///////////////////// 1. SENSING without EEPROM //////////////////////////
 
 void HelloDrum::singlePiezo(int sens, int thre1, int scan, int mask)
 {
-#ifdef __AVR__
-  int thre1Raw = thre1 * 10;
-  int sensRaw = sens * 10;
-#endif
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
   int sensRaw = sens * 40;
+#else
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
 #endif
 
   hit = false;
@@ -187,13 +187,12 @@ void HelloDrum::singlePiezo(int sens, int thre1, int scan, int mask)
 
 void HelloDrum::dualPiezo(int sens, int thre1, int scan, int mask)
 {
-#ifdef __AVR__
-  int thre1Raw = thre1 * 10;
-  int sensRaw = sens * 10;
-#endif
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
   int sensRaw = sens * 40;
+#else
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
 #endif
 
   hit = false;
@@ -303,13 +302,13 @@ void HelloDrum::dualPiezo(int sens, int thre1, int scan, int mask)
 
 void HelloDrum::HH(int sens, int thre1, int scan, int mask)
 {
-#ifdef __AVR__
-  int thre1Raw = thre1 * 10;
-  int sensRaw = sens * 10;
-#endif
+
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
   int sensRaw = sens * 40;
+#else
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
 #endif
 
   HHnum = padNum;
@@ -379,15 +378,14 @@ void HelloDrum::HH(int sens, int thre1, int scan, int mask)
 void HelloDrum::HH2zone(int sens, int thre1, int scan, int mask)
 {
 
-#ifdef __AVR__
-  int thre1Raw = thre1 * 10;
-  int sensRaw = sens * 10;
-  int edgeThreshold = 50;
-#endif
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
   int sensRaw = sens * 40;
   int edgeThreshold = 200;
+#else
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+  int edgeThreshold = 50;
 #endif
 
   HHnum = padNum;
@@ -483,15 +481,14 @@ void HelloDrum::HH2zone(int sens, int thre1, int scan, int mask)
 void HelloDrum::cymbal2zone(int sens, int thre1, int scan, int mask)
 {
 
-#ifdef __AVR__
-  int thre1Raw = thre1 * 10;
-  int sensRaw = sens * 10;
-  int edgeThreshold = 50;
-#endif
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
   int sensRaw = sens * 40;
   int edgeThreshold = 200;
+#else
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+  int edgeThreshold = 50;
 #endif
 
   hit = false;
@@ -584,19 +581,19 @@ void HelloDrum::cymbal2zone(int sens, int thre1, int scan, int mask)
 
 void HelloDrum::cymbal3zone(int sens, int thre1, int scan, int mask)
 {
-#ifdef __AVR__
-  int thre1Raw = thre1 * 10;
-  int sensRaw = sens * 10;
-  int edgeThreshold = 50;
-  int cupThreshold = 520;
-  int loopTimesCup = 10; //?
-#endif
+
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
   int sensRaw = sens * 40;
   int edgeThreshold = 200;
   int cupThreshold = 2000;
   int loopTimesCup = 25;
+#else
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+  int edgeThreshold = 50;
+  int cupThreshold = 520;
+  int loopTimesCup = 10; //?
 #endif
 
   hit = false;
@@ -716,17 +713,16 @@ void HelloDrum::TCRT5000(int sens, int thre1, int thre2, int scan)
 {
   int TCRT = analogRead(pin_1);
 
-#ifdef __AVR__
-  int thre1Raw = thre1 * 10;
-  int thre2Raw = thre2 * 10;
-  int sensRaw = sens * 10;
-  TCRT = 1024 - TCRT;
-#endif
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
   int thre2Raw = thre2 * 40;
   int sensRaw = sens * 40;
   TCRT = 4096 - TCRT;
+#else
+  int thre1Raw = thre1 * 10;
+  int thre2Raw = thre2 * 10;
+  int sensRaw = sens * 10;
+  TCRT = 1024 - TCRT;
 #endif
 
   HHCnum = padNum;
@@ -842,15 +838,15 @@ void HelloDrum::TCRT5000(int sens, int thre1, int thre2, int scan)
 
 void HelloDrum::FSR(int sens, int thre1, int thre2, int scan)
 {
-#ifdef __AVR__
-  int thre1Raw = thre1 * 10;
-  int thre2Raw = thre2 * 10;
-  int sensRaw = sens * 10;
-#endif
+
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
   int thre2Raw = thre2 * 40;
   int sensRaw = sens * 40;
+#else
+  int thre1Raw = thre1 * 10;
+  int thre2Raw = thre2 * 10;
+  int sensRaw = sens * 10;
 #endif
 
   HHCnum = padNum;
@@ -969,13 +965,13 @@ void HelloDrum::FSR(int sens, int thre1, int thre2, int scan)
 
 void HelloDrum::singlePiezo()
 {
-#ifdef __AVR__
-  int threshold1Raw = threshold1 * 10;
-  int sensitivityRaw = sensitivity * 10;
-#endif
+
 #ifdef ESP32
   int threshold1Raw = threshold1 * 40;
   int sensitivityRaw = sensitivity * 40;
+#else
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
 #endif
 
   hit = false;
@@ -1046,13 +1042,13 @@ void HelloDrum::singlePiezo()
 
 void HelloDrum::dualPiezo()
 {
-#ifdef __AVR__
-  int threshold1Raw = threshold1 * 10;
-  int sensitivityRaw = sensitivity * 10;
-#endif
+
 #ifdef ESP32
   int threshold1Raw = threshold1 * 40;
   int sensitivityRaw = sensitivity * 40;
+#else
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
 #endif
 
   hit = false;
@@ -1168,13 +1164,13 @@ void HelloDrum::dualPiezo()
 
 void HelloDrum::HH()
 {
-#ifdef __AVR__
-  int threshold1Raw = threshold1 * 10;
-  int sensitivityRaw = sensitivity * 10;
-#endif
+
 #ifdef ESP32
   int threshold1Raw = threshold1 * 40;
   int sensitivityRaw = sensitivity * 40;
+#else
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
 #endif
 
   HHnum = padNum;
@@ -1246,15 +1242,15 @@ void HelloDrum::HH()
 
 void HelloDrum::HH2zone()
 {
-#ifdef __AVR__
-  int threshold1Raw = threshold1 * 10;
-  int sensitivityRaw = sensitivity * 10;
-  int edgeThreshold = 50;
-#endif
+
 #ifdef ESP32
   int threshold1Raw = threshold1 * 40;
   int sensitivityRaw = sensitivity * 40;
   int edgeThreshold = 200;
+#else
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+  int edgeThreshold = 50;
 #endif
 
   HHnum = padNum;
@@ -1356,15 +1352,15 @@ void HelloDrum::HH2zone()
 
 void HelloDrum::cymbal2zone()
 {
-#ifdef __AVR__
-  int threshold1Raw = threshold1 * 10;
-  int sensitivityRaw = sensitivity * 10;
-  int edgeThreshold = 50;
-#endif
+
 #ifdef ESP32
   int threshold1Raw = threshold1 * 40;
   int sensitivityRaw = sensitivity * 40;
   int edgeThreshold = 200;
+#else
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+  int edgeThreshold = 50;
 #endif
 
   hit = false;
@@ -1463,19 +1459,19 @@ void HelloDrum::cymbal2zone()
 
 void HelloDrum::cymbal3zone()
 {
-#ifdef __AVR__
-  int threshold1Raw = threshold1 * 10;
-  int sensitivityRaw = sensitivity * 10;
-  int edgeThreshold = 50;
-  int cupThreshold = 520;
-  int loopTimesCup = 10; //?
-#endif
+
 #ifdef ESP32
   int threshold1Raw = threshold1 * 40;
   int sensitivityRaw = sensitivity * 40;
   int edgeThreshold = 200;
   int cupThreshold = 2000;
   int loopTimesCup = 25;
+#else
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+  int edgeThreshold = 50;
+  int cupThreshold = 520;
+  int loopTimesCup = 10; //?
 #endif
 
   hit = false;
@@ -1594,17 +1590,16 @@ void HelloDrum::TCRT5000()
 {
   int TCRT = analogRead(pin_1);
 
-#ifdef __AVR__
-  int threshold1Raw = threshold1 * 10;
-  int threshold2Raw = threshold2 * 10;
-  int sensitivityRaw = sensitivity * 10;
-  TCRT = 1024 - TCRT;
-#endif
 #ifdef ESP32
   int threshold1Raw = threshold1 * 40;
   int threshold2Raw = threshold2 * 40;
   int sensitivityRaw = sensitivity * 40;
   TCRT = 4096 - TCRT;
+#else
+  int threshold1Raw = threshold1 * 10;
+  int threshold2Raw = threshold2 * 10;
+  int sensitivityRaw = sensitivity * 10;
+  TCRT = 1024 - TCRT;
 #endif
 
   HHCnum = padNum;
@@ -1720,15 +1715,15 @@ void HelloDrum::TCRT5000()
 
 void HelloDrum::FSR()
 {
-#ifdef __AVR__
-  int threshold1Raw = threshold1 * 10;
-  int threshold2Raw = threshold2 * 10;
-  int sensitivityRaw = sensitivity * 10;
-#endif
+
 #ifdef ESP32
   int threshold1Raw = threshold1 * 40;
   int threshold2Raw = threshold2 * 40;
   int sensitivityRaw = sensitivity * 40;
+#else
+  int threshold1Raw = threshold1 * 10;
+  int threshold2Raw = threshold2 * 10;
+  int sensitivityRaw = sensitivity * 10;
 #endif
 
   HHCnum = padNum;
@@ -1845,7 +1840,8 @@ void HelloDrum::FSR()
 
 /////////////////////////////// 3. MUX SCANNING ///////////////////////////////////
 
-void HelloDrumMUX::scan()
+//4051
+void HelloDrumMUX_4051::scan()
 {
 
   for (byte pin = muxNum * 8; pin < (muxNum + 1) * 8; pin++)
@@ -1863,17 +1859,36 @@ void HelloDrumMUX::scan()
   }
 }
 
+//4067
+void HelloDrumMUX_4067::scan()
+{
+
+  for (byte pin = muxNum * 16; pin < (muxNum + 1) * 16; pin++)
+  {
+
+    for (int i = 0; i < 4; i++)
+    {
+      if (pin & (1 << i))
+        digitalWrite(selectPins[i], HIGH);
+      else
+        digitalWrite(selectPins[i], LOW);
+    }
+
+    rawValue[pin] = analogRead(pin_A);
+  }
+}
+
 //////////////////////// 4. MUX SENSING without EEPROM //////////////////////////
 
 void HelloDrum::singlePiezoMUX(int sens, int thre1, int scan, int mask)
 {
-#ifdef __AVR__
-  int thre1Raw = thre1 * 10;
-  int sensRaw = sens * 10;
-#endif
+
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
   int sensRaw = sens * 40;
+#else
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
 #endif
 
   hit = false;
@@ -1940,13 +1955,13 @@ void HelloDrum::singlePiezoMUX(int sens, int thre1, int scan, int mask)
 
 void HelloDrum::dualPiezoMUX(int sens, int thre1, int scan, int mask)
 {
-#ifdef __AVR__
-  int thre1Raw = thre1 * 10;
-  int sensRaw = sens * 10;
-#endif
+
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
   int sensRaw = sens * 40;
+#else
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
 #endif
 
   hit = false;
@@ -2056,13 +2071,13 @@ void HelloDrum::dualPiezoMUX(int sens, int thre1, int scan, int mask)
 
 void HelloDrum::HHMUX(int sens, int thre1, int scan, int mask)
 {
-#ifdef __AVR__
-  int thre1Raw = thre1 * 10;
-  int sensRaw = sens * 10;
-#endif
+
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
   int sensRaw = sens * 40;
+#else
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
 #endif
 
   HHnum = padNum;
@@ -2131,15 +2146,15 @@ void HelloDrum::HHMUX(int sens, int thre1, int scan, int mask)
 ////////////////////////////////////////////
 void HelloDrum::HH2zoneMUX(int sens, int thre1, int scan, int mask)
 {
-#ifdef __AVR__
-  int thre1Raw = thre1 * 10;
-  int sensRaw = sens * 10;
-  int edgeThreshold = 50;
-#endif
+
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
   int sensRaw = sens * 40;
   int edgeThreshold = 200;
+#else
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+  int edgeThreshold = 50;
 #endif
 
   HHnum = padNum;
@@ -2233,15 +2248,15 @@ void HelloDrum::HH2zoneMUX(int sens, int thre1, int scan, int mask)
 
 void HelloDrum::cymbal2zoneMUX(int sens, int thre1, int scan, int mask)
 {
-#ifdef __AVR__
-  int thre1Raw = thre1 * 10;
-  int sensRaw = sens * 10;
-  int edgeThreshold = 50;
-#endif
+
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
   int sensRaw = sens * 40;
   int edgeThreshold = 200;
+#else
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+  int edgeThreshold = 50;
 #endif
 
   hit = false;
@@ -2334,19 +2349,19 @@ void HelloDrum::cymbal2zoneMUX(int sens, int thre1, int scan, int mask)
 
 void HelloDrum::cymbal3zoneMUX(int sens, int thre1, int scan, int mask)
 {
-#ifdef __AVR__
-  int thre1Raw = thre1 * 10;
-  int sensRaw = sens * 10;
-  int edgeThreshold = 50;
-  int cupThreshold = 520;
-  int loopTimesCup = 10; //?
-#endif
+
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
   int sensRaw = sens * 40;
   int edgeThreshold = 200;
   int cupThreshold = 2000;
   int loopTimesCup = 25;
+#else
+  int thre1Raw = thre1 * 10;
+  int sensRaw = sens * 10;
+  int edgeThreshold = 50;
+  int cupThreshold = 520;
+  int loopTimesCup = 10; //?
 #endif
 
   hit = false;
@@ -2466,17 +2481,16 @@ void HelloDrum::TCRT5000MUX(int sens, int thre1, int thre2, int scan)
 {
   int TCRT = rawValue[pin_1];
 
-#ifdef __AVR__
-  int thre1Raw = thre1 * 10;
-  int thre2Raw = thre2 * 10;
-  int sensRaw = sens * 10;
-  TCRT = 1024 - TCRT;
-#endif
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
   int thre2Raw = thre2 * 40;
   int sensRaw = sens * 40;
   TCRT = 4096 - TCRT;
+#else
+  int thre1Raw = thre1 * 10;
+  int thre2Raw = thre2 * 10;
+  int sensRaw = sens * 10;
+  TCRT = 1024 - TCRT;
 #endif
 
   HHCnum = padNum;
@@ -2593,15 +2607,15 @@ void HelloDrum::TCRT5000MUX(int sens, int thre1, int thre2, int scan)
 //with EEPROM と比較！
 void HelloDrum::FSRMUX(int sens, int thre1, int thre2, int scan)
 {
-#ifdef __AVR__
-  int thre1Raw = thre1 * 10;
-  int thre2Raw = thre2 * 10;
-  int sensRaw = sens * 10;
-#endif
+
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
   int thre2Raw = thre2 * 40;
   int sensRaw = sens * 40;
+#else
+  int thre1Raw = thre1 * 10;
+  int thre2Raw = thre2 * 10;
+  int sensRaw = sens * 10;
 #endif
 
   HHCnum = padNum;
@@ -2720,13 +2734,13 @@ void HelloDrum::FSRMUX(int sens, int thre1, int thre2, int scan)
 
 void HelloDrum::singlePiezoMUX()
 {
-#ifdef __AVR__
-  int threshold1Raw = threshold1 * 10;
-  int sensitivityRaw = sensitivity * 10;
-#endif
+
 #ifdef ESP32
   int threshold1Raw = threshold1 * 40;
   int sensitivityRaw = sensitivity * 40;
+#else
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
 #endif
 
   hit = false;
@@ -2797,13 +2811,13 @@ void HelloDrum::singlePiezoMUX()
 
 void HelloDrum::dualPiezoMUX()
 {
-#ifdef __AVR__
-  int threshold1Raw = threshold1 * 10;
-  int sensitivityRaw = sensitivity * 10;
-#endif
+
 #ifdef ESP32
   int threshold1Raw = threshold1 * 40;
   int sensitivityRaw = sensitivity * 40;
+#else
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
 #endif
 
   hit = false;
@@ -2919,13 +2933,13 @@ void HelloDrum::dualPiezoMUX()
 
 void HelloDrum::HHMUX()
 {
-#ifdef __AVR__
-  int threshold1Raw = threshold1 * 10;
-  int sensitivityRaw = sensitivity * 10;
-#endif
+
 #ifdef ESP32
   int threshold1Raw = threshold1 * 40;
   int sensitivityRaw = sensitivity * 40;
+#else
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
 #endif
 
   HHnum = padNum;
@@ -2997,15 +3011,15 @@ void HelloDrum::HHMUX()
 
 void HelloDrum::HH2zoneMUX()
 {
-#ifdef __AVR__
-  int threshold1Raw = threshold1 * 10;
-  int sensitivityRaw = sensitivity * 10;
-  int edgeThreshold = 50;
-#endif
+
 #ifdef ESP32
   int threshold1Raw = threshold1 * 40;
   int sensitivityRaw = sensitivity * 40;
   int edgeThreshold = 200;
+#else
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+  int edgeThreshold = 50;
 #endif
 
   HHnum = padNum;
@@ -3108,15 +3122,15 @@ void HelloDrum::HH2zoneMUX()
 
 void HelloDrum::cymbal2zoneMUX()
 {
-#ifdef __AVR__
-  int threshold1Raw = threshold1 * 10;
-  int sensitivityRaw = sensitivity * 10;
-  int edgeThreshold = 50;
-#endif
+
 #ifdef ESP32
   int threshold1Raw = threshold1 * 40;
   int sensitivityRaw = sensitivity * 40;
   int edgeThreshold = 200;
+#else
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+  int edgeThreshold = 50;
 #endif
 
   hit = false;
@@ -3216,19 +3230,19 @@ void HelloDrum::cymbal2zoneMUX()
 
 void HelloDrum::cymbal3zoneMUX()
 {
-#ifdef __AVR__
-  int threshold1Raw = threshold1 * 10;
-  int sensitivityRaw = sensitivity * 10;
-  int edgeThreshold = 50;
-  int cupThreshold = 520;
-  int loopTimesCup = 10; //?
-#endif
+
 #ifdef ESP32
   int threshold1Raw = threshold1 * 40;
   int sensitivityRaw = sensitivity * 40;
   int edgeThreshold = 200;
   int cupThreshold = 2000;
   int loopTimesCup = 25;
+#else
+  int threshold1Raw = threshold1 * 10;
+  int sensitivityRaw = sensitivity * 10;
+  int edgeThreshold = 50;
+  int cupThreshold = 520;
+  int loopTimesCup = 10; //?
 #endif
 
   hit = false;
@@ -3357,17 +3371,16 @@ void HelloDrum::TCRT5000MUX()
 {
   int TCRT = rawValue[pin_1];
 
-#ifdef __AVR__
-  int threshold1Raw = threshold1 * 10;
-  int threshold2Raw = threshold2 * 10;
-  int sensitivityRaw = sensitivity * 10;
-  TCRT = 1024 - TCRT;
-#endif
 #ifdef ESP32
   int threshold1Raw = threshold1 * 40;
   int threshold2Raw = threshold2 * 40;
   int sensitivityRaw = sensitivity * 40;
   TCRT = 4096 - TCRT;
+#else
+  int threshold1Raw = threshold1 * 10;
+  int threshold2Raw = threshold2 * 10;
+  int sensitivityRaw = sensitivity * 10;
+  TCRT = 1024 - TCRT;
 #endif
 
   HHCnum = padNum;
@@ -3483,15 +3496,15 @@ void HelloDrum::TCRT5000MUX()
 
 void HelloDrum::FSRMUX()
 {
-#ifdef __AVR__
-  int threshold1Raw = threshold1 * 10;
-  int threshold2Raw = threshold2 * 10;
-  int sensitivityRaw = sensitivity * 10;
-#endif
+
 #ifdef ESP32
   int threshold1Raw = threshold1 * 40;
   int threshold2Raw = threshold2 * 40;
   int sensitivityRaw = sensitivity * 40;
+#else
+  int threshold1Raw = threshold1 * 10;
+  int threshold2Raw = threshold2 * 10;
+  int sensitivityRaw = sensitivity * 10;
 #endif
 
   HHCnum = padNum;
@@ -3607,213 +3620,6 @@ void HelloDrum::FSRMUX()
 }
 
 //////////////////////////// 6. EEPROM SETTING  //////////////////////////////
-
-#ifdef __AVR__
-
-void HelloDrum::settingEnable()
-{
-
-  //When EDIT button pushed
-  if (padNum == nameIndex)
-  {
-
-    //When UP button pushed
-    if (button_up == LOW && buttonState == true && editCheck == true)
-    {
-
-      switch (itemNumber)
-      {
-      case 0:
-        sensitivity = sensitivity + UP[itemNumber];
-        if (sensitivity > 10)
-        {
-          sensitivity = 10;
-        }
-        EEPROM.write(padNum * 7, sensitivity);
-        break;
-
-      case 1:
-        threshold1 = threshold1 + UP[itemNumber];
-        if (threshold1 > 10)
-        {
-          threshold1 = 10;
-        }
-        EEPROM.write((padNum * 7) + 1, threshold1);
-        break;
-
-      case 2:
-        scantime = scantime + UP[itemNumber];
-        if (scantime > 250)
-        {
-          scantime = 250;
-        }
-        EEPROM.write((padNum * 7) + 2, scantime);
-        break;
-
-      case 3:
-        masktime = masktime + UP[itemNumber];
-        if (masktime > 250)
-        {
-          masktime = 250;
-        }
-        EEPROM.write((padNum * 7) + 3, masktime);
-        break;
-
-      case 4:
-        note = note + UP[itemNumber];
-        if (note > 127)
-        {
-          note = 127;
-        }
-        EEPROM.write((padNum * 7) + 4, note);
-        noteOpen = note;
-        break;
-
-      case 5:
-        noteRim = noteRim + UP[itemNumber];
-        if (noteRim > 127)
-        {
-          noteRim = 127;
-        }
-        EEPROM.write((padNum * 7) + 5, noteRim);
-        noteClose = noteRim;
-        noteOpenEdge = noteRim;
-        break;
-
-      case 6:
-        noteCup = noteCup + UP[itemNumber];
-        if (noteCup > 127)
-        {
-          noteCup = 127;
-        }
-        EEPROM.write((padNum * 7) + 6, noteCup);
-        noteCloseEdge = noteCup;
-        break;
-      }
-      change = true;
-      push = true;
-      buttonState = false;
-      delay(30);
-    }
-
-    //When Down button pushed
-    if (button_down == LOW && buttonState == true && editCheck == true)
-    {
-
-      switch (itemNumber)
-      {
-      case 0:
-        sensitivity = sensitivity - UP[itemNumber];
-        if (sensitivity < 1)
-        {
-          sensitivity = 1;
-        }
-        EEPROM.write(padNum * 7, sensitivity);
-        break;
-
-      case 1:
-        threshold1 = threshold1 - UP[itemNumber];
-        if (threshold1 < 1)
-        {
-          threshold1 = 1;
-        }
-        EEPROM.write((padNum * 7) + 1, threshold1);
-        break;
-
-      case 2:
-        scantime = scantime - UP[itemNumber];
-        if (scantime < 1)
-        {
-          scantime = 1;
-        }
-        EEPROM.write((padNum * 7) + 2, scantime);
-        break;
-
-      case 3:
-        masktime = masktime - UP[itemNumber];
-        if (masktime < 1)
-        {
-          masktime = 1;
-        }
-        EEPROM.write((padNum * 7) + 3, masktime);
-        break;
-
-      case 4:
-        note = note - UP[itemNumber];
-        if (note < 0)
-        {
-          note = 0;
-        }
-        EEPROM.write((padNum * 7) + 4, note);
-        noteOpen = note;
-        break;
-
-      case 5:
-        noteRim = noteRim - UP[itemNumber];
-        if (noteRim < 0)
-        {
-          noteRim = 0;
-        }
-        EEPROM.write((padNum * 7) + 5, noteRim);
-        noteClose = noteRim;
-        noteOpenEdge = noteRim;
-        break;
-
-      case 6:
-        noteCup = noteCup - UP[itemNumber];
-        if (noteCup < 0)
-        {
-          noteCup = 0;
-        }
-        EEPROM.write((padNum * 7) + 6, noteCup);
-        noteCloseEdge = noteCup;
-        break;
-      }
-      change = true;
-      push = true;
-      buttonState = false;
-      delay(30);
-    }
-
-    if (itemNumber == 0)
-    {
-      value = sensitivity;
-    }
-
-    else if (itemNumber == 1)
-    {
-      value = threshold1;
-    }
-
-    else if (itemNumber == 2)
-    {
-      value = scantime;
-    }
-
-    else if (itemNumber == 3)
-    {
-      value = masktime;
-    }
-
-    else if (itemNumber == 4)
-    {
-      value = note;
-    }
-
-    else if (itemNumber == 5)
-    {
-      value = noteRim;
-    }
-
-    else if (itemNumber == 6)
-    {
-      value = noteCup;
-    }
-
-    showValue = value;
-  }
-}
-#endif
 
 #ifdef ESP32
 
@@ -4022,6 +3828,212 @@ void HelloDrum::settingEnable()
     showValue = value;
   }
 }
+
+#else
+
+void HelloDrum::settingEnable()
+{
+
+  //When EDIT button pushed
+  if (padNum == nameIndex)
+  {
+
+    //When UP button pushed
+    if (button_up == LOW && buttonState == true && editCheck == true)
+    {
+
+      switch (itemNumber)
+      {
+      case 0:
+        sensitivity = sensitivity + UP[itemNumber];
+        if (sensitivity > 10)
+        {
+          sensitivity = 10;
+        }
+        EEPROM.write(padNum * 7, sensitivity);
+        break;
+
+      case 1:
+        threshold1 = threshold1 + UP[itemNumber];
+        if (threshold1 > 10)
+        {
+          threshold1 = 10;
+        }
+        EEPROM.write((padNum * 7) + 1, threshold1);
+        break;
+
+      case 2:
+        scantime = scantime + UP[itemNumber];
+        if (scantime > 250)
+        {
+          scantime = 250;
+        }
+        EEPROM.write((padNum * 7) + 2, scantime);
+        break;
+
+      case 3:
+        masktime = masktime + UP[itemNumber];
+        if (masktime > 250)
+        {
+          masktime = 250;
+        }
+        EEPROM.write((padNum * 7) + 3, masktime);
+        break;
+
+      case 4:
+        note = note + UP[itemNumber];
+        if (note > 127)
+        {
+          note = 127;
+        }
+        EEPROM.write((padNum * 7) + 4, note);
+        noteOpen = note;
+        break;
+
+      case 5:
+        noteRim = noteRim + UP[itemNumber];
+        if (noteRim > 127)
+        {
+          noteRim = 127;
+        }
+        EEPROM.write((padNum * 7) + 5, noteRim);
+        noteClose = noteRim;
+        noteOpenEdge = noteRim;
+        break;
+
+      case 6:
+        noteCup = noteCup + UP[itemNumber];
+        if (noteCup > 127)
+        {
+          noteCup = 127;
+        }
+        EEPROM.write((padNum * 7) + 6, noteCup);
+        noteCloseEdge = noteCup;
+        break;
+      }
+      change = true;
+      push = true;
+      buttonState = false;
+      delay(30);
+    }
+
+    //When Down button pushed
+    if (button_down == LOW && buttonState == true && editCheck == true)
+    {
+
+      switch (itemNumber)
+      {
+      case 0:
+        sensitivity = sensitivity - UP[itemNumber];
+        if (sensitivity < 1)
+        {
+          sensitivity = 1;
+        }
+        EEPROM.write(padNum * 7, sensitivity);
+        break;
+
+      case 1:
+        threshold1 = threshold1 - UP[itemNumber];
+        if (threshold1 < 1)
+        {
+          threshold1 = 1;
+        }
+        EEPROM.write((padNum * 7) + 1, threshold1);
+        break;
+
+      case 2:
+        scantime = scantime - UP[itemNumber];
+        if (scantime < 1)
+        {
+          scantime = 1;
+        }
+        EEPROM.write((padNum * 7) + 2, scantime);
+        break;
+
+      case 3:
+        masktime = masktime - UP[itemNumber];
+        if (masktime < 1)
+        {
+          masktime = 1;
+        }
+        EEPROM.write((padNum * 7) + 3, masktime);
+        break;
+
+      case 4:
+        note = note - UP[itemNumber];
+        if (note < 0)
+        {
+          note = 0;
+        }
+        EEPROM.write((padNum * 7) + 4, note);
+        noteOpen = note;
+        break;
+
+      case 5:
+        noteRim = noteRim - UP[itemNumber];
+        if (noteRim < 0)
+        {
+          noteRim = 0;
+        }
+        EEPROM.write((padNum * 7) + 5, noteRim);
+        noteClose = noteRim;
+        noteOpenEdge = noteRim;
+        break;
+
+      case 6:
+        noteCup = noteCup - UP[itemNumber];
+        if (noteCup < 0)
+        {
+          noteCup = 0;
+        }
+        EEPROM.write((padNum * 7) + 6, noteCup);
+        noteCloseEdge = noteCup;
+        break;
+      }
+      change = true;
+      push = true;
+      buttonState = false;
+      delay(30);
+    }
+
+    if (itemNumber == 0)
+    {
+      value = sensitivity;
+    }
+
+    else if (itemNumber == 1)
+    {
+      value = threshold1;
+    }
+
+    else if (itemNumber == 2)
+    {
+      value = scantime;
+    }
+
+    else if (itemNumber == 3)
+    {
+      value = masktime;
+    }
+
+    else if (itemNumber == 4)
+    {
+      value = note;
+    }
+
+    else if (itemNumber == 5)
+    {
+      value = noteRim;
+    }
+
+    else if (itemNumber == 6)
+    {
+      value = noteCup;
+    }
+
+    showValue = value;
+  }
+}
 #endif
 
 void HelloDrum::settingName(char *instrumentName)
@@ -4031,38 +4043,6 @@ void HelloDrum::settingName(char *instrumentName)
   nameIndexMax = nameIndex;
   nameIndex = ++nameIndex;
 }
-
-#ifdef __AVR__
-
-void HelloDrum::loadMemory()
-{
-  //Read values from EEPROM.
-  sensitivity = EEPROM.read(padNum * 7);
-  threshold1 = EEPROM.read((padNum * 7) + 1);
-  scantime = EEPROM.read((padNum * 7) + 2);
-  masktime = EEPROM.read((padNum * 7) + 3);
-  note = EEPROM.read((padNum * 7) + 4);
-  noteOpen = EEPROM.read((padNum * 7) + 4);
-  noteRim = EEPROM.read((padNum * 7) + 5);
-  noteClose = EEPROM.read((padNum * 7) + 5);
-  noteOpenEdge = EEPROM.read((padNum * 7) + 5);
-  noteCup = EEPROM.read((padNum * 7) + 6);
-  noteCloseEdge = EEPROM.read((padNum * 7) + 6);
-}
-
-void HelloDrum::initMemory()
-{
-  //Write initial value to EEPROM.
-  EEPROM.write(padNum * 7, sensitivity);
-  EEPROM.write((padNum * 7) + 1, threshold1);
-  EEPROM.write((padNum * 7) + 2, scantime);
-  EEPROM.write((padNum * 7) + 3, masktime);
-  EEPROM.write((padNum * 7) + 4, note);
-  EEPROM.write((padNum * 7) + 5, noteRim);
-  EEPROM.write((padNum * 7) + 6, noteCup);
-}
-
-#endif
 
 #ifdef ESP32
 
@@ -4109,6 +4089,36 @@ void HelloDrum::initMemory()
   EEPROM_ESP.write((padNum * 7) + 5, noteRim);
   EEPROM_ESP.write((padNum * 7) + 6, noteCup);
   EEPROM_ESP.commit();
+}
+
+#else
+
+void HelloDrum::loadMemory()
+{
+  //Read values from EEPROM.
+  sensitivity = EEPROM.read(padNum * 7);
+  threshold1 = EEPROM.read((padNum * 7) + 1);
+  scantime = EEPROM.read((padNum * 7) + 2);
+  masktime = EEPROM.read((padNum * 7) + 3);
+  note = EEPROM.read((padNum * 7) + 4);
+  noteOpen = EEPROM.read((padNum * 7) + 4);
+  noteRim = EEPROM.read((padNum * 7) + 5);
+  noteClose = EEPROM.read((padNum * 7) + 5);
+  noteOpenEdge = EEPROM.read((padNum * 7) + 5);
+  noteCup = EEPROM.read((padNum * 7) + 6);
+  noteCloseEdge = EEPROM.read((padNum * 7) + 6);
+}
+
+void HelloDrum::initMemory()
+{
+  //Write initial value to EEPROM.
+  EEPROM.write(padNum * 7, sensitivity);
+  EEPROM.write((padNum * 7) + 1, threshold1);
+  EEPROM.write((padNum * 7) + 2, scantime);
+  EEPROM.write((padNum * 7) + 3, masktime);
+  EEPROM.write((padNum * 7) + 4, note);
+  EEPROM.write((padNum * 7) + 5, noteRim);
+  EEPROM.write((padNum * 7) + 6, noteCup);
 }
 
 #endif
@@ -4245,7 +4255,7 @@ void HelloDrumButton::readButtonState()
 }
 
 /////////////////////// 5. LCD  //////////////////////////
-
+/*
 void HelloDrumLCD::show()
 {
 
@@ -4315,10 +4325,11 @@ void HelloDrumLCD::show()
     lcd.print(showValue);
   }
 }
+*/
 
 //////////////////////////////////////////////////////////
 
-//For debug.
+//For Display
 
 int HelloDrumButton::GetVelocity()
 {
@@ -4328,13 +4339,22 @@ int HelloDrumButton::GetSettingValue()
 {
   return showValue;
 }
-int HelloDrumButton::GetItemNumber()
-{
-  return itemNumber;
-}
 bool HelloDrumButton::GetEditState()
 {
   return edit;
+}
+bool HelloDrumButton::GetDisplayState()
+{
+  if (showLCD == true)
+  {
+    showLCD = false;
+    showFlag = true;
+  }
+  else
+  {
+    showFlag = false;
+  }
+  return showFlag;
 }
 int HelloDrumButton::GetEditdoneState()
 {
@@ -4344,23 +4364,37 @@ bool HelloDrumButton::GetPushState()
 {
   return push;
 }
-int HelloDrumButton::GetChangeState()
-{
-  return change;
-}
 char *HelloDrumButton::GetPadName()
 {
   return showInstrument[nameIndex];
 }
 char *HelloDrumButton::GetSettingItem()
 {
-  return item[itemNumber];
+  if (nameIndex == HHCnum)
+  {
+    return itemHHC[itemNumber];
+  }
+  else if (nameIndex == HHnum)
+  {
+    return itemHH[itemNumber];
+  }
+  else
+  {
+    return item[itemNumber];
+  }
 }
 char *HelloDrumButton::GetHitPad()
 {
   return showInstrument[padIndex];
 }
 
-//char* HelloDrum::GetItem(int i) {
-//  return item[i];
-//}
+/*
+int HelloDrumButton::GetItemNumber()
+{
+  return itemNumber;
+}
+int HelloDrumButton::GetChangeState()
+{
+  return change;
+}
+ */
