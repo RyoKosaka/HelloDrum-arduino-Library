@@ -3,7 +3,8 @@ hellodrum	KEYWORD1
 HelloDrum	KEYWORD1
 HelloDrumButton	KEYWORD1
 HelloDrumLCD	KEYWORD1
-HelloDrumMUX	KEYWORD1
+HelloDrumMUX_4051	KEYWORD1
+HelloDrumMUX_4067	KEYWORD1
 
 singlePiezo	KEYWORD2
 dualPiezo	KEYWORD2
@@ -13,6 +14,7 @@ cymbal3zone	KEYWORD2
 cymbal2zone	KEYWORD2
 TCRT5000	KEYWORD2
 FSR	KEYWORD2
+
 singlePiezoMUX	KEYWORD2
 dualPiezoMUX	KEYWORD2
 HHMUX	KEYWORD2
@@ -26,12 +28,9 @@ settingName	KEYWORD2
 readButtonState	KEYWORD2
 settingEnable	KEYWORD2
 show	KEYWORD2
-
 scan	KEYWORD2
-
 initMemory	KEYWORD2
 loadMemory	KEYWORD2
-
 note	KEYWORD2
 noteRim	KEYWORD2
 noteCup	KEYWORD2
