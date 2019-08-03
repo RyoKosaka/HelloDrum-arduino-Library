@@ -88,7 +88,7 @@ S2 ------------------- 4
 Z -------------------- A0
  */
 //Define MUX Pins
-HelloDrumMUX mux(2, 3, 4, 0); //D2, D3, D4, A0
+HelloDrumMUX_4051 mux(2, 3, 4, 0); //D2, D3, D4, A0
 
 HelloDrum pad1(0); //mux pin
 HelloDrum pad2(1); //mux pin

@@ -36,7 +36,7 @@ S2 ------------------- 17
 Z -------------------- 33
  */
 //Define MUX Pins
-HelloDrumMUX mux(4, 16, 2, 36);
+HelloDrumMUX_4051 mux(4, 16, 17, 33);
 
 //Please name your piezo.
 HelloDrum pad1(0); //mux pin
@@ -158,9 +158,13 @@ void loop()
   bool buttonPush = button.GetPushState();
   bool editStart = button.GetEditState();
   bool editDone = button.GetEditdoneState();
+  bool display = button.GetDisplayState();
+
   char *padName = button.GetPadName();
   char *item = button.GetSettingItem();
   int settingValue = button.GetSettingValue();
+  int velocity = button.GetVelocity();
+  char *hitPad = button.GetHitPad();
 
   button.readButtonState();
 
@@ -213,6 +217,18 @@ void loop()
     u8g2.sendBuffer();
   }
 
+  /*
+  if (display == true)
+  {
+    u8g2.clearBuffer();
+    u8g2.setCursor(0, 10);
+    u8g2.print(hitPad);
+    u8g2.setCursor(0, 30);
+    u8g2.print(velocity);
+    u8g2.sendBuffer();
+  }
+  */
+
   //Sensing and Sending MIDI
   if (deviceConnected)
   {
@@ -245,16 +261,6 @@ void loop()
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
-
-      int velocity = button.GetVelocity();
-      char *hitPad = button.GetHitPad();
-
-      u8g2.clearBuffer();
-      u8g2.setCursor(0, 10);
-      u8g2.print(hitPad);
-      u8g2.setCursor(0, 30);
-      u8g2.print(velocity);
-      u8g2.sendBuffer();
     }
 
     if (pad2.hit == true)
@@ -271,16 +277,6 @@ void loop()
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
-
-      int velocity = button.GetVelocity();
-      char *hitPad = button.GetHitPad();
-
-      u8g2.clearBuffer();
-      u8g2.setCursor(0, 10);
-      u8g2.print(hitPad);
-      u8g2.setCursor(0, 30);
-      u8g2.print(velocity);
-      u8g2.sendBuffer();
     }
 
     if (pad3.hit == true)
@@ -297,16 +293,6 @@ void loop()
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
-
-      int velocity = button.GetVelocity();
-      char *hitPad = button.GetHitPad();
-
-      u8g2.clearBuffer();
-      u8g2.setCursor(0, 10);
-      u8g2.print(hitPad);
-      u8g2.setCursor(0, 30);
-      u8g2.print(velocity);
-      u8g2.sendBuffer();
     }
 
     if (pad4.hit == true)
@@ -323,16 +309,6 @@ void loop()
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
-
-      int velocity = button.GetVelocity();
-      char *hitPad = button.GetHitPad();
-
-      u8g2.clearBuffer();
-      u8g2.setCursor(0, 10);
-      u8g2.print(hitPad);
-      u8g2.setCursor(0, 30);
-      u8g2.print(velocity);
-      u8g2.sendBuffer();
     }
 
     if (pad5.hit == true)
@@ -349,16 +325,6 @@ void loop()
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
-
-      int velocity = button.GetVelocity();
-      char *hitPad = button.GetHitPad();
-
-      u8g2.clearBuffer();
-      u8g2.setCursor(0, 10);
-      u8g2.print(hitPad);
-      u8g2.setCursor(0, 30);
-      u8g2.print(velocity);
-      u8g2.sendBuffer();
     }
 
     if (pad6.hit == true)
@@ -375,16 +341,6 @@ void loop()
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
-
-      int velocity = button.GetVelocity();
-      char *hitPad = button.GetHitPad();
-
-      u8g2.clearBuffer();
-      u8g2.setCursor(0, 10);
-      u8g2.print(hitPad);
-      u8g2.setCursor(0, 30);
-      u8g2.print(velocity);
-      u8g2.sendBuffer();
     }
 
     if (pad7.hit == true)
@@ -401,16 +357,6 @@ void loop()
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
-
-      int velocity = button.GetVelocity();
-      char *hitPad = button.GetHitPad();
-
-      u8g2.clearBuffer();
-      u8g2.setCursor(0, 10);
-      u8g2.print(hitPad);
-      u8g2.setCursor(0, 30);
-      u8g2.print(velocity);
-      u8g2.sendBuffer();
     }
 
     if (pad8.hit == true)
@@ -427,16 +373,6 @@ void loop()
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
-
-      int velocity = button.GetVelocity();
-      char *hitPad = button.GetHitPad();
-
-      u8g2.clearBuffer();
-      u8g2.setCursor(0, 10);
-      u8g2.print(hitPad);
-      u8g2.setCursor(0, 30);
-      u8g2.print(velocity);
-      u8g2.sendBuffer();
     }
   }
 }

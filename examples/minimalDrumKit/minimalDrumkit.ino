@@ -38,8 +38,12 @@
 
 #include <hellodrum.h>
 #include <MIDI.h>
+#include <LiquidCrystal.h>
 
 MIDI_CREATE_DEFAULT_INSTANCE();
+
+//LCD pin define
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2); //(rs, en, d4, d5, d6, d7)
 
 //Please name your pad and controller.
 HelloDrum kick(0);
@@ -48,9 +52,8 @@ HelloDrum hihat(2);
 HelloDrum hihatControl(3);
 HelloDrum ride(4, 5);
 
-//Set the DIGITAL pin number to which the button and the LCD are connected.
+//Set the DIGITAL pin number to which the buttons are connected.
 HelloDrumButton button(6, 7, 8, 9, 10); //(EDIT,UP,DOWN,NEXT,BACK)
-HelloDrumLCD lcd(12, 11, 5, 4, 3, 2);   //(rs, en, d4, d5, d6, d7)
 
 void setup()
 {
@@ -78,6 +81,13 @@ void setup()
   hihat.loadMemory();
   hihatControl.loadMemory();
   ride.loadMemory();
+
+  //boot message
+  lcd.begin(16, 2);
+  lcd.clear();
+  lcd.print("hello, world!");
+  lcd.setCursor(0, 1);
+  lcd.print("hello, drum!");
 }
 
 void loop()
@@ -85,14 +95,70 @@ void loop()
 
   /////////// 1. LCD & SETTING MODE /////////////
 
+  bool buttonPush = button.GetPushState();
+  bool editStart = button.GetEditState();
+  bool editDone = button.GetEditdoneState();
+  bool display = button.GetDisplayState();
+
+  char *padName = button.GetPadName();
+  char *item = button.GetSettingItem();
+  int settingValue = button.GetSettingValue();
+
   button.readButtonState();
-  lcd.show();
 
   kick.settingEnable();
   snare.settingEnable();
   hihat.settingEnable();
   hihatControl.settingEnable();
   ride.settingEnable();
+
+  if (buttonPush == true)
+  {
+    lcd.clear();
+    lcd.print(padName);
+    lcd.setCursor(0, 1);
+    lcd.print(item);
+    lcd.setCursor(13, 1);
+    lcd.print(settingValue);
+  }
+
+  if (editStart == true)
+  {
+    lcd.clear();
+    lcd.print("EDIT START");
+    delay(500);
+    lcd.clear();
+    lcd.print(padName);
+    lcd.setCursor(0, 1);
+    lcd.print(item);
+    lcd.setCursor(13, 1);
+    lcd.print(settingValue);
+  }
+
+  if (editDone == true)
+  {
+    lcd.clear();
+    lcd.print("EDIT DONE");
+    delay(500);
+    lcd.clear();
+    lcd.print(padName);
+    lcd.setCursor(0, 1);
+    lcd.print(item);
+    lcd.setCursor(13, 1);
+    lcd.print(settingValue);
+  }
+
+  //show hitted pad name and velocity to LCD
+  if (display == true)
+  {
+    int velocity = button.GetVelocity();
+    char *hitPad = button.GetHitPad();
+
+    lcd.clear();
+    lcd.print(hitPad);
+    lcd.setCursor(0, 1);
+    lcd.print(velocity);
+  }
 
   ////////// 2. SENSING & SENDING MIDI////////////
 

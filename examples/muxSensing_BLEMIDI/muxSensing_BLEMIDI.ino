@@ -91,7 +91,7 @@ S2 ------------------- 17
 Z -------------------- 33
  */
 //Define MUX Pins
-HelloDrumMUX mux(4, 16, 17, 33);
+HelloDrumMUX_4051 mux(4, 16, 17, 33);
 
 //Please name your piezo.
 HelloDrum pad1(0); //mux pin

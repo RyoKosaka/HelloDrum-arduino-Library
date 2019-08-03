@@ -32,7 +32,7 @@ S2 ------------------- 17
 Z -------------------- 33
  */
 //Define MUX Pins
-HelloDrumMUX mux(4, 16, 2, 36);
+HelloDrumMUX_4051 mux(4, 16, 17, 33);
 
 //Please name your piezo.
 HelloDrum pad1(0); //mux pin
@@ -152,9 +152,13 @@ void loop()
   bool buttonPush = button.GetPushState();
   bool editStart = button.GetEditState();
   bool editDone = button.GetEditdoneState();
+  bool display = button.GetDisplayState();
+
   char *padName = button.GetPadName();
   char *item = button.GetSettingItem();
   int settingValue = button.GetSettingValue();
+  int velocity = button.GetVelocity();
+  char *hitPad = button.GetHitPad();
 
   button.readButtonState();
 
@@ -204,6 +208,18 @@ void loop()
     lcd.print(settingValue);
   }
 
+  //show hitted pad name and velocity to LCD
+  //if
+  /*
+    if (display == true)
+    {
+        lcd.clear();
+        lcd.print(hitPad);
+        lcd.setCursor(0, 1);
+        lcd.print(velocity);
+    }
+    */
+
   //Sensing and Sending MIDI
   if (deviceConnected)
   {
@@ -236,13 +252,6 @@ void loop()
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
-
-      int velocity = button.GetVelocity();
-      char *hitPad = button.GetHitPad();
-      lcd.clear();
-      lcd.print(hitPad);
-      lcd.setCursor(0, 1);
-      lcd.print(velocity);
     }
 
     if (pad2.hit == true)
@@ -259,13 +268,6 @@ void loop()
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
-
-      int velocity = button.GetVelocity();
-      char *hitPad = button.GetHitPad();
-      lcd.clear();
-      lcd.print(hitPad);
-      lcd.setCursor(0, 1);
-      lcd.print(velocity);
     }
 
     if (pad3.hit == true)
@@ -282,13 +284,6 @@ void loop()
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
-
-      int velocity = button.GetVelocity();
-      char *hitPad = button.GetHitPad();
-      lcd.clear();
-      lcd.print(hitPad);
-      lcd.setCursor(0, 1);
-      lcd.print(velocity);
     }
 
     if (pad4.hit == true)
@@ -305,13 +300,6 @@ void loop()
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
-
-      int velocity = button.GetVelocity();
-      char *hitPad = button.GetHitPad();
-      lcd.clear();
-      lcd.print(hitPad);
-      lcd.setCursor(0, 1);
-      lcd.print(velocity);
     }
 
     if (pad5.hit == true)
@@ -328,13 +316,6 @@ void loop()
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
-
-      int velocity = button.GetVelocity();
-      char *hitPad = button.GetHitPad();
-      lcd.clear();
-      lcd.print(hitPad);
-      lcd.setCursor(0, 1);
-      lcd.print(velocity);
     }
 
     if (pad6.hit == true)
@@ -351,13 +332,6 @@ void loop()
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
-
-      int velocity = button.GetVelocity();
-      char *hitPad = button.GetHitPad();
-      lcd.clear();
-      lcd.print(hitPad);
-      lcd.setCursor(0, 1);
-      lcd.print(velocity);
     }
 
     if (pad7.hit == true)
@@ -374,13 +348,6 @@ void loop()
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
-
-      int velocity = button.GetVelocity();
-      char *hitPad = button.GetHitPad();
-      lcd.clear();
-      lcd.print(hitPad);
-      lcd.setCursor(0, 1);
-      lcd.print(velocity);
     }
 
     if (pad8.hit == true)
@@ -397,13 +364,6 @@ void loop()
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
-
-      int velocity = button.GetVelocity();
-      char *hitPad = button.GetHitPad();
-      lcd.clear();
-      lcd.print(hitPad);
-      lcd.setCursor(0, 1);
-      lcd.print(velocity);
     }
 
     /* 

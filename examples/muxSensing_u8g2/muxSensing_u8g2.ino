@@ -39,7 +39,8 @@ S2 ------------------- 17
 Z -------------------- 33
  */
 //Define MUX Pins
-HelloDrumMUX mux(4, 16, 2, 36);
+HelloDrumMUX_4051 mux(4, 16, 17, 33);
+//HelloDrumMUX_4067 mux(2, 4, 16, 17, 36);
 
 //Please name your piezo.
 //The piezo named snare is connected to the A0 pin and the piezo named tom is connected to the A1 pin.
@@ -97,9 +98,13 @@ void loop()
     bool buttonPush = button.GetPushState();
     bool editStart = button.GetEditState();
     bool editDone = button.GetEditdoneState();
+    bool display = button.GetDisplayState();
+
     char *padName = button.GetPadName();
     char *item = button.GetSettingItem();
     int settingValue = button.GetSettingValue();
+    int velocity = button.GetVelocity();
+    char *hitPad = button.GetHitPad();
 
     button.readButtonState();
 
@@ -152,11 +157,24 @@ void loop()
         u8g2.sendBuffer();
     }
 
+    /*
+    if (display == true)
+    {
+        u8g2.clearBuffer();
+        u8g2.setCursor(0, 10);
+        u8g2.print(hitPad);
+        u8g2.setCursor(0, 30);
+        u8g2.print(velocity);
+        u8g2.sendBuffer();
+    }
+    */
+
     //scanning 8 piezos.
     mux.scan();
 
     //Piezo sensing is done in this line. And it is returned as a velocity of 127 stages.
     //For each piezo, one line is required.
+
     pad1.singlePiezoMUX();
     pad2.singlePiezoMUX();
     pad3.singlePiezoMUX();
@@ -170,127 +188,47 @@ void loop()
     {
         MIDI.sendNoteOn(pad1.note, pad1.velocity, 10); //(note, velocity, channel)
         MIDI.sendNoteOff(pad1.note, 0, 10);
-
-        int velocity = button.GetVelocity();
-        char *hitPad = button.GetHitPad();
-
-        u8g2.clearBuffer();
-        u8g2.setCursor(0, 10);
-        u8g2.print(hitPad);
-        u8g2.setCursor(0, 30);
-        u8g2.print(velocity);
-        u8g2.sendBuffer();
     }
 
     if (pad2.hit == true)
     {
         MIDI.sendNoteOn(pad2.note, pad2.velocity, 10); //(note, velocity, channel)
         MIDI.sendNoteOff(pad2.note, 0, 10);
-
-        int velocity = button.GetVelocity();
-        char *hitPad = button.GetHitPad();
-
-        u8g2.clearBuffer();
-        u8g2.setCursor(0, 10);
-        u8g2.print(hitPad);
-        u8g2.setCursor(0, 30);
-        u8g2.print(velocity);
-        u8g2.sendBuffer();
     }
 
     if (pad3.hit == true)
     {
         MIDI.sendNoteOn(pad3.note, pad3.velocity, 10); //(note, velocity, channel)
         MIDI.sendNoteOff(pad3.note, 0, 10);
-
-        int velocity = button.GetVelocity();
-        char *hitPad = button.GetHitPad();
-
-        u8g2.clearBuffer();
-        u8g2.setCursor(0, 10);
-        u8g2.print(hitPad);
-        u8g2.setCursor(0, 30);
-        u8g2.print(velocity);
-        u8g2.sendBuffer();
     }
 
     if (pad4.hit == true)
     {
         MIDI.sendNoteOn(pad4.note, pad4.velocity, 10); //(note, velocity, channel)
         MIDI.sendNoteOff(pad4.note, 0, 10);
-
-        int velocity = button.GetVelocity();
-        char *hitPad = button.GetHitPad();
-
-        u8g2.clearBuffer();
-        u8g2.setCursor(0, 10);
-        u8g2.print(hitPad);
-        u8g2.setCursor(0, 30);
-        u8g2.print(velocity);
-        u8g2.sendBuffer();
     }
 
     if (pad5.hit == true)
     {
         MIDI.sendNoteOn(pad5.note, pad5.velocity, 10); //(note, velocity, channel)
         MIDI.sendNoteOff(pad5.note, 0, 10);
-
-        int velocity = button.GetVelocity();
-        char *hitPad = button.GetHitPad();
-
-        u8g2.clearBuffer();
-        u8g2.setCursor(0, 10);
-        u8g2.print(hitPad);
-        u8g2.setCursor(0, 30);
-        u8g2.print(velocity);
-        u8g2.sendBuffer();
     }
 
     if (pad6.hit == true)
     {
         MIDI.sendNoteOn(pad6.note, pad6.velocity, 10); //(note, velocity, channel)
         MIDI.sendNoteOff(pad6.note, 0, 10);
-
-        int velocity = button.GetVelocity();
-        char *hitPad = button.GetHitPad();
-
-        u8g2.clearBuffer();
-        u8g2.setCursor(0, 10);
-        u8g2.print(hitPad);
-        u8g2.setCursor(0, 30);
-        u8g2.print(velocity);
-        u8g2.sendBuffer();
     }
 
     if (pad7.hit == true)
     {
         MIDI.sendNoteOn(pad7.note, pad7.velocity, 10); //(note, velocity, channel)
         MIDI.sendNoteOff(pad7.note, 0, 10);
-
-        int velocity = button.GetVelocity();
-        char *hitPad = button.GetHitPad();
-
-        u8g2.clearBuffer();
-        u8g2.setCursor(0, 10);
-        u8g2.print(hitPad);
-        u8g2.setCursor(0, 30);
-        u8g2.print(velocity);
-        u8g2.sendBuffer();
     }
 
     if (pad8.hit == true)
     {
         MIDI.sendNoteOn(pad8.note, pad8.velocity, 10); //(note, velocity, channel)
         MIDI.sendNoteOff(pad8.note, 0, 10);
-
-        int velocity = button.GetVelocity();
-        char *hitPad = button.GetHitPad();
-
-        u8g2.clearBuffer();
-        u8g2.setCursor(0, 10);
-        u8g2.print(hitPad);
-        u8g2.setCursor(0, 30);
-        u8g2.print(velocity);
-        u8g2.sendBuffer();
     }
 }

@@ -30,7 +30,7 @@ S2 ------------------- 4
 Z -------------------- A0
  */
 //Define MUX Pins
-HelloDrumMUX mux(2, 3, 4, 0);
+HelloDrumMUX_4051 mux(2, 3, 4, 0);
 
 //Please name your pad and controller.
 HelloDrum kick(0);
@@ -89,9 +89,13 @@ void loop()
   bool buttonPush = button.GetPushState();
   bool editStart = button.GetEditState();
   bool editDone = button.GetEditdoneState();
+  bool display = button.GetDisplayState();
+
   char *padName = button.GetPadName();
   char *item = button.GetSettingItem();
   int settingValue = button.GetSettingValue();
+  int velocity = button.GetVelocity();
+  char *hitPad = button.GetHitPad();
 
   button.readButtonState();
 
@@ -138,6 +142,18 @@ void loop()
     lcd.print(settingValue);
   }
 
+  //show hitted pad name and velocity to LCD
+  //if
+  /*
+    if (display == true)
+    {
+        lcd.clear();
+        lcd.print(hitPad);
+        lcd.setCursor(0, 1);
+        lcd.print(velocity);
+    }
+    */
+
   ////////// 2. SENSING & SENDING MIDI////////////
 
   //Sensing each pad.
@@ -156,14 +172,6 @@ void loop()
   {
     MIDI.sendNoteOn(kick.note, kick.velocity, 10); //(note, velocity, channel)
     MIDI.sendNoteOff(kick.note, 0, 10);
-
-    int velocity = button.GetVelocity();
-    char *hitPad = button.GetHitPad();
-
-    lcd.clear();
-    lcd.print(hitPad);
-    lcd.setCursor(0, 1);
-    lcd.print(velocity);
   }
 
   //SNARE//
@@ -171,14 +179,6 @@ void loop()
   {
     MIDI.sendNoteOn(snare.note, snare.velocity, 10); //(note, velocity, channel)
     MIDI.sendNoteOff(snare.note, 0, 10);
-
-    int velocity = button.GetVelocity();
-    char *hitPad = button.GetHitPad();
-
-    lcd.clear();
-    lcd.print(hitPad);
-    lcd.setCursor(0, 1);
-    lcd.print(velocity);
   }
   else if (snare.hitRim == true)
   {
@@ -192,14 +192,6 @@ void loop()
       MIDI.sendNoteOn(snare.noteCup, snare.velocity * 2, 10); //(note, velocity, channel)
       MIDI.sendNoteOff(snare.noteCup, 0, 10);
     }
-
-    int velocity = button.GetVelocity();
-    char *hitPad = button.GetHitPad();
-
-    lcd.clear();
-    lcd.print(hitPad);
-    lcd.setCursor(0, 1);
-    lcd.print(velocity);
   }
 
   //HIHAT//
@@ -218,14 +210,6 @@ void loop()
       MIDI.sendNoteOn(hihat.noteClose, hihat.velocity, 10); //(note of close, velocity, channel)
       MIDI.sendNoteOff(hihat.noteClose, 0, 10);
     }
-
-    int velocity = button.GetVelocity();
-    char *hitPad = button.GetHitPad();
-
-    lcd.clear();
-    lcd.print(hitPad);
-    lcd.setCursor(0, 1);
-    lcd.print(velocity);
   }
 
   //HIHAT CONTROLLER//
@@ -234,14 +218,6 @@ void loop()
   {
     MIDI.sendNoteOn(hihatControl.note, hihatControl.velocity, 10); //(note of pedal, velocity, channel)
     MIDI.sendNoteOff(hihatControl.note, 0, 10);
-
-    int velocity = button.GetVelocity();
-    char *hitPad = button.GetHitPad();
-
-    lcd.clear();
-    lcd.print(hitPad);
-    lcd.setCursor(0, 1);
-    lcd.print(velocity);
   }
 
   //sending state of pedal with controll change
@@ -256,14 +232,6 @@ void loop()
   {
     MIDI.sendNoteOn(ride.note, ride.velocity, 10); //(note, velocity, channel)
     MIDI.sendNoteOff(ride.note, 0, 10);
-
-    int velocity = button.GetVelocity();
-    char *hitPad = button.GetHitPad();
-
-    lcd.clear();
-    lcd.print(hitPad);
-    lcd.setCursor(0, 1);
-    lcd.print(velocity);
   }
 
   //2.edge
@@ -271,14 +239,6 @@ void loop()
   {
     MIDI.sendNoteOn(ride.noteRim, ride.velocity, 10); //(note, velocity, channel)
     MIDI.sendNoteOff(ride.noteRim, 0, 10);
-
-    int velocity = button.GetVelocity();
-    char *hitPad = button.GetHitPad();
-
-    lcd.clear();
-    lcd.print(hitPad);
-    lcd.setCursor(0, 1);
-    lcd.print(velocity);
   }
 
   //3.cup
@@ -286,14 +246,6 @@ void loop()
   {
     MIDI.sendNoteOn(ride.noteCup, ride.velocity, 10); //(note, velocity, channel)
     MIDI.sendNoteOff(ride.noteCup, 0, 10);
-
-    int velocity = button.GetVelocity();
-    char *hitPad = button.GetHitPad();
-
-    lcd.clear();
-    lcd.print(hitPad);
-    lcd.setCursor(0, 1);
-    lcd.print(velocity);
   }
 
   //4.choke
@@ -312,13 +264,5 @@ void loop()
   {
     MIDI.sendNoteOn(tom.note, tom.velocity, 10); //(note, velocity, channel)
     MIDI.sendNoteOff(tom.note, 0, 10);
-
-    int velocity = button.GetVelocity();
-    char *hitPad = button.GetHitPad();
-
-    lcd.clear();
-    lcd.print(hitPad);
-    lcd.setCursor(0, 1);
-    lcd.print(velocity);
   }
 }
