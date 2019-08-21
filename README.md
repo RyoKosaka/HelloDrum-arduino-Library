@@ -23,6 +23,13 @@ Use at your own risk.
 - Works with ESP32 and Teensy and AVR boards such as UNO and MEGA.
 
 ## How to Use
+- Install
+
+Use Arduino's Library Manager to install the library. Search for “hellodrum ”.  
+If you use MIDI, also install the MIDI Library.
+<img src="https://open-e-drums.com/images/ide.png" width="800px">
+
+
 - Coding:
    ```cpp
     #include <hellodrum.h>
@@ -130,12 +137,6 @@ Use at your own risk.
 ## Pads
 
 The STL data of pads from 6 inches to 12 inches, hi-hat controllers(<https://www.thingiverse.com/RyoKosaka/designs>)
-
-## Install
-
-1. Download ZIP from [release page](https://github.com/RyoKosaka/HelloDrum-arduino-Library/releases)
-2. Import a .zip Library (<https://www.arduino.cc/en/Guide/Libraries#toc4>)
-3. Import Arduino MIDI Library (<https://playground.arduino.cc/Main/MIDILibrary>)
 
 ## Release History
 
