@@ -3846,9 +3846,9 @@ void HelloDrum::settingEnable()
       {
       case 0:
         sensitivity = sensitivity + UP[itemNumber];
-        if (sensitivity > 10)
+        if (sensitivity > 100)
         {
-          sensitivity = 10;
+          sensitivity = 100;
         }
         EEPROM.write(padNum * 7, sensitivity);
         break;
