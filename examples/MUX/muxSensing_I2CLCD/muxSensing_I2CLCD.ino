@@ -53,7 +53,7 @@ void setup()
     lcd.backlight();
 
     //if you use ESP32, you have to uncomment the next line.
-    EEPROM_ESP.begin(512);
+    //EEPROM_ESP.begin(512);
 
     //If you use Hairless MIDI, you have to comment out the next line.
     //MIDI.begin(10);
@@ -147,7 +147,9 @@ void loop()
     }
 
     //show hitted pad name and velocity to LCD
-    //if
+    //Immediately after I2C communication, scanning of piezo is stop.
+    //So if you change the display right after you hit pad, it affects the sensing.
+    //I recommend leaving it as a comment.
     /*
     if (display == true)
     {

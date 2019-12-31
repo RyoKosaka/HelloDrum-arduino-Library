@@ -1,32 +1,87 @@
 /*
-  EXAMPLE - MUX Piezo Sensing With ESP32(BLE MIDI) and OLED(SSD1306)
+  EXAMPLE - MUX Piezo Sensing With ESP32(BLE MIDI)
 
   With this sample code, you can make the octapad with ESP32 and 74HC4051.
-  And you can set the value of sensitivity etc.. with OLED (SSD1306).
-  And send MIDI signals with bluetooth. 
+  And send MIDI signals with bluetooth.
   https://open-e-drums.tumblr.com/
 */
 
-/* NOTICE
+///////////////////////////////   SETTING VALUE   ///////////////////////////////////
 
-  You have to install the u8g2 library.
-  u8g2 : https://github.com/olikraus/u8g2
+//Determine the setting value.
+//By changing the number in this array you can set sensitivity, threshold and so on.
 
-*/
+int PAD1[5] = {
+    100, //sensitivity
+    10,  //threshold
+    50,  //scan time
+    10,  //mask time
+    38   //note
+};
+
+int PAD2[5] = {
+    100, //sensitivity
+    10,  //threshold
+    50,  //scan time
+    10,  //mask time
+    36   //note
+};
+
+int PAD3[5] = {
+    100, //sensitivity
+    10,  //threshold
+    50,  //scan time
+    10,  //mask time
+    41   //note
+};
+
+int PAD4[5] = {
+    100, //sensitivity
+    10,  //threshold
+    50,  //scan time
+    10,  //mask time
+    46   //note
+};
+
+int PAD5[5] = {
+    100, //sensitivity
+    10,  //threshold
+    50,  //scan time
+    10,  //mask time
+    47   //note
+};
+
+int PAD6[5] = {
+    100, //sensitivity
+    10,  //threshold
+    50,  //scan time
+    10,  //mask time
+    48   //note
+};
+
+int PAD7[5] = {
+    100, //sensitivity
+    10,  //threshold
+    50,  //scan time
+    10,  //mask time
+    55   //note
+};
+
+int PAD8[5] = {
+    100, //sensitivity
+    10,  //threshold
+    50,  //scan time
+    10,  //mask time
+    84   //note
+};
+
+/////////////////////////////////////////////////////////////////////////////////////
 
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <hellodrum.h>
-#include <Arduino.h>
-#include <U8g2lib.h>
-
-#ifdef U8X8_HAVE_HW_I2C
-#include <Wire.h>
-#endif
-
-U8G2_SSD1306_128X32_UNIVISION_F_SW_I2C u8g2(U8G2_R0, /* clock=*/SCL, /* data=*/SDA, /* reset=*/U8X8_PIN_NONE);
 
 /*
 Mux Breakout ----------- ESP32
@@ -47,9 +102,6 @@ HelloDrum pad5(4); //mux pin
 HelloDrum pad6(5); //mux pin
 HelloDrum pad7(6); //mux pin
 HelloDrum pad8(7); //mux pin
-
-//Define control buttons
-HelloDrumButton button(12, 14, 27, 26, 25); //(EDIT,UP,DOWN,NEXT,BACK)
 
 ///////////////////////////////   BLE MIDI SETTING   ///////////////////////////////////
 
@@ -84,35 +136,6 @@ class MyServerCallbacks : public BLEServerCallbacks
 
 void setup()
 {
-  //if you use ESP32, you have to uncomment the next line.
-  EEPROM_ESP.begin(512);
-
-  //Serial.begin(115200);
-  u8g2.begin();
-
-  u8g2.clearBuffer();                  // clear the internal memory
-  u8g2.setFont(u8g2_font_ncenB08_tr);  // choose a suitable font
-  u8g2.drawStr(0, 10, "Hello World!"); // write something to the internal memory
-  u8g2.sendBuffer();                   // transfer internal memory to the display
-
-  pad1.settingName("PAD 1");
-  pad2.settingName("PAD 2");
-  pad3.settingName("PAD 3");
-  pad4.settingName("PAD 4");
-  pad5.settingName("PAD 5");
-  pad6.settingName("PAD 6");
-  pad7.settingName("PAD 7");
-  pad8.settingName("PAD 8");
-
-  pad1.loadMemory();
-  pad2.loadMemory();
-  pad3.loadMemory();
-  pad4.loadMemory();
-  pad5.loadMemory();
-  pad6.loadMemory();
-  pad7.loadMemory();
-  pad8.loadMemory();
-
   ///////////////////////////////   BLE MIDI INITIALIZE   ///////////////////////////////////
 
   BLEDevice::init("DRUM"); //Device Name
@@ -155,81 +178,7 @@ void setup()
 
 void loop()
 {
-  bool buttonPush = button.GetPushState();
-  bool editStart = button.GetEditState();
-  bool editDone = button.GetEditdoneState();
-  bool display = button.GetDisplayState();
 
-  char *padName = button.GetPadName();
-  char *item = button.GetSettingItem();
-  int settingValue = button.GetSettingValue();
-  int velocity = button.GetVelocity();
-  char *hitPad = button.GetHitPad();
-
-  button.readButtonState();
-
-  pad1.settingEnable();
-  pad2.settingEnable();
-  pad3.settingEnable();
-  pad4.settingEnable();
-  pad5.settingEnable();
-  pad6.settingEnable();
-  pad7.settingEnable();
-  pad8.settingEnable();
-
-  if (buttonPush == true)
-  {
-    u8g2.clearBuffer();           // clear the internal memory
-    u8g2.drawStr(0, 10, padName); // write something to the internal memory
-    u8g2.drawStr(0, 20, item);    // write something to the internal memory
-    u8g2.setCursor(0, 30);
-    u8g2.print(settingValue);
-    u8g2.sendBuffer(); // transfer internal memory to the display
-  }
-
-  if (editStart == true)
-  {
-    u8g2.clearBuffer();
-    u8g2.setCursor(0, 10);
-    u8g2.print("EDIT START");
-    u8g2.sendBuffer();
-    delay(500);
-    u8g2.clearBuffer();
-    u8g2.drawStr(0, 10, padName);
-    u8g2.drawStr(0, 20, item);
-    u8g2.setCursor(0, 30);
-    u8g2.print(settingValue);
-    u8g2.sendBuffer();
-  }
-
-  if (editDone == true)
-  {
-    u8g2.clearBuffer();
-    u8g2.setCursor(0, 10);
-    u8g2.print("EDIT DONE");
-    u8g2.sendBuffer();
-    delay(500);
-    u8g2.clearBuffer();
-    u8g2.drawStr(0, 10, padName);
-    u8g2.drawStr(0, 20, item);
-    u8g2.setCursor(0, 30);
-    u8g2.print(settingValue);
-    u8g2.sendBuffer();
-  }
-
-  /*
-  if (display == true)
-  {
-    u8g2.clearBuffer();
-    u8g2.setCursor(0, 10);
-    u8g2.print(hitPad);
-    u8g2.setCursor(0, 30);
-    u8g2.print(velocity);
-    u8g2.sendBuffer();
-  }
-  */
-
-  //Sensing and Sending MIDI
   if (deviceConnected)
   {
     //scanning 8 piezos.
@@ -237,27 +186,26 @@ void loop()
 
     //Piezo sensing is done in this line. And it is returned as a velocity of 127 stages.
     //For each piezo, one line is required.
-    pad1.singlePiezoMUX();
-    pad2.singlePiezoMUX();
-    pad3.singlePiezoMUX();
-    pad4.singlePiezoMUX();
-    pad5.singlePiezoMUX();
-    pad6.singlePiezoMUX();
-    pad7.singlePiezoMUX();
-    pad8.singlePiezoMUX();
-    //ride.cymbal3zoneMUX();
+    pad1.singlePiezoMUX(PAD1[0], PAD1[1], PAD1[2], PAD1[3]);
+    pad2.singlePiezoMUX(PAD2[0], PAD2[1], PAD2[2], PAD2[3]);
+    pad3.singlePiezoMUX(PAD3[0], PAD3[1], PAD3[2], PAD3[3]);
+    pad4.singlePiezoMUX(PAD4[0], PAD4[1], PAD4[2], PAD4[3]);
+    pad5.singlePiezoMUX(PAD5[0], PAD5[1], PAD5[2], PAD5[3]);
+    pad6.singlePiezoMUX(PAD6[0], PAD6[1], PAD6[2], PAD6[3]);
+    pad7.singlePiezoMUX(PAD7[0], PAD7[1], PAD7[2], PAD7[3]);
+    pad8.singlePiezoMUX(PAD8[0], PAD8[1], PAD8[2], PAD8[3]);
 
     if (pad1.hit == true)
     {
       // noteOn
       midiPacket[2] = 0x90;                     // note down, channel 0
-      midiPacket[3] = pad1.note;                //snare note is 38
+      midiPacket[3] = PAD1[4];                  //snare note is 38
       midiPacket[4] = pad1.velocity;            // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes
       pCharacteristic->notify();
       // noteOff
       midiPacket[2] = 0x80;                     // note up, channel 0
-      midiPacket[3] = pad1.note;                //snare note is 38
+      midiPacket[3] = PAD1[4];                  //snare note is 38
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
@@ -267,13 +215,13 @@ void loop()
     {
       // noteOn
       midiPacket[2] = 0x90;                     // note down, channel 0
-      midiPacket[3] = pad2.note;                //snare note is 38
+      midiPacket[3] = PAD2[4];                  //snare note is 38
       midiPacket[4] = pad2.velocity;            // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes
       pCharacteristic->notify();
       // noteOff
       midiPacket[2] = 0x80;                     // note up, channel 0
-      midiPacket[3] = pad2.note;                //snare note is 38
+      midiPacket[3] = PAD2[4];                  //snare note is 38
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
@@ -283,13 +231,13 @@ void loop()
     {
       // noteOn
       midiPacket[2] = 0x90;                     // note down, channel 0
-      midiPacket[3] = pad3.note;                //snare note is 38
+      midiPacket[3] = PAD3[4];                  //snare note is 38
       midiPacket[4] = pad3.velocity;            // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes
       pCharacteristic->notify();
       // noteOff
       midiPacket[2] = 0x80;                     // note up, channel 0
-      midiPacket[3] = pad3.note;                //snare note is 38
+      midiPacket[3] = PAD3[4];                  //snare note is 38
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
@@ -299,13 +247,13 @@ void loop()
     {
       // noteOn
       midiPacket[2] = 0x90;                     // note down, channel 0
-      midiPacket[3] = pad4.note;                //snare note is 38
+      midiPacket[3] = PAD4[4];                  //snare note is 38
       midiPacket[4] = pad4.velocity;            // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes
       pCharacteristic->notify();
       // noteOff
       midiPacket[2] = 0x80;                     // note up, channel 0
-      midiPacket[3] = pad4.note;                //snare note is 38
+      midiPacket[3] = PAD4[4];                  //snare note is 38
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
@@ -315,13 +263,13 @@ void loop()
     {
       // noteOn
       midiPacket[2] = 0x90;                     // note down, channel 0
-      midiPacket[3] = pad5.note;                //snare note is 38
+      midiPacket[3] = PAD5[4];                  //snare note is 38
       midiPacket[4] = pad5.velocity;            // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes
       pCharacteristic->notify();
       // noteOff
       midiPacket[2] = 0x80;                     // note up, channel 0
-      midiPacket[3] = pad5.note;                //snare note is 38
+      midiPacket[3] = PAD5[4];                  //snare note is 38
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
@@ -331,13 +279,13 @@ void loop()
     {
       // noteOn
       midiPacket[2] = 0x90;                     // note down, channel 0
-      midiPacket[3] = pad6.note;                //snare note is 38
+      midiPacket[3] = PAD6[4];                  //snare note is 38
       midiPacket[4] = pad6.velocity;            // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes
       pCharacteristic->notify();
       // noteOff
       midiPacket[2] = 0x80;                     // note up, channel 0
-      midiPacket[3] = pad6.note;                //snare note is 38
+      midiPacket[3] = PAD6[4];                  //snare note is 38
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
@@ -347,13 +295,13 @@ void loop()
     {
       // noteOn
       midiPacket[2] = 0x90;                     // note down, channel 0
-      midiPacket[3] = pad7.note;                //snare note is 38
+      midiPacket[3] = PAD7[4];                  //snare note is 38
       midiPacket[4] = pad7.velocity;            // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes
       pCharacteristic->notify();
       // noteOff
       midiPacket[2] = 0x80;                     // note up, channel 0
-      midiPacket[3] = pad7.note;                //snare note is 38
+      midiPacket[3] = PAD7[4];                  //snare note is 38
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();
@@ -363,13 +311,13 @@ void loop()
     {
       // noteOn
       midiPacket[2] = 0x90;                     // note down, channel 0
-      midiPacket[3] = pad8.note;                //snare note is 38
+      midiPacket[3] = PAD8[4];                  //snare note is 38
       midiPacket[4] = pad8.velocity;            // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes
       pCharacteristic->notify();
       // noteOff
       midiPacket[2] = 0x80;                     // note up, channel 0
-      midiPacket[3] = pad8.note;                //snare note is 38
+      midiPacket[3] = PAD8[4];                  //snare note is 38
       midiPacket[4] = 0;                        // velocity
       pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
       pCharacteristic->notify();

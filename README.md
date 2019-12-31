@@ -1,11 +1,12 @@
 # HelloDrum Arduino Library
 This is a library for making E-Drum with Arduino.  
-**Ver.0.7.1(8/3/2019) Work in progress.** 
+**Ver.0.7.2(12/31/2019) Work in progress.** 
 
 ## Description
 
 This is a library for making E-Drum with Arduino.  
 By using it with Arduino MIDI Library, you can make E-drum.  
+Project Site :[https://open-e-drums.com/](https://open-e-drums.com/)  
 Blog :[https://open-e-drums.tumblr.com/](https://open-e-drums.tumblr.com/)  
 YouTube :[https://www.youtube.com/channel/UCNCDcIO26xL_NhI04QY-v4A](https://www.youtube.com/channel/UCNCDcIO26xL_NhI04QY-v4A)
 
@@ -26,9 +27,8 @@ Use at your own risk.
 - Install
 
 Use Arduino's Library Manager to install the library. Search for “hellodrum ”.  
-If you use MIDI, also install the MIDI Library.
+If you use MIDI, also install the MIDI Library.  
 <img src="https://open-e-drums.com/images/ide.png" width="800px">
-
 
 - Coding:
    ```cpp
@@ -140,6 +140,10 @@ The STL data of pads from 6 inches to 12 inches, hi-hat controllers(<https://www
 
 ## Release History
 
+* 0.7.2
+   - Update sample code
+   - Add Knob function
+   - Add sample code for Teensy
 * 0.7.1
    - Sensing with 16ch MUX(4067) is available
    - Update sample code

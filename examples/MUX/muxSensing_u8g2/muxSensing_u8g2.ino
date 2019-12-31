@@ -59,7 +59,7 @@ HelloDrumButton button(12, 14, 27, 26, 25); //(EDIT,UP,DOWN,NEXT,BACK)
 void setup()
 {
     //if you use ESP32, you have to uncomment the next line.
-    EEPROM_ESP.begin(512);
+    //EEPROM_ESP.begin(512);
 
     //If you use Hairless MIDI, you have to comment out the next line.
     //MIDI.begin(10);
@@ -157,6 +157,10 @@ void loop()
         u8g2.sendBuffer();
     }
 
+    //show hitted pad name and velocity to LCD
+    //Immediately after I2C communication, scanning of piezo is stop.
+    //So if you change the display right after you hit pad, it affects the sensing.
+    //I recommend leaving it as a comment.
     /*
     if (display == true)
     {
@@ -174,7 +178,6 @@ void loop()
 
     //Piezo sensing is done in this line. And it is returned as a velocity of 127 stages.
     //For each piezo, one line is required.
-
     pad1.singlePiezoMUX();
     pad2.singlePiezoMUX();
     pad3.singlePiezoMUX();

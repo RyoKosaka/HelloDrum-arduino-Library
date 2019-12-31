@@ -1,13 +1,10 @@
 /*
-  " HELLO DRUM LIBRARY" Ver.0.6.1
-
-  Ver.0.5 - May 19, 2018
-  Ver.0.6 - June 18, 2019
-  Ver.0.6.1 - July 3, 2019
-
+  " HELLO DRUM LIBRARY" Ver.0.7.2
+  
   by Ryo Kosaka
 
-  https://open-e-drums.tumblr.com/
+  GitHUb : https://github.com/RyoKosaka/HelloDrum-arduino-Library
+  Blog : https://open-e-drums.tumblr.com/
 */
 
 #ifndef HelloDrum_h
@@ -260,6 +257,18 @@ private:
   int pin_3;
   int pin_4;
   int pin_5;
+};
+
+class HelloDrumKnob
+{
+public:
+  HelloDrumKnob(int pin1);
+  void read();
+  void readMUX();
+  int knobValue;
+
+private:
+  int pin_1;
 };
 
 /* 

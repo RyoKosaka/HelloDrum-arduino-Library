@@ -2,7 +2,7 @@ hellodrum.h	KEYWORD1
 hellodrum	KEYWORD1
 HelloDrum	KEYWORD1
 HelloDrumButton	KEYWORD1
-HelloDrumLCD	KEYWORD1
+HelloDrumKnob	KEYWORD1
 HelloDrumMUX_4051	KEYWORD1
 HelloDrumMUX_4067	KEYWORD1
 
@@ -47,12 +47,16 @@ openHH	KEYWORD2
 closeHH	KEYWORD2
 pedalCC	KEYWORD2
 moving	KEYWORD2
+knobValue KEYWORD2
+readMUX	KEYWORD2
+read	KEYWORD2
+knobValue	KEYWORD2
 
-GetPushState    KEYWORD2
-GetEditState    KEYWORD2
-GetEditdoneState    KEYWORD2
-GetPadName  KEYWORD2
-GetSettingItem  KEYWORD2
-GetSettingValue KEYWORD2
-GetVelocity KEYWORD2
-GetHitPad   KEYWORD2
+GetPushState	KEYWORD2
+GetEditState	KEYWORD2
+GetEditdoneState	KEYWORD2
+GetPadName	KEYWORD2
+GetSettingItem	KEYWORD2
+GetSettingValue	KEYWORD2
+GetVelocity	KEYWORD2
+GetHitPad	KEYWORD2

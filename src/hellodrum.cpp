@@ -1,13 +1,10 @@
 /*
-  " HELLO DRUM LIBRARY" Ver.0.6.1
-
-  Ver.0.5 - May 19, 2018
-  Ver.0.6 - June 18, 2019
-  Ver.0.6.1 - July 3, 2019
-
+  " HELLO DRUM LIBRARY" Ver.0.7.2
+  
   by Ryo Kosaka
 
-  https://open-e-drums.tumblr.com/
+  GitHUb : https://github.com/RyoKosaka/HelloDrum-arduino-Library
+  Blog : https://open-e-drums.tumblr.com/
 */
 
 #include "hellodrum.h"
@@ -108,6 +105,12 @@ HelloDrumButton::HelloDrumButton(int pin1, int pin2, int pin3, int pin4, int pin
   pin_3 = pin3; //DOWN
   pin_4 = pin4; //NEXT
   pin_5 = pin5; //BACK
+}
+
+//Knob
+HelloDrumKnob::HelloDrumKnob(int pin1)
+{
+  pin_1 = pin1;
 }
 
 ///////////////////// 1. SENSING without EEPROM //////////////////////////
@@ -4123,7 +4126,7 @@ void HelloDrum::initMemory()
 
 #endif
 
-///////////////////// 4. BUTONN //////////////////////////
+///////////////////// 7. BUTONN //////////////////////////
 
 void HelloDrumButton::readButtonState()
 {
@@ -4326,6 +4329,18 @@ void HelloDrumLCD::show()
   }
 }
 */
+
+//////////////////////  KNOB  /////////////////////////
+
+void HelloDrumKnob::read()
+{
+  knobValue = analogRead(pin_1);
+}
+
+void HelloDrumKnob::readMUX()
+{
+  knobValue = rawValue[pin_1];
+}
 
 //////////////////////////////////////////////////////////
 

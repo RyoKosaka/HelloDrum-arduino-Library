@@ -115,10 +115,8 @@ void setup()
 
 void loop()
 {
-
   if (deviceConnected)
   {
-
     //Piezo sensing is done in this line. And it is returned as a velocity of 127 stages.
     //For each piezo, one line is required.
     snare.singlePiezo(SNARE[0], SNARE[1], SNARE[2], SNARE[3]);

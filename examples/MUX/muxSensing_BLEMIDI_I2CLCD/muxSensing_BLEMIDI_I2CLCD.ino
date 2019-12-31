@@ -209,16 +209,18 @@ void loop()
   }
 
   //show hitted pad name and velocity to LCD
-  //if
+  //Immediately after I2C communication, scanning of piezo is stop.
+  //So if you change the display right after you hit pad, it affects the sensing.
+  //I recommend leaving it as a comment.
   /*
-    if (display == true)
-    {
-        lcd.clear();
-        lcd.print(hitPad);
-        lcd.setCursor(0, 1);
-        lcd.print(velocity);
-    }
-    */
+  if (display == true)
+  {
+    lcd.clear();
+    lcd.print(hitPad);
+    lcd.setCursor(0, 1);
+    lcd.print(velocity);
+  }
+  */
 
   //Sensing and Sending MIDI
   if (deviceConnected)

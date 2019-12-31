@@ -143,7 +143,9 @@ void loop()
   }
 
   //show hitted pad name and velocity to LCD
-  //if
+  //Immediately after I2C communication, scanning of piezo is stop.
+  //So if you change the display right after you hit pad, it affects the sensing.
+  //I recommend leaving it as a comment.
   /*
     if (display == true)
     {
