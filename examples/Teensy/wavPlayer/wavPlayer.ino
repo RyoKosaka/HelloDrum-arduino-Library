@@ -18,7 +18,7 @@
 #include <SerialFlash.h>
 #include <hellodrum.h>
 
-int SNARE[5] = {
+int PAD1[5] = {
     100, //sensitivity (1-100)
     10,  //threshold (1-100)
     30,  //scan time (1-)
@@ -126,7 +126,7 @@ void setup()
     // This may wait forever if the SDA & SCL pins lack
     // pullup resistors
     sgtl5000_1.enable();
-    sgtl5000_1.volume(0.5);
+    sgtl5000_1.volume(1.0);
 
     SPI.setMOSI(SDCARD_MOSI_PIN);
     SPI.setSCK(SDCARD_SCK_PIN);
