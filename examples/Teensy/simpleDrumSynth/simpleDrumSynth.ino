@@ -12,7 +12,7 @@
 #include <SerialFlash.h>
 #include <hellodrum.h>
 
-int SNARE[5] = {
+int PAD1[5] = {
     100, //sensitivity (1-100)
     10,  //threshold (1-100)
     30,  //scan time (1-)
