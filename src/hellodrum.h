@@ -91,7 +91,13 @@ static int button_down;
 static int button_next;
 static int button_back;
 static int UP[7] = {1, 1, 1, 1, 1, 1, 1}; //{sensitivity, threshold1, scantime, masktime, note}
+
+#ifdef __AVR_ATmega328P__
+static int rawValue[16];                  //2 * 8chanel Mux 
+#else
 static int rawValue[64];                  //8 * 8chanel Mux
+#endif
+
 //static int UP_ADVANCE[4] = {1, 50, 1, 1};  //{scantime, rim / head, pedal velocity ,masktime}
 
 class HelloDrum
@@ -189,8 +195,8 @@ private:
   int sensorValue;
   int firstSensorValue;
   int lastSensorValue;
-  int piezoValueSUM;
-  int RimPiezoValueSUM;
+//  int piezoValueSUM;
+//  int RimPiezoValueSUM;
   int loopTimes = 0;
   bool flag;
   unsigned long time_hit;

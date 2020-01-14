@@ -226,8 +226,8 @@ void HelloDrum::dualPiezo(int sens, int thre1, int scan, int mask)
   {
     if (loopTimes != scan)
     {
-      piezoValueSUM = piezoValueSUM + piezoValue;
-      RimPiezoValueSUM = RimPiezoValueSUM + RimPiezoValue;
+//      piezoValueSUM = piezoValueSUM + piezoValue;
+//      RimPiezoValueSUM = RimPiezoValueSUM + RimPiezoValue;
 
       if (piezoValue > velocity)
       {
@@ -1082,8 +1082,8 @@ void HelloDrum::dualPiezo()
   {
     if (loopTimes != scantime)
     {
-      piezoValueSUM = piezoValueSUM + piezoValue;
-      RimPiezoValueSUM = RimPiezoValueSUM + RimPiezoValue;
+//      piezoValueSUM = piezoValueSUM + piezoValue;
+//      RimPiezoValueSUM = RimPiezoValueSUM + RimPiezoValue;
 
       if (piezoValue > velocity)
       {
@@ -1995,8 +1995,8 @@ void HelloDrum::dualPiezoMUX(int sens, int thre1, int scan, int mask)
   {
     if (loopTimes != scan)
     {
-      piezoValueSUM = piezoValueSUM + piezoValue;
-      RimPiezoValueSUM = RimPiezoValueSUM + RimPiezoValue;
+//      piezoValueSUM = piezoValueSUM + piezoValue;
+//      RimPiezoValueSUM = RimPiezoValueSUM + RimPiezoValue;
 
       if (piezoValue > velocity)
       {
@@ -2851,8 +2851,8 @@ void HelloDrum::dualPiezoMUX()
   {
     if (loopTimes != scantime)
     {
-      piezoValueSUM = piezoValueSUM + piezoValue;
-      RimPiezoValueSUM = RimPiezoValueSUM + RimPiezoValue;
+//      piezoValueSUM = piezoValueSUM + piezoValue;
+//      RimPiezoValueSUM = RimPiezoValueSUM + RimPiezoValue;
 
       if (piezoValue > velocity)
       {
