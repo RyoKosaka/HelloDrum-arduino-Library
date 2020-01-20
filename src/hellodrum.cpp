@@ -4145,6 +4145,11 @@ void HelloDrumButton::readButtonState()
 
   ////////////////////////////// EDIT START////////////////////////////////
 
+  if (nameIndex > nameIndexMax) // Reset nameIndex
+  {
+    nameIndex = 0;
+  }
+
   if (button_set == LOW && buttonState == true && editCheck == false)
   {
     editCheck = true;
