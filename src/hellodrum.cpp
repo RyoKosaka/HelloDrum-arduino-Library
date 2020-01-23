@@ -17,7 +17,7 @@
 #endif
 
 //Pad with 2 sensors.
-HelloDrum::HelloDrum(int pin1, int pin2)
+HelloDrum::HelloDrum(byte pin1, byte pin2)
 {
   pin_1 = pin1;
   pin_2 = pin2;
@@ -37,7 +37,7 @@ HelloDrum::HelloDrum(int pin1, int pin2)
 }
 
 //Pad with a sensor.
-HelloDrum::HelloDrum(int pin1)
+HelloDrum::HelloDrum(byte pin1)
 {
   pin_1 = pin1;
 
@@ -56,7 +56,7 @@ HelloDrum::HelloDrum(int pin1)
 }
 
 //MUX(4051) pin define
-HelloDrumMUX_4051::HelloDrumMUX_4051(int pin1, int pin2, int pin3, int pinA) //s0,s1,s2, analogPin
+HelloDrumMUX_4051::HelloDrumMUX_4051(byte pin1, byte pin2, byte pin3, byte pinA) //s0,s1,s2, analogPin
 {
   pin_1 = pin1;
   pin_2 = pin2;
@@ -66,17 +66,17 @@ HelloDrumMUX_4051::HelloDrumMUX_4051(int pin1, int pin2, int pin3, int pinA) //s
   selectPins[1] = pin_2;
   selectPins[2] = pin_3;
 
-  for (int i = 0; i < 3; i++)
+  for (byte i = 0; i < 3; i++)
   {
     pinMode(selectPins[i], OUTPUT);
     digitalWrite(selectPins[i], HIGH);
   }
-  muxIndex = ++muxIndex;
   muxNum = muxIndex;
+  muxIndex = ++muxIndex;
 }
 
 //MUX(4067) pin define
-HelloDrumMUX_4067::HelloDrumMUX_4067(int pin1, int pin2, int pin3, int pin4, int pinA) //s0,s1,s2,s3,analogPin
+HelloDrumMUX_4067::HelloDrumMUX_4067(byte pin1, byte pin2, byte pin3, byte pin4, byte pinA) //s0,s1,s2,s3,analogPin
 {
   pin_1 = pin1;
   pin_2 = pin2;
@@ -88,17 +88,17 @@ HelloDrumMUX_4067::HelloDrumMUX_4067(int pin1, int pin2, int pin3, int pin4, int
   selectPins[2] = pin_3;
   selectPins[3] = pin_4;
 
-  for (int i = 0; i < 4; i++)
+  for (byte i = 0; i < 4; i++)
   {
     pinMode(selectPins[i], OUTPUT);
     digitalWrite(selectPins[i], HIGH);
   }
-  muxIndex = ++muxIndex;
   muxNum = muxIndex;
+  muxIndex = ++muxIndex;
 }
 
 //control button
-HelloDrumButton::HelloDrumButton(int pin1, int pin2, int pin3, int pin4, int pin5)
+HelloDrumButton::HelloDrumButton(byte pin1, byte pin2, byte pin3, byte pin4, byte pin5)
 {
   pin_1 = pin1; //EDIT
   pin_2 = pin2; //UP
@@ -108,14 +108,14 @@ HelloDrumButton::HelloDrumButton(int pin1, int pin2, int pin3, int pin4, int pin
 }
 
 //Knob
-HelloDrumKnob::HelloDrumKnob(int pin1)
+HelloDrumKnob::HelloDrumKnob(byte pin1)
 {
   pin_1 = pin1;
 }
 
 ///////////////////// 1. SENSING without EEPROM //////////////////////////
 
-void HelloDrum::singlePiezo(int sens, int thre1, int scan, int mask)
+void HelloDrum::singlePiezo(byte sens, byte thre1, byte scan, byte mask)
 {
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
@@ -188,7 +188,7 @@ void HelloDrum::singlePiezo(int sens, int thre1, int scan, int mask)
   }
 }
 
-void HelloDrum::dualPiezo(int sens, int thre1, int scan, int mask)
+void HelloDrum::dualPiezo(byte sens, byte thre1, byte scan, byte mask)
 {
 #ifdef ESP32
   int thre1Raw = thre1 * 40;
@@ -303,7 +303,7 @@ void HelloDrum::dualPiezo(int sens, int thre1, int scan, int mask)
   }
 }
 
-void HelloDrum::HH(int sens, int thre1, int scan, int mask)
+void HelloDrum::HH(byte sens, byte thre1, byte scan, byte mask)
 {
 
 #ifdef ESP32
@@ -378,7 +378,7 @@ void HelloDrum::HH(int sens, int thre1, int scan, int mask)
 }
 
 ////////////////////////////////////////////
-void HelloDrum::HH2zone(int sens, int thre1, int scan, int mask)
+void HelloDrum::HH2zone(byte sens, byte thre1, byte scan, byte mask)
 {
 
 #ifdef ESP32
@@ -481,7 +481,7 @@ void HelloDrum::HH2zone(int sens, int thre1, int scan, int mask)
   }
 }
 
-void HelloDrum::cymbal2zone(int sens, int thre1, int scan, int mask)
+void HelloDrum::cymbal2zone(byte sens, byte thre1, byte scan, byte mask)
 {
 
 #ifdef ESP32
@@ -582,7 +582,7 @@ void HelloDrum::cymbal2zone(int sens, int thre1, int scan, int mask)
   }
 }
 
-void HelloDrum::cymbal3zone(int sens, int thre1, int scan, int mask)
+void HelloDrum::cymbal3zone(byte sens, byte thre1, byte scan, byte mask)
 {
 
 #ifdef ESP32
@@ -712,7 +712,7 @@ void HelloDrum::cymbal3zone(int sens, int thre1, int scan, int mask)
   }
 }
 
-void HelloDrum::TCRT5000(int sens, int thre1, int thre2, int scan)
+void HelloDrum::TCRT5000(byte sens, byte thre1, byte thre2, byte scan)
 {
   int TCRT = analogRead(pin_1);
 
@@ -839,7 +839,7 @@ void HelloDrum::TCRT5000(int sens, int thre1, int thre2, int scan)
   }
 }
 
-void HelloDrum::FSR(int sens, int thre1, int thre2, int scan)
+void HelloDrum::FSR(byte sens, byte thre1, byte thre2, byte scan)
 {
 
 #ifdef ESP32
@@ -1850,7 +1850,7 @@ void HelloDrumMUX_4051::scan()
   for (byte pin = muxNum * 8; pin < (muxNum + 1) * 8; pin++)
   {
 
-    for (int i = 0; i < 3; i++)
+    for (byte i = 0; i < 3; i++)
     {
       if (pin & (1 << i))
         digitalWrite(selectPins[i], HIGH);
@@ -1869,7 +1869,7 @@ void HelloDrumMUX_4067::scan()
   for (byte pin = muxNum * 16; pin < (muxNum + 1) * 16; pin++)
   {
 
-    for (int i = 0; i < 4; i++)
+    for (byte i = 0; i < 4; i++)
     {
       if (pin & (1 << i))
         digitalWrite(selectPins[i], HIGH);
@@ -1883,7 +1883,7 @@ void HelloDrumMUX_4067::scan()
 
 //////////////////////// 4. MUX SENSING without EEPROM //////////////////////////
 
-void HelloDrum::singlePiezoMUX(int sens, int thre1, int scan, int mask)
+void HelloDrum::singlePiezoMUX(byte sens, byte thre1, byte scan, byte mask)
 {
 
 #ifdef ESP32
@@ -1956,7 +1956,7 @@ void HelloDrum::singlePiezoMUX(int sens, int thre1, int scan, int mask)
   }
 }
 
-void HelloDrum::dualPiezoMUX(int sens, int thre1, int scan, int mask)
+void HelloDrum::dualPiezoMUX(byte sens, byte thre1, byte scan, byte mask)
 {
 
 #ifdef ESP32
@@ -2072,7 +2072,7 @@ void HelloDrum::dualPiezoMUX(int sens, int thre1, int scan, int mask)
   }
 }
 
-void HelloDrum::HHMUX(int sens, int thre1, int scan, int mask)
+void HelloDrum::HHMUX(byte sens, byte thre1, byte scan, byte mask)
 {
 
 #ifdef ESP32
@@ -2147,7 +2147,7 @@ void HelloDrum::HHMUX(int sens, int thre1, int scan, int mask)
 }
 
 ////////////////////////////////////////////
-void HelloDrum::HH2zoneMUX(int sens, int thre1, int scan, int mask)
+void HelloDrum::HH2zoneMUX(byte sens, byte thre1, byte scan, byte mask)
 {
 
 #ifdef ESP32
@@ -2249,7 +2249,7 @@ void HelloDrum::HH2zoneMUX(int sens, int thre1, int scan, int mask)
   }
 }
 
-void HelloDrum::cymbal2zoneMUX(int sens, int thre1, int scan, int mask)
+void HelloDrum::cymbal2zoneMUX(byte sens, byte thre1, byte scan, byte mask)
 {
 
 #ifdef ESP32
@@ -2350,7 +2350,7 @@ void HelloDrum::cymbal2zoneMUX(int sens, int thre1, int scan, int mask)
   }
 }
 
-void HelloDrum::cymbal3zoneMUX(int sens, int thre1, int scan, int mask)
+void HelloDrum::cymbal3zoneMUX(byte sens, byte thre1, byte scan, byte mask)
 {
 
 #ifdef ESP32
@@ -2480,7 +2480,7 @@ void HelloDrum::cymbal3zoneMUX(int sens, int thre1, int scan, int mask)
   }
 }
 
-void HelloDrum::TCRT5000MUX(int sens, int thre1, int thre2, int scan)
+void HelloDrum::TCRT5000MUX(byte sens, byte thre1, byte thre2, byte scan)
 {
   int TCRT = rawValue[pin_1];
 
@@ -2608,7 +2608,7 @@ void HelloDrum::TCRT5000MUX(int sens, int thre1, int thre2, int scan)
 }
 
 //with EEPROM と比較！
-void HelloDrum::FSRMUX(int sens, int thre1, int thre2, int scan)
+void HelloDrum::FSRMUX(byte sens, byte thre1, byte thre2, byte scan)
 {
 
 #ifdef ESP32
@@ -3679,7 +3679,7 @@ void HelloDrum::settingEnable()
         note = note + UP[itemNumber];
         if (note > 127)
         {
-          note = 127;
+          note = 0;
         }
         EEPROM_ESP.write((padNum * 7) + 4, note);
         noteOpen = note;
@@ -3689,7 +3689,7 @@ void HelloDrum::settingEnable()
         noteRim = noteRim + UP[itemNumber];
         if (noteRim > 127)
         {
-          noteRim = 127;
+          noteRim = 0;
         }
         EEPROM_ESP.write((padNum * 7) + 5, noteRim);
         noteClose = noteRim;
@@ -3700,7 +3700,7 @@ void HelloDrum::settingEnable()
         noteCup = noteCup + UP[itemNumber];
         if (noteCup > 127)
         {
-          noteCup = 127;
+          noteCup = 0;
         }
         EEPROM_ESP.write((padNum * 7) + 6, noteCup);
         noteCloseEdge = noteCup;
@@ -3757,9 +3757,9 @@ void HelloDrum::settingEnable()
 
       case 4:
         note = note - UP[itemNumber];
-        if (note < 0)
+        if (note == 255)
         {
-          note = 0;
+          note = 127;
         }
         EEPROM_ESP.write((padNum * 7) + 4, note);
         noteOpen = note;
@@ -3767,9 +3767,9 @@ void HelloDrum::settingEnable()
 
       case 5:
         noteRim = noteRim - UP[itemNumber];
-        if (noteRim < 0)
+        if (noteRim == 255)
         {
-          noteRim = 0;
+          noteRim = 127;
         }
         EEPROM_ESP.write((padNum * 7) + 5, noteRim);
         noteClose = noteRim;
@@ -3778,9 +3778,9 @@ void HelloDrum::settingEnable()
 
       case 6:
         noteCup = noteCup - UP[itemNumber];
-        if (noteCup < 0)
+        if (noteCup == 255)
         {
-          noteCup = 0;
+          noteCup = 127;
         }
         EEPROM_ESP.write((padNum * 7) + 6, noteCup);
         noteCloseEdge = noteCup;
@@ -3887,7 +3887,7 @@ void HelloDrum::settingEnable()
         note = note + UP[itemNumber];
         if (note > 127)
         {
-          note = 127;
+          note = 0;
         }
         EEPROM.write((padNum * 7) + 4, note);
         noteOpen = note;
@@ -3897,7 +3897,7 @@ void HelloDrum::settingEnable()
         noteRim = noteRim + UP[itemNumber];
         if (noteRim > 127)
         {
-          noteRim = 127;
+          noteRim = 0;
         }
         EEPROM.write((padNum * 7) + 5, noteRim);
         noteClose = noteRim;
@@ -3908,7 +3908,7 @@ void HelloDrum::settingEnable()
         noteCup = noteCup + UP[itemNumber];
         if (noteCup > 127)
         {
-          noteCup = 127;
+          noteCup = 0;
         }
         EEPROM.write((padNum * 7) + 6, noteCup);
         noteCloseEdge = noteCup;
@@ -3964,9 +3964,9 @@ void HelloDrum::settingEnable()
 
       case 4:
         note = note - UP[itemNumber];
-        if (note < 0)
+        if (note == 255)
         {
-          note = 0;
+          note = 127;
         }
         EEPROM.write((padNum * 7) + 4, note);
         noteOpen = note;
@@ -3974,9 +3974,9 @@ void HelloDrum::settingEnable()
 
       case 5:
         noteRim = noteRim - UP[itemNumber];
-        if (noteRim < 0)
+        if (noteRim == 255)
         {
-          noteRim = 0;
+          noteRim = 127;
         }
         EEPROM.write((padNum * 7) + 5, noteRim);
         noteClose = noteRim;
@@ -3985,9 +3985,9 @@ void HelloDrum::settingEnable()
 
       case 6:
         noteCup = noteCup - UP[itemNumber];
-        if (noteCup < 0)
+        if (noteCup == 255)
         {
-          noteCup = 0;
+          noteCup = 127;
         }
         EEPROM.write((padNum * 7) + 6, noteCup);
         noteCloseEdge = noteCup;
@@ -4346,11 +4346,11 @@ void HelloDrumKnob::readMUX()
 
 //For Display
 
-int HelloDrumButton::GetVelocity()
+byte HelloDrumButton::GetVelocity()
 {
   return showVelocity;
 }
-int HelloDrumButton::GetSettingValue()
+byte HelloDrumButton::GetSettingValue()
 {
   return showValue;
 }
@@ -4371,7 +4371,7 @@ bool HelloDrumButton::GetDisplayState()
   }
   return showFlag;
 }
-int HelloDrumButton::GetEditdoneState()
+bool HelloDrumButton::GetEditdoneState()
 {
   return editdone;
 }
@@ -4404,11 +4404,11 @@ char *HelloDrumButton::GetHitPad()
 }
 
 /*
-int HelloDrumButton::GetItemNumber()
+byte HelloDrumButton::GetItemNumber()
 {
   return itemNumber;
 }
-int HelloDrumButton::GetChangeState()
+bool HelloDrumButton::GetChangeState()
 {
   return change;
 }

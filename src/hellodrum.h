@@ -70,27 +70,27 @@ static char *showInstrument[] = {
 static bool push;
 static bool showLCD;
 static bool showFlag;
-static int showVelocity;
-static int nameIndex;
-static int nameIndexMax;
-static int showValue = 0;
-static int padIndex = 0;
-static int muxIndex = -1;
-static int HHCnum = -1;
-static int HHnum = -1;
+static byte showVelocity;
+static byte nameIndex;
+static byte nameIndexMax;
+static byte showValue = 0;
+static byte padIndex = 0;
+static byte muxIndex = 0;
+static byte HHCnum = 0;
+static byte HHnum = 0;
 static bool edit;
 static bool editCheck;
 static bool editdone;
 static bool change;
-static int itemNumber;
+static byte itemNumber;
 static bool buttonState;
 static bool buttonState_set;
-static int button_set;
-static int button_up;
-static int button_down;
-static int button_next;
-static int button_back;
-static int UP[7] = {1, 1, 1, 1, 1, 1, 1}; //{sensitivity, threshold1, scantime, masktime, note}
+static bool button_set;
+static bool button_up;
+static bool button_down;
+static bool button_next;
+static bool button_back;
+static byte UP[7] = {1, 1, 1, 1, 1, 1, 1}; //{sensitivity, threshold1, scantime, masktime, note}
 
 #ifdef __AVR_ATmega328P__
 static int rawValue[16];                  //2 * 8chanel Mux 
@@ -98,46 +98,46 @@ static int rawValue[16];                  //2 * 8chanel Mux
 static int rawValue[64];                  //8 * 8chanel Mux
 #endif
 
-//static int UP_ADVANCE[4] = {1, 50, 1, 1};  //{scantime, rim / head, pedal velocity ,masktime}
+//static byte UP_ADVANCE[4] = {1, 50, 1, 1};  //{scantime, rim / head, pedal velocity ,masktime}
 
 class HelloDrum
 {
 public:
-  HelloDrum(int pin1, int pin2);
-  HelloDrum(int pin1);
+  HelloDrum(byte pin1, byte pin2);
+  HelloDrum(byte pin1);
 
-  void singlePiezoMUX(int sens, int thre1, int scan, int mask);
+  void singlePiezoMUX(byte sens, byte thre1, byte scan, byte mask);
   void singlePiezoMUX();
-  void dualPiezoMUX(int sens, int thre1, int scan, int mask);
+  void dualPiezoMUX(byte sens, byte thre1, byte scan, byte mask);
   void dualPiezoMUX();
-  void HHMUX(int sens, int thre1, int scan, int mask);
+  void HHMUX(byte sens, byte thre1, byte scan, byte mask);
   void HHMUX();
-  void HH2zoneMUX(int sens, int thre1, int scan, int mask);
+  void HH2zoneMUX(byte sens, byte thre1, byte scan, byte mask);
   void HH2zoneMUX();
-  void cymbal3zoneMUX(int sens, int thre1, int scan, int mask);
+  void cymbal3zoneMUX(byte sens, byte thre1, byte scan, byte mask);
   void cymbal3zoneMUX();
-  void cymbal2zoneMUX(int sens, int thre1, int scan, int mask);
+  void cymbal2zoneMUX(byte sens, byte thre1, byte scan, byte mask);
   void cymbal2zoneMUX();
-  void TCRT5000MUX(int sens, int thre1, int thre2, int scan);
+  void TCRT5000MUX(byte sens, byte thre1, byte thre2, byte scan);
   void TCRT5000MUX();
-  void FSRMUX(int sens, int thre1, int thre2, int scan);
+  void FSRMUX(byte sens, byte thre1, byte thre2, byte scan);
   void FSRMUX();
 
-  void singlePiezo(int sens, int thre1, int scan, int mask);
+  void singlePiezo(byte sens, byte thre1, byte scan, byte mask);
   void singlePiezo();
-  void dualPiezo(int sens, int thre1, int scan, int mask);
+  void dualPiezo(byte sens, byte thre1, byte scan, byte mask);
   void dualPiezo();
-  void HH(int sens, int thre1, int scan, int mask);
+  void HH(byte sens, byte thre1, byte scan, byte mask);
   void HH();
-  void HH2zone(int sens, int thre1, int scan, int mask);
+  void HH2zone(byte sens, byte thre1, byte scan, byte mask);
   void HH2zone();
-  void cymbal3zone(int sens, int thre1, int scan, int mask);
+  void cymbal3zone(byte sens, byte thre1, byte scan, byte mask);
   void cymbal3zone();
-  void cymbal2zone(int sens, int thre1, int scan, int mask);
+  void cymbal2zone(byte sens, byte thre1, byte scan, byte mask);
   void cymbal2zone();
-  void TCRT5000(int sens, int thre1, int thre2, int scan);
+  void TCRT5000(byte sens, byte thre1, byte thre2, byte scan);
   void TCRT5000();
-  void FSR(int sens, int thre1, int thre2, int scan);
+  void FSR(byte sens, byte thre1, byte thre2, byte scan);
   void FSR();
 
   void settingName(char *instrumentName);
@@ -149,11 +149,11 @@ public:
   int velocity;
   int velocityRim;
   int velocityCup;
-  int pedalCC;
+  byte pedalCC;
 
-  int exValue;
-  int exTCRT = 0;
-  int exFSR = 0;
+//  int exValue;
+  byte exTCRT = 0;
+  byte exFSR = 0;
   bool hit;
   bool openHH = false;
   bool closeHH = false;
@@ -167,29 +167,29 @@ public:
   bool settingHHC = false;
   bool chokeFlag;
 
-  char *GetItem(int i);
+  char *GetItem(byte i);
 
-  int value;
-  int padNum;
+  byte value;
+  byte padNum;
 
-  int note;
-  int noteRim;
-  int noteCup;
-  int noteOpen;
-  int noteClose;
-  int noteOpenEdge;
-  int noteCloseEdge;
-  int threshold1;
-  int threshold2;
-  int scantime;
-  int masktime;
-  int sensitivity;
+  byte note;
+  byte noteRim;
+  byte noteCup;
+  byte noteOpen;
+  byte noteClose;
+  byte noteOpenEdge;
+  byte noteCloseEdge;
+  byte threshold1;
+  byte threshold2;
+  byte scantime;
+  byte masktime;
+  byte sensitivity;
 
   //int initialValue[5];
 
 private:
-  int pin_1;
-  int pin_2;
+  byte pin_1;
+  byte pin_2;
   int piezoValue;
   int RimPiezoValue;
   int sensorValue;
@@ -209,45 +209,45 @@ private:
 class HelloDrumMUX_4051
 {
 public:
-  HelloDrumMUX_4051(int pin1, int pin2, int pin3, int pinA);
+  HelloDrumMUX_4051(byte pin1, byte pin2, byte pin3, byte pinA);
   void scan();
-  int selectPins[3];
-  int muxNum;
+  byte selectPins[3];
+  byte muxNum;
 
 private:
-  int pin_1;
-  int pin_2;
-  int pin_3;
-  int pin_A;
+  byte pin_1;
+  byte pin_2;
+  byte pin_3;
+  byte pin_A;
 };
 
 class HelloDrumMUX_4067
 {
 public:
-  HelloDrumMUX_4067(int pin1, int pin2, int pin3, int pin4, int pinA);
+  HelloDrumMUX_4067(byte pin1, byte pin2, byte pin3, byte pin4, byte pinA);
   void scan();
-  int selectPins[4];
-  int muxNum;
+  byte selectPins[4];
+  byte muxNum;
 
 private:
-  int pin_1;
-  int pin_2;
-  int pin_3;
-  int pin_4;
-  int pin_A;
+  byte pin_1;
+  byte pin_2;
+  byte pin_3;
+  byte pin_4;
+  byte pin_A;
 };
 
 class HelloDrumButton
 {
 public:
-  HelloDrumButton(int pin1, int pin2, int pin3, int pin4, int pin5);
+  HelloDrumButton(byte pin1, byte pin2, byte pin3, byte pin4, byte pin5);
 
   void readButtonState();
 
-  int GetSettingValue();
-  int GetVelocity();
+  byte GetSettingValue();
+  byte GetVelocity();
   bool GetEditState();
-  int GetEditdoneState();
+  bool GetEditdoneState();
   bool GetPushState();
   bool GetDisplayState();
   char *GetPadName();
@@ -258,23 +258,23 @@ public:
   int NEXTBACK;
 
 private:
-  int pin_1;
-  int pin_2;
-  int pin_3;
-  int pin_4;
-  int pin_5;
+  byte pin_1;
+  byte pin_2;
+  byte pin_3;
+  byte pin_4;
+  byte pin_5;
 };
 
 class HelloDrumKnob
 {
 public:
-  HelloDrumKnob(int pin1);
+  HelloDrumKnob(byte pin1);
   void read();
   void readMUX();
   int knobValue;
 
 private:
-  int pin_1;
+  byte pin_1;
 };
 
 /* 
