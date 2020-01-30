@@ -1,6 +1,6 @@
 # HelloDrum Arduino Library
 This is a library for making E-Drum with Arduino.  
-**Ver.0.7.2(12/31/2019) Work in progress.** 
+**Ver.0.7.3(1/30/2020) Work in progress.** 
 
 ## Description
 
@@ -20,6 +20,7 @@ Use at your own risk.
 - Compatible with SoftPot, FSR and Optical(TCRT5000) type hi-hat controllers
 - Sensing with MUX(4051 and 4067)
 - Setting mode with LCD or OLED
+- Setting mode with LCD Keypad Shield (DFRobot, HiLetgo)
 - Sensitivity, Threshold, Scan Time, Mask Time, Note Number can be set with each pad
 - Works with ESP32 and Teensy and AVR boards such as UNO and MEGA.
 
@@ -140,6 +141,10 @@ The STL data of pads from 6 inches to 12 inches, hi-hat controllers(<https://www
 
 ## Release History
 
+* 0.7.3
+   - Update variables type
+   - Add button function for LCD keypad shield
+   - Add sample code "lcdShield.ino" for LCD keypad shield
 * 0.7.2
    - Update sample code
    - Add Knob function
