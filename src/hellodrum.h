@@ -1,5 +1,5 @@
 /*
-  " HELLO DRUM LIBRARY" Ver.0.7.2
+  " HELLO DRUM LIBRARY" Ver.0.7.3
   
   by Ryo Kosaka
 
@@ -76,8 +76,8 @@ static byte nameIndexMax;
 static byte showValue = 0;
 static byte padIndex = 0;
 static byte muxIndex = 0;
-static byte HHCnum = 0;
-static byte HHnum = 0;
+static byte HHCnum = 255;
+static byte HHnum = 255;
 static bool edit;
 static bool editCheck;
 static bool editdone;
@@ -263,6 +263,31 @@ private:
   byte pin_3;
   byte pin_4;
   byte pin_5;
+};
+
+class HelloDrumButtonLcdShield
+{
+public:
+  HelloDrumButtonLcdShield(byte pin1);
+
+  void readButtonState();
+
+  byte GetSettingValue();
+  byte GetVelocity();
+  bool GetEditState();
+  bool GetEditdoneState();
+  bool GetPushState();
+  bool GetDisplayState();
+  char *GetPadName();
+  char *GetSettingItem();
+  char *GetHitPad();
+
+  int UPDOWN;
+  int NEXTBACK;
+
+private:
+  int buttonValue;
+  byte pin_1;
 };
 
 class HelloDrumKnob

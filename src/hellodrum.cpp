@@ -1,5 +1,5 @@
 /*
-  " HELLO DRUM LIBRARY" Ver.0.7.2
+  " HELLO DRUM LIBRARY" Ver.0.7.3
   
   by Ryo Kosaka
 
@@ -105,6 +105,12 @@ HelloDrumButton::HelloDrumButton(byte pin1, byte pin2, byte pin3, byte pin4, byt
   pin_3 = pin3; //DOWN
   pin_4 = pin4; //NEXT
   pin_5 = pin5; //BACK
+}
+
+//control button
+HelloDrumButtonLcdShield::HelloDrumButtonLcdShield(byte pin1)
+{
+  pin_1 = pin1; //button's analog pin
 }
 
 //Knob
@@ -4262,6 +4268,157 @@ void HelloDrumButton::readButtonState()
   }
 }
 
+/////////////////// 7-2. BUTTON (LCD KEYPAD SHIELD) ////////////////////////
+
+void HelloDrumButtonLcdShield::readButtonState()
+{
+
+  pinMode(pin_1, INPUT);
+  buttonValue = analogRead(pin_1);
+
+  //read buttons analog value
+  if(buttonValue > 1000){
+    button_set = HIGH;
+    button_up = HIGH;
+    button_down = HIGH;
+    button_next = HIGH;
+    button_back = HIGH;
+  }
+  else if(buttonValue >= 700 && buttonValue < 1000){
+    button_set = LOW;
+  }
+  else if(buttonValue >= 500 && buttonValue < 700){
+    button_back = LOW;
+  }
+  else if(buttonValue >= 300 && buttonValue < 500){
+    button_down = LOW;
+  }
+  else if(buttonValue >= 50 && buttonValue < 300){
+    button_up = LOW;
+  }
+  else if(buttonValue < 50){
+    button_next = LOW;
+  }
+
+  ////////////////////////////// EDIT START////////////////////////////////
+
+  if (nameIndex > nameIndexMax) // Reset nameIndex
+  {
+    nameIndex = 0;
+  }
+
+  if (button_set == LOW && buttonState == true && editCheck == false)
+  {
+    editCheck = true;
+    edit = true;
+    buttonState = false;
+    buttonState_set = false;
+    delay(30);
+  }
+
+  if (button_set == LOW && buttonState == true && editCheck == true)
+  {
+    editCheck = false;
+    editdone = true;
+    buttonState = false;
+    buttonState_set = true;
+    delay(30);
+  }
+
+  if (button_set == HIGH)
+  {
+    edit = false;
+    editdone = false;
+  }
+
+  /////////////////////////// UP DOWN ///////////////////////////////////////
+
+  if (button_up == LOW && buttonState == true && editCheck == false)
+  {
+    UPDOWN = ++UPDOWN;
+
+    if (UPDOWN < 0)
+    {
+      UPDOWN = nameIndexMax;
+    }
+    if (UPDOWN > nameIndexMax)
+    {
+      UPDOWN = 0;
+    }
+
+    nameIndex = UPDOWN;
+    push = true;
+    buttonState = false;
+    delay(30);
+  }
+
+  if (button_down == LOW && buttonState == true && editCheck == false)
+  {
+    UPDOWN = --UPDOWN;
+
+    if (UPDOWN < 0)
+    {
+      UPDOWN = nameIndexMax;
+    }
+    if (UPDOWN > nameIndexMax)
+    {
+      UPDOWN = 0;
+    }
+    nameIndex = UPDOWN;
+    push = true;
+    buttonState = false;
+    delay(30);
+  }
+
+  ///////////////////////////// NEXT BACK ////////////////////////////////
+
+  if (button_next == LOW && buttonState == true && editCheck == false)
+  {
+    NEXTBACK = ++NEXTBACK;
+
+    if (NEXTBACK < 0)
+    {
+      NEXTBACK = 6;
+    }
+    if (NEXTBACK > 6)
+    {
+      NEXTBACK = 0;
+    }
+    itemNumber = NEXTBACK;
+    nameIndex = UPDOWN;
+    push = true;
+    buttonState = false;
+    delay(30);
+  }
+
+  if (button_back == LOW && buttonState == true && editCheck == false)
+  {
+    NEXTBACK = --NEXTBACK;
+
+    if (NEXTBACK < 0)
+    {
+      NEXTBACK = 6;
+    }
+    if (NEXTBACK > 6)
+    {
+      NEXTBACK = 0;
+    }
+    itemNumber = NEXTBACK;
+    nameIndex = UPDOWN;
+    push = true;
+    buttonState = false;
+    delay(30);
+  }
+
+  //When you take your hand off the button
+  if (buttonState == false && button_up == HIGH && button_down == HIGH && button_next == HIGH && button_back == HIGH && button_set == HIGH)
+  {
+    push = false;
+    buttonState = true;
+    change = false;
+  }
+}
+
 /////////////////////// 5. LCD  //////////////////////////
 /*
 void HelloDrumLCD::show()
@@ -4404,6 +4561,65 @@ char *HelloDrumButton::GetSettingItem()
   }
 }
 char *HelloDrumButton::GetHitPad()
+{
+  return showInstrument[padIndex];
+}
+
+/////////////// For Display Keypad ////////////////////
+
+byte HelloDrumButtonLcdShield::GetVelocity()
+{
+  return showVelocity;
+}
+byte HelloDrumButtonLcdShield::GetSettingValue()
+{
+  return showValue;
+}
+bool HelloDrumButtonLcdShield::GetEditState()
+{
+  return edit;
+}
+bool HelloDrumButtonLcdShield::GetDisplayState()
+{
+  if (showLCD == true)
+  {
+    showLCD = false;
+    showFlag = true;
+  }
+  else
+  {
+    showFlag = false;
+  }
+  return showFlag;
+}
+bool HelloDrumButtonLcdShield::GetEditdoneState()
+{
+  return editdone;
+}
+bool HelloDrumButtonLcdShield::GetPushState()
+{
+  return push;
+}
+char *HelloDrumButtonLcdShield::GetPadName()
+{
+  return showInstrument[nameIndex];
+}
+char *HelloDrumButtonLcdShield::GetSettingItem()
+{
+  if (nameIndex == HHCnum)
+  {
+    return itemHHC[itemNumber];
+  }
+  else if (nameIndex == HHnum)
+  {
+    return itemHH[itemNumber];
+  }
+  else
+  {
+    return item[itemNumber];
+  }
+}
+char *HelloDrumButtonLcdShield::GetHitPad()
 {
   return showInstrument[padIndex];
 }
