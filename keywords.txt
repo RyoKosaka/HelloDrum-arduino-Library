@@ -2,6 +2,7 @@ hellodrum.h	KEYWORD1
 hellodrum	KEYWORD1
 HelloDrum	KEYWORD1
 HelloDrumButton	KEYWORD1
+HelloDrumButtonLcdShield	KEYWORD1
 HelloDrumKnob	KEYWORD1
 HelloDrumMUX_4051	KEYWORD1
 HelloDrumMUX_4067	KEYWORD1
