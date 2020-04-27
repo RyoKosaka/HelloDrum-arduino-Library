@@ -1,7 +1,7 @@
 /*
   "HELLO DRUM LIBRARY" Ver.0.7.4
   
-  by Ryo Kosaka
+  by Ryo Kosaka, Claudio Cas
 
   GitHub : https://github.com/RyoKosaka/HelloDrum-arduino-Library
   Blog : https://open-e-drums.tumblr.com/
