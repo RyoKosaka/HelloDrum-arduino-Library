@@ -163,9 +163,9 @@ A film switch is used for the edge of the cymbal. This is a quicker response tha
 <img src="https://open-e-drums.com/images/sensing/cy3.png" width="800px">  
 It's almost the same as 2-Zone. So far, it only supports YAMAHA's PCY135/155.  
 In the PCY135/155, the film switch value is divided by the voltage divider circuit. So, you need to set the Edge Threshold and Cup Threshold. Since the Cup switch has a higher value, set the Cup Threshold higher than the Edge.  
-When I checked with the PCY-155
-Cup Threshold : 9
-Edge Threshold : 5
+When I checked with the PCY-155  
+    Cup Threshold : 4  
+    Edge Threshold : 2       
 it worked well.
 
     - Sensitivity (1 - 100)
