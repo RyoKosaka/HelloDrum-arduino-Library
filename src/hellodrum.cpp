@@ -7,7 +7,7 @@
   Blog : https://open-e-drums.tumblr.com/
 */
 
-#define DEBUG //<-- uncomment this line to have debug value on Serial
+//#define DEBUG //<-- uncomment this line to have debug value on Serial
 
 #include "hellodrum.h"
 #include "Arduino.h"
