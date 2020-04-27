@@ -7,7 +7,7 @@
   Blog : https://open-e-drums.tumblr.com/
 */
 
-//#define DEBUG //<-- uncomment this line to have debug value on Serial
+#define DEBUG_DRUM //<-- uncomment this line to have debug value on Serial
 
 #include "hellodrum.h"
 #include "Arduino.h"
@@ -174,7 +174,7 @@ void HelloDrum::singlePiezoSensing(byte sens, byte thre, byte scanTime, byte mas
     if (millis() - time_hit >= scanTime)
     {
 
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
       int prevVel = velocity;
 #endif
 
@@ -188,7 +188,7 @@ void HelloDrum::singlePiezoSensing(byte sens, byte thre, byte scanTime, byte mas
       showLCD = true;
       padIndex = padNum;
 
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
       Serial.print("Hit : ");
       Serial.print(velocity);
       Serial.print(" (raw:");
@@ -256,7 +256,7 @@ void HelloDrum::dualPiezoSensing(byte sens, byte thre, byte scanTime, byte maskT
     if (millis() - time_hit >= scanTime)
     {
 
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
       int prevVel = velocity;
       int prevVelR = velocityRim;
 #endif
@@ -269,7 +269,7 @@ void HelloDrum::dualPiezoSensing(byte sens, byte thre, byte scanTime, byte maskT
         velocity = curve(velocity, Threshold, Sensitivity, curvetype);
         velocityRim = curve(velocityRim, Threshold, Sensitivity, curvetype);
 
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
         Serial.print("HitRim : ");
         Serial.print(velocity);
         Serial.print(", ");
@@ -299,7 +299,7 @@ void HelloDrum::dualPiezoSensing(byte sens, byte thre, byte scanTime, byte maskT
         velocity = curve(velocity, Threshold, Sensitivity, curvetype);
         velocityRim = curve(velocityRim, Threshold, Sensitivity, curvetype);
 
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
         Serial.print("Hit : ");
         Serial.print(velocity);
         Serial.print(", ");
@@ -384,7 +384,7 @@ void HelloDrum::cymbal2zoneSensing(byte sens, byte thre, byte scanTime, byte mas
     if (millis() - time_hit >= scanTime)
     {
 
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
       int prevVel = velocity;
 #endif
 
@@ -397,7 +397,7 @@ void HelloDrum::cymbal2zoneSensing(byte sens, byte thre, byte scanTime, byte mas
       {
         velocity = curve(velocity, Threshold, Sensitivity, curvetype);
 
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
         Serial.print("Hit Bow : ");
         Serial.print(velocity);
         Serial.print(" (raw:");
@@ -423,7 +423,7 @@ void HelloDrum::cymbal2zoneSensing(byte sens, byte thre, byte scanTime, byte mas
       {
         velocity = curve(velocity, Threshold, Sensitivity, curvetype);
 
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
         Serial.print("Hit Edge : ");
         Serial.print(velocity);
         Serial.print(" (raw:");
@@ -448,7 +448,7 @@ void HelloDrum::cymbal2zoneSensing(byte sens, byte thre, byte scanTime, byte mas
       else if (lastSensorValue > edgeThreshold && firstSensorValue > edgeThreshold)
       {
 
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
         Serial.print("Choke : ");
         Serial.print(velocity);
         Serial.print(" (raw:");
@@ -525,7 +525,7 @@ void HelloDrum::cymbal3zoneSensing(byte sens, byte thre, byte scanTime, byte mas
     if (millis() - time_hit >= scanTime)
     {
 
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
       int prevVel = velocity;
 #endif
 
@@ -537,7 +537,7 @@ void HelloDrum::cymbal3zoneSensing(byte sens, byte thre, byte scanTime, byte mas
       if (velocity > Threshold && firstSensorValue < edgeThreshold && lastSensorValue < edgeThreshold)
       {
         velocity = curve(velocity, Threshold, Sensitivity, curvetype);
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
         Serial.print("Hit Bow : ");
         Serial.print(velocity);
         Serial.print(" (raw:");
@@ -561,7 +561,7 @@ void HelloDrum::cymbal3zoneSensing(byte sens, byte thre, byte scanTime, byte mas
       else if (velocity > Threshold && firstSensorValue > edgeThreshold && firstSensorValue < cupThreshold && firstSensorValue > lastSensorValue)
       {
         velocity = curve(velocity, Threshold, Sensitivity, curvetype);
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
         Serial.print("Hit Edge : ");
         Serial.print(velocity);
         Serial.print(" (raw:");
@@ -585,7 +585,7 @@ void HelloDrum::cymbal3zoneSensing(byte sens, byte thre, byte scanTime, byte mas
       else if (velocity > Threshold && firstSensorValue > cupThreshold && lastSensorValue < edgeThreshold)
       {
         velocity = curve(velocity, Threshold, Sensitivity, curvetype);
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
         Serial.print("Hit Cup : ");
         Serial.print(velocity);
         Serial.print(" (raw:");
@@ -608,7 +608,7 @@ void HelloDrum::cymbal3zoneSensing(byte sens, byte thre, byte scanTime, byte mas
       //choke
       else if (firstSensorValue > edgeThreshold && lastSensorValue > edgeThreshold)
       {
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
         Serial.print("Choke : ");
         Serial.print(velocity);
         Serial.print(" (raw:");
@@ -771,7 +771,7 @@ void HelloDrum::FSRSensing(byte sens, byte thre, byte scanStart, byte scanEnd, b
 
     velocity = time_hit_pedal_2 - time_hit_pedal_1;
 
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
     int prevVel = velocity;
 #endif
 
@@ -787,7 +787,7 @@ void HelloDrum::FSRSensing(byte sens, byte thre, byte scanStart, byte scanEnd, b
       velocity = 127;
     }
 
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
     Serial.print("Close : ");
     Serial.print(velocity);
     Serial.print(" (raw time:");
@@ -805,13 +805,13 @@ void HelloDrum::FSRSensing(byte sens, byte thre, byte scanStart, byte scanEnd, b
     padIndex = padNum;
   }
 
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
   int prevFsr = fsr;
 #endif
   //
   if (fsr < ScanEnd && pedalFlag == true)
   {
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
     Serial.print("Open : ");
     Serial.println(fsr);
 #endif
@@ -864,7 +864,7 @@ void HelloDrum::FSRSensing(byte sens, byte thre, byte scanStart, byte scanEnd, b
     moving = true;
     exFSR = fsr;
 
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
     Serial.print("Move : ");
     Serial.print(fsr);
     Serial.print(" (raw:");
@@ -2167,7 +2167,7 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
     push = true;
     buttonState = false;
 
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
     Serial.print(itemNumber);
     Serial.print(",");
     Serial.print(itemNumberShow);
@@ -2476,7 +2476,7 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
     push = true;
     buttonState = false;
 
-#ifdef DEBUG
+#ifdef DEBUG_DRUM
     Serial.print(itemNumber);
     Serial.print(",");
     Serial.print(itemNumberShow);

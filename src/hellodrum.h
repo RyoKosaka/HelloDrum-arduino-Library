@@ -18,7 +18,7 @@
 #include "EEPROM.h"
 #endif
 
-static const char *item[] = {
+static char *item[] = {
     "SENSITIVITY", //0 0
     "THRESHOLD",   //1 1
     "SCAN TIME",   //2 2
@@ -27,7 +27,7 @@ static const char *item[] = {
     "NOTE",        //7 5
 };
 
-static const char *itemD[] = {
+static char *itemD[] = {
     "SENSITIVITY", //0
     "THRESHOLD",   //1
     "SCAN TIME",   //2
@@ -40,7 +40,7 @@ static const char *itemD[] = {
     "NOTE CROSS",  //9
 };
 
-static const char *itemCY2[] = {
+static char *itemCY2[] = {
     "SENSITIVITY", //0 0
     "THRESHOLD",   //1 1
     "SCAN TIME",   //2 2
@@ -51,7 +51,7 @@ static const char *itemCY2[] = {
     "NOTE EDGE",   //8 7
 };
 
-static const char *itemCY3[] = {
+static char *itemCY3[] = {
     "SENSITIVITY", //0
     "THRESHOLD",   //1
     "SCAN TIME",   //2
@@ -64,7 +64,7 @@ static const char *itemCY3[] = {
     "NOTE CUP",    //9
 };
 
-static const char *itemHH[] = {
+static char *itemHH[] = {
     "SENSITIVITY", //0 0
     "THRESHOLD",   //1 1
     "SCAN TIME",   //2 2
@@ -74,7 +74,7 @@ static const char *itemHH[] = {
     "NOTE CLOSE",  //8 6
 };
 
-static const char *itemHH2[] = {
+static char *itemHH2[] = {
     "SENSITIVITY", //0 0
     "THRESHOLD",   //1 1
     "SCAN TIME",   //2 2
@@ -85,7 +85,7 @@ static const char *itemHH2[] = {
     "NOTE CLOSE",  //8 7
 };
 
-static const char *itemHHC[] = {
+static char *itemHHC[] = {
     "SENSITIVITY",  //0 0
     "THRESHOLD",    //1 1
     "SCAN START",   //2 2
