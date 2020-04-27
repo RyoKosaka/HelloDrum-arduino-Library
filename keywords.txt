@@ -15,6 +15,7 @@ cymbal3zone	KEYWORD2
 cymbal2zone	KEYWORD2
 TCRT5000	KEYWORD2
 FSR	KEYWORD2
+hihatControl	KEYWORD2
 
 singlePiezoMUX	KEYWORD2
 dualPiezoMUX	KEYWORD2
@@ -24,21 +25,25 @@ cymbal3zoneMUX	KEYWORD2
 cymbal2zoneMUX	KEYWORD2
 TCRT5000MUX	KEYWORD2
 FSRMUX	KEYWORD2
+hihatControlMUX	KEYWORD2
 
 settingName	KEYWORD2
 readButtonState	KEYWORD2
 settingEnable	KEYWORD2
+setCurve	KEYWORD2
 show	KEYWORD2
 scan	KEYWORD2
 initMemory	KEYWORD2
 loadMemory	KEYWORD2
 note	KEYWORD2
 noteRim	KEYWORD2
+noteEdge	KEYWORD2
 noteCup	KEYWORD2
 noteOpen	KEYWORD2
 noteClose	KEYWORD2
 noteOpenEdge	KEYWORD2
 noteCloseEdge	KEYWORD2
+noteCross	KEYWORD2
 velocity	KEYWORD2
 hit	KEYWORD2
 hitRim	KEYWORD2

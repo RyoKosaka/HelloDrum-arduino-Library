@@ -1,5 +1,5 @@
 /*
-  " HELLO DRUM LIBRARY" Ver.0.7.3
+  " HELLO DRUM LIBRARY" Ver.0.7.4
   
   by Ryo Kosaka
 
@@ -18,34 +18,83 @@
 #include "EEPROM.h"
 #endif
 
-static char *item[] = {
-    "SENSITIVITY",
-    "THRESHOLD",
-    "SCAN TIME",
-    "MASK TIME",
-    "NOTE",
-    "NOTE RIM",
-    "NOTE CUP",
+static const char *item[] = {
+    "SENSITIVITY", //0 0
+    "THRESHOLD",   //1 1
+    "SCAN TIME",   //2 2
+    "MASK TIME",   //3 3
+    "CURVE TYPE",  //6 4
+    "NOTE",        //7 5
 };
 
-static char *itemHH[] = {
-    "SENSITIVITY",
-    "THRESHOLD",
-    "SCAN TIME",
-    "MASK TIME",
-    "NOTE OPEN",
-    "NOTE CLOSE",
-    "NOTE CUP",
+static const char *itemD[] = {
+    "SENSITIVITY", //0
+    "THRESHOLD",   //1
+    "SCAN TIME",   //2
+    "MASK TIME",   //3
+    "RIM SENS",    //4
+    "RIM THRE",    //5
+    "CURVE TYPE",  //6
+    "NOTE HEAD",   //7
+    "NOTE RIM",    //8
+    "NOTE CROSS",  //9
 };
 
-static char *itemHHC[] = {
-    "SENSITIVITY",
-    "THRESHOLD1",
-    "THRESHOLD2",
-    "SCAN TIME",
-    "NOTE PEDAL",
-    "NOTE OPEN E",
-    "NOTE CLOSE E",
+static const char *itemCY2[] = {
+    "SENSITIVITY", //0 0
+    "THRESHOLD",   //1 1
+    "SCAN TIME",   //2 2
+    "MASK TIME",   //3 3
+    "EDGE THRE",   //4 4
+    "CURVE TYPE",  //6 5
+    "NOTE BOW",    //7 6
+    "NOTE EDGE",   //8 7
+};
+
+static const char *itemCY3[] = {
+    "SENSITIVITY", //0
+    "THRESHOLD",   //1
+    "SCAN TIME",   //2
+    "MASK TIME",   //3
+    "EDGE THRE",   //4
+    "CUP THRE",    //5
+    "CURVE TYPE",  //6
+    "NOTE BOW",    //7
+    "NOTE EDGE",   //8
+    "NOTE CUP",    //9
+};
+
+static const char *itemHH[] = {
+    "SENSITIVITY", //0 0
+    "THRESHOLD",   //1 1
+    "SCAN TIME",   //2 2
+    "MASK TIME",   //3 3
+    "CURVE TYPE",  //6 4
+    "NOTE OPEN",   //7 5
+    "NOTE CLOSE",  //8 6
+};
+
+static const char *itemHH2[] = {
+    "SENSITIVITY", //0 0
+    "THRESHOLD",   //1 1
+    "SCAN TIME",   //2 2
+    "MASK TIME",   //3 3
+    "EDGE THRE",   //4 4
+    "CURVE TYPE",  //6 5
+    "NOTE OPEN",   //7 6
+    "NOTE CLOSE",  //8 7
+};
+
+static const char *itemHHC[] = {
+    "SENSITIVITY",  //0 0
+    "THRESHOLD",    //1 1
+    "SCAN START",   //2 2
+    "SCAN END",     //3 3
+    "PEDAL SENS",   //4 4
+    "CURVE TYPE",   //6 5
+    "NOTE PEDAL",   //7 6
+    "NOTE OPEN E",  //8 7
+    "NOTE CLOSE E", //9 8
 };
 
 static char *showInstrument[] = {
@@ -70,6 +119,7 @@ static char *showInstrument[] = {
 static bool push;
 static bool showLCD;
 static bool showFlag;
+
 static byte showVelocity;
 static byte nameIndex;
 static byte nameIndexMax;
@@ -78,11 +128,18 @@ static byte padIndex = 0;
 static byte muxIndex = 0;
 static byte HHCnum = 255;
 static byte HHnum = 255;
+static byte HH2num = 255;
+static byte CY2num = 255;
+static byte CY3num = 255;
+static byte Dnum = 255;
+static byte Snum = 255;
+
 static bool edit;
 static bool editCheck;
 static bool editdone;
 static bool change;
 static byte itemNumber;
+static byte itemNumberShow;
 static bool buttonState;
 static bool buttonState_set;
 static bool button_set;
@@ -90,15 +147,13 @@ static bool button_up;
 static bool button_down;
 static bool button_next;
 static bool button_back;
-static byte UP[7] = {1, 1, 1, 1, 1, 1, 1}; //{sensitivity, threshold1, scantime, masktime, note}
+static byte UP[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 #ifdef __AVR_ATmega328P__
-static int rawValue[16];                  //2 * 8chanel Mux 
+static int rawValue[16]; //2 * 8chanel Mux
 #else
-static int rawValue[64];                  //8 * 8chanel Mux
+static int rawValue[64]; //8 * 8chanel Mux
 #endif
-
-//static byte UP_ADVANCE[4] = {1, 50, 1, 1};  //{scantime, rim / head, pedal velocity ,masktime}
 
 class HelloDrum
 {
@@ -106,39 +161,45 @@ public:
   HelloDrum(byte pin1, byte pin2);
   HelloDrum(byte pin1);
 
-  void singlePiezoMUX(byte sens, byte thre1, byte scan, byte mask);
+  void singlePiezoMUX(byte sens, byte thre, byte scan, byte mask);
   void singlePiezoMUX();
-  void dualPiezoMUX(byte sens, byte thre1, byte scan, byte mask);
+  void dualPiezoMUX(byte sens, byte thre, byte scan, byte mask, byte rimSens, byte rimThre);
   void dualPiezoMUX();
-  void HHMUX(byte sens, byte thre1, byte scan, byte mask);
+  void HHMUX(byte sens, byte thre, byte scan, byte mask);
   void HHMUX();
-  void HH2zoneMUX(byte sens, byte thre1, byte scan, byte mask);
+  void HH2zoneMUX(byte sens, byte thre, byte scan, byte mask, byte edgeThre);
   void HH2zoneMUX();
-  void cymbal3zoneMUX(byte sens, byte thre1, byte scan, byte mask);
+  void cymbal3zoneMUX(byte sens, byte thre, byte scan, byte mask, byte edgeThre, byte cupThre);
   void cymbal3zoneMUX();
-  void cymbal2zoneMUX(byte sens, byte thre1, byte scan, byte mask);
+  void cymbal2zoneMUX(byte sens, byte thre, byte scan, byte mask, byte edgeThre);
   void cymbal2zoneMUX();
   void TCRT5000MUX(byte sens, byte thre1, byte thre2, byte scan);
   void TCRT5000MUX();
-  void FSRMUX(byte sens, byte thre1, byte thre2, byte scan);
+  void FSRMUX(byte sens, byte thre, byte scanStart, byte scanEnd, byte pedalSens);
   void FSRMUX();
+  void hihatControlMUX(byte sens, byte thre, byte scanStart, byte scanEnd, byte pedalSens);
+  void hihatControlMUX();
 
-  void singlePiezo(byte sens, byte thre1, byte scan, byte mask);
+  void singlePiezo(byte sens, byte thre, byte scan, byte mask);
   void singlePiezo();
-  void dualPiezo(byte sens, byte thre1, byte scan, byte mask);
+  void dualPiezo(byte sens, byte thre, byte scan, byte mask, byte rimSens, byte rimThre);
   void dualPiezo();
-  void HH(byte sens, byte thre1, byte scan, byte mask);
+  void HH(byte sens, byte thre, byte scan, byte mask);
   void HH();
-  void HH2zone(byte sens, byte thre1, byte scan, byte mask);
+  void HH2zone(byte sens, byte thre, byte scan, byte mask, byte edgeThre);
   void HH2zone();
-  void cymbal3zone(byte sens, byte thre1, byte scan, byte mask);
+  void cymbal3zone(byte sens, byte thre, byte scan, byte mask, byte edgeThre, byte cupThre);
   void cymbal3zone();
-  void cymbal2zone(byte sens, byte thre1, byte scan, byte mask);
+  void cymbal2zone(byte sens, byte thre, byte scan, byte mask, byte edgeThre);
   void cymbal2zone();
   void TCRT5000(byte sens, byte thre1, byte thre2, byte scan);
   void TCRT5000();
-  void FSR(byte sens, byte thre1, byte thre2, byte scan);
+  void FSR(byte sens, byte thre, byte scanStart, byte scanEnd, byte pedalSens);
   void FSR();
+  void hihatControl(byte sens, byte thre, byte scanStart, byte scanEnd, byte pedalSens);
+  void hihatControl();
+
+  void setCurve(byte curveType);
 
   void settingName(char *instrumentName);
   void settingEnable();
@@ -151,7 +212,7 @@ public:
   int velocityCup;
   byte pedalCC;
 
-//  int exValue;
+  //  int exValue;
   byte exTCRT = 0;
   byte exFSR = 0;
   bool hit;
@@ -163,7 +224,7 @@ public:
   bool sensorFlag;
   bool moving;
   bool pedalVelocityFlag = false;
-  bool pedalFlag = false;
+  bool pedalFlag = true;
   bool settingHHC = false;
   bool chokeFlag;
 
@@ -175,17 +236,20 @@ public:
   byte note;
   byte noteRim;
   byte noteCup;
+  byte noteEdge;
   byte noteOpen;
   byte noteClose;
   byte noteOpenEdge;
   byte noteCloseEdge;
+  byte noteCross;
   byte threshold1;
   byte threshold2;
   byte scantime;
   byte masktime;
   byte sensitivity;
-
-  //int initialValue[5];
+  byte curvetype;
+  byte rimThreshold;
+  byte rimSensitivity;
 
 private:
   byte pin_1;
@@ -193,17 +257,24 @@ private:
   int piezoValue;
   int RimPiezoValue;
   int sensorValue;
+  int TCRT;
+  int fsr;
   int firstSensorValue;
   int lastSensorValue;
-//  int piezoValueSUM;
-//  int RimPiezoValueSUM;
   int loopTimes = 0;
-  bool flag;
   unsigned long time_hit;
   unsigned long time_end;
   unsigned long time_choke;
   unsigned long time_hit_pedal_1;
   unsigned long time_hit_pedal_2;
+
+  void singlePiezoSensing(byte sens, byte thre, byte scanTime, byte maskTime);
+  void dualPiezoSensing(byte sens, byte thre, byte scanTime, byte maskTime, byte rimSens, byte rimThre);
+  void cymbal2zoneSensing(byte sens, byte thre, byte scanTime, byte maskTime, byte edgeThre);
+  void cymbal3zoneSensing(byte sens, byte thre, byte scanTime, byte maskTime, byte edgeThre, byte cupThre);
+  void TCRT5000Sensing(byte sens, byte thre1, byte thre2, byte scanTime);
+  void FSRSensing(byte sens, byte thre, byte scanStart, byte scanEnd, byte pedalSens);
+  int curve(int velocityRaw, int threshold, int sensRaw, byte curveType);
 };
 
 class HelloDrumMUX_4051
@@ -243,6 +314,7 @@ public:
   HelloDrumButton(byte pin1, byte pin2, byte pin3, byte pin4, byte pin5);
 
   void readButtonState();
+  void readButton(bool button_set, bool button_up, bool button_down, bool button_next, bool button_back);
 
   byte GetSettingValue();
   byte GetVelocity();
@@ -271,6 +343,7 @@ public:
   HelloDrumButtonLcdShield(byte pin1);
 
   void readButtonState();
+  void readButton(bool button_set, bool button_up, bool button_down, bool button_next, bool button_back);
 
   byte GetSettingValue();
   byte GetVelocity();
@@ -301,25 +374,5 @@ public:
 private:
   byte pin_1;
 };
-
-/* 
-class HelloDrumLCD
-{
-public:
-  HelloDrumLCD(int pin1, int pin2, int pin3, int pin4, int pin5, int pin6);
-
-  void show();
-
-  LiquidCrystal lcd;
-
-private:
-  int pin_1;
-  int pin_2;
-  int pin_3;
-  int pin_4;
-  int pin_5;
-  int pin_6;
-};
-*/
 
 #endif
