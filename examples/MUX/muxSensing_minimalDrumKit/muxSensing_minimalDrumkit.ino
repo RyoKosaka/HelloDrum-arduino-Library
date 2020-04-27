@@ -36,7 +36,7 @@ HelloDrumMUX_4051 mux(2, 3, 4, 0);
 HelloDrum kick(0);
 HelloDrum snare(1, 2);
 HelloDrum hihat(3);
-HelloDrum hihatControl(4);
+HelloDrum hihatPedal(4);
 HelloDrum ride(5, 6);
 HelloDrum tom(7);
 
@@ -62,7 +62,7 @@ void setup()
   kick.settingName("KICK");
   snare.settingName("SNARE");
   hihat.settingName("HIHAT");
-  hihatControl.settingName("HIHAT PEDAL");
+  hihatPedal.settingName("HIHAT PEDAL");
   ride.settingName("RIDE");
   ride.settingName("TOM");
 
@@ -71,7 +71,7 @@ void setup()
   kick.loadMemory();
   snare.loadMemory();
   hihat.loadMemory();
-  hihatControl.loadMemory();
+  hihatPedal.loadMemory();
   ride.loadMemory();
   tom.loadMemory();
 
@@ -102,7 +102,7 @@ void loop()
   kick.settingEnable();
   snare.settingEnable();
   hihat.settingEnable();
-  hihatControl.settingEnable();
+  hihatPedal.settingEnable();
   ride.settingEnable();
   tom.settingEnable();
 
@@ -164,7 +164,7 @@ void loop()
   kick.singlePiezoMUX();
   snare.dualPiezoMUX();
   hihat.HHMUX();
-  hihatControl.TCRT5000MUX();
+  hihatPedal.hihatControlMUX();
   ride.cymbal3zoneMUX();
   tom.singlePiezoMUX();
 
@@ -201,7 +201,7 @@ void loop()
   {
     //check open or close
     //1.open
-    if (hihatControl.openHH == true)
+    if (hihatPedal.openHH == true)
     {
       MIDI.sendNoteOn(hihat.noteOpen, hihat.velocity, 10); //(note of open, velocity, channel)
       MIDI.sendNoteOff(hihat.noteOpen, 0, 10);
@@ -216,16 +216,16 @@ void loop()
 
   //HIHAT CONTROLLER//
   //when hihat is closed
-  if (hihatControl.closeHH == true)
+  if (hihatPedal.closeHH == true)
   {
-    MIDI.sendNoteOn(hihatControl.note, hihatControl.velocity, 10); //(note of pedal, velocity, channel)
-    MIDI.sendNoteOff(hihatControl.note, 0, 10);
+    MIDI.sendNoteOn(hihatPedal.note, hihatPedal.velocity, 10); //(note of pedal, velocity, channel)
+    MIDI.sendNoteOff(hihatPedal.note, 0, 10);
   }
 
   //sending state of pedal with controll change
-  if (hihatControl.moving == true)
+  if (hihatPedal.moving == true)
   {
-    MIDI.sendControlChange(4, hihatControl.pedalCC, 10);
+    MIDI.sendControlChange(4, hihatPedal.pedalCC, 10);
   }
 
   //RIDE//

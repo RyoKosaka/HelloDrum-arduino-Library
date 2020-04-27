@@ -1,7 +1,6 @@
 /*
-  EXAMPLE - 2 Zone Hi-Hat with FSR Controller
+  EXAMPLE - Single Piezo Hi-Hat with hihat Controller (FSR or TCRT5000)
 
-  This sample code tesed with YAMAHA PCY135/PCY155.
   https://open-e-drums.tumblr.com/
 */
 
@@ -17,22 +16,21 @@
 //Determine the setting value.
 //By changing the number in this array you can set sensitivity, threshold and so on.
 
-int HIHAT[8] = {
+byte HIHAT[6] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan start
+    30,  //scan end
     46,  //note of open
     42,  //note of close
-    26,  //note of open edge
-    22   //note of close edge
 };
 
-int HIHAT_CONTROL[5] = {
+byte HIHAT_PEDAL[6] = {
     90, //sensitivity
-    12, //threshold1
-    80, //threshold2
-    10, //scan time
+    30, //threshold
+    60, //scan start
+    80, //scan end
+    10, //pedal sensitivity
     44  //note of pedal
 };
 
@@ -44,10 +42,10 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 
 //Please name your piezo and sensor.
 //So, you need the same number of lines as the number of pads.
-//The piezo named "hihat" is connected to the A6 pin and A12 pin.
-//The TCRT5000 named "hihatcontrol" is connected to the A1 pin.
+//The piezo named "hihat" is connected to the A0 pin.
+//The FSR or TCRT5000 named "hihatPedal" is connected to the A1 pin.
 HelloDrum hihat(0);
-HelloDrum hihatControl(1);
+HelloDrum hihatPedal(1);
 
 void setup()
 {
@@ -65,15 +63,14 @@ void loop()
   //For each pad, one line is required.
   //So, you need the same number of lines as the number of pads or controller.
   hihat.HH(HIHAT[0], HIHAT[1], HIHAT[2], HIHAT[3]);
-  hihatControl.FSR(HIHAT_CONTROL[0], HIHAT_CONTROL[1], HIHAT_CONTROL[2], HIHAT_CONTROL[3]);
+  hihatPedal.hihatControl(HIHAT_PEDAL[0], HIHAT_PEDAL[1], HIHAT_PEDAL[2], HIHAT_PEDAL[3], HIHAT_PEDAL[4]); //hihatControl(byte sens, byte thre, byte scanStart, byte scanEnd, byte pedalSens);
 
   //MIDI signals are transmitted with this IF statement.
-  //bow
   if (hihat.hit == true)
   {
     //check open or close
     //1.open
-    if (hihatControl.openHH == true)
+    if (hihatPedal.openHH == true)
     {
       MIDI.sendNoteOn(HIHAT[4], hihat.velocity, 10); //(note, velocity, channel)
       MIDI.sendNoteOff(HIHAT[4], 0, 10);
@@ -86,34 +83,16 @@ void loop()
     }
   }
 
-  //edge
-  else if (hihat.hitRim == true)
-  {
-    //check open or close
-    //1.open
-    if (hihatControl.openHH == true)
-    {
-      MIDI.sendNoteOn(HIHAT[6], hihat.velocity, 10); //(note, velocity, channel)
-      MIDI.sendNoteOff(HIHAT[6], 0, 10);
-    }
-    //2.close
-    else
-    {
-      MIDI.sendNoteOn(HIHAT[7], hihat.velocity, 10); //(note, velocity, channel)
-      MIDI.sendNoteOff(HIHAT[7], 0, 10);
-    }
-  }
-
   //when pedal is closed
-  if (hihatControl.closeHH == true)
+  if (hihatPedal.closeHH == true)
   {
-    MIDI.sendNoteOn(HIHAT_CONTROL[4], hihatControl.velocity, 10); //(note, velocity, channel)
-    MIDI.sendNoteOff(HIHAT_CONTROL[4], 0, 10);
+    MIDI.sendNoteOn(HIHAT_PEDAL[5], hihatPedal.velocity, 10); //(note, velocity, channel)
+    MIDI.sendNoteOff(HIHAT_PEDAL[5], 0, 10);
   }
 
   //sending state of pedal with controll change
-  if (hihatControl.moving == true)
+  if (hihatPedal.moving == true)
   {
-    MIDI.sendControlChange(4, hihatControl.pedalCC, 10);
+    MIDI.sendControlChange(4, hihatPedal.pedalCC, 10);
   }
 }

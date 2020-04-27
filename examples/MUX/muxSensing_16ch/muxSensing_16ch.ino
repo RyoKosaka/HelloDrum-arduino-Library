@@ -13,128 +13,128 @@
 int PAD1[5] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan time
+    30,  //mask time
     38   //note
 };
 
 int PAD2[5] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan time
+    30,  //mask time
     36   //note
 };
 
 int PAD3[5] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan time
+    30,  //mask time
     41   //note
 };
 
 int PAD4[5] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan time
+    30,  //mask time
     46   //note
 };
 
 int PAD5[5] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan time
+    30,  //mask time
     47   //note
 };
 
 int PAD6[5] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan time
+    30,  //mask time
     48   //note
 };
 
 int PAD7[5] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan time
+    30,  //mask time
     55   //note
 };
 
 int PAD8[5] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan time
+    30,  //mask time
     84   //note
 };
 
 int PAD9[5] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan time
+    30,  //mask time
     38   //note
 };
 
 int PAD10[5] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan time
+    30,  //mask time
     36   //note
 };
 
 int PAD11[5] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan time
+    30,  //mask time
     41   //note
 };
 
 int PAD12[5] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan time
+    30,  //mask time
     46   //note
 };
 
 int PAD13[5] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan time
+    30,  //mask time
     47   //note
 };
 
 int PAD14[5] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan time
+    30,  //mask time
     48   //note
 };
 
 int PAD15[5] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan time
+    30,  //mask time
     55   //note
 };
 
 int PAD16[5] = {
     100, //sensitivity
     10,  //threshold
-    30,  //scan time
-    10,  //mask time
+    10,  //scan time
+    30,  //mask time
     84   //note
 };
 

@@ -10,8 +10,11 @@
     
     Sensitivity = 100
     Threshold = 10
-    Scan Time = 30
-    Mask Time = 10
+    Scan Time = 10
+    Mask Time = 30
+    Rim Sensitivity = 20
+    Rim Threshold = 3
+    Curve type = 0
     Note = 38
     Note of rim/Edge = 39
     Note of cup = 40

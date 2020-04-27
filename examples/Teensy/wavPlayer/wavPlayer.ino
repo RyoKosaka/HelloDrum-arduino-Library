@@ -118,6 +118,9 @@ AudioControlSGTL5000 sgtl5000_1;
 
 void setup()
 {
+    //Set Curve Type
+    pad1.setCurve(1);
+
     // Audio connections require memory to work.  For more
     // detailed information, see the MemoryAndCpuUsage example
     AudioMemory(20);
@@ -141,46 +144,46 @@ void setup()
     }
 
     //mixer gain
-    mixerLeft1.gain(0,0.25);
-    mixerLeft1.gain(1,0.25);
-    mixerLeft1.gain(2,0.25);
-    mixerLeft1.gain(3,0.25);
-    mixerLeft2.gain(0,0.25);
-    mixerLeft2.gain(1,0.25);
-    mixerLeft2.gain(2,0.25);
-    mixerLeft2.gain(3,0.25);
-    mixerLeft3.gain(0,0.25);
-    mixerLeft3.gain(1,0.25);
-    mixerLeft3.gain(2,0.25);
-    mixerLeft3.gain(3,0.25);
-    mixerLeft4.gain(0,0.25);
-    mixerLeft4.gain(1,0.25);
-    mixerLeft4.gain(2,0.25);
-    mixerLeft4.gain(3,0.25);
-    mixerRight1.gain(0,0.25);
-    mixerRight1.gain(1,0.25);
-    mixerRight1.gain(2,0.25);
-    mixerRight1.gain(3,0.25);
-    mixerRight2.gain(0,0.25);
-    mixerRight2.gain(1,0.25);
-    mixerRight2.gain(2,0.25);
-    mixerRight2.gain(3,0.25);
-    mixerRight3.gain(0,0.25);
-    mixerRight3.gain(1,0.25);
-    mixerRight3.gain(2,0.25);
-    mixerRight3.gain(3,0.25);
-    mixerRight4.gain(0,0.25);
-    mixerRight4.gain(1,0.25);
-    mixerRight4.gain(2,0.25);
-    mixerRight4.gain(3,0.25);
-    mixerLeftMaster.gain(0,0.25);
-    mixerLeftMaster.gain(1,0.25);
-    mixerLeftMaster.gain(2,0.25);
-    mixerLeftMaster.gain(3,0.25);
-    mixerRightMaster.gain(0,0.25);
-    mixerRightMaster.gain(1,0.25);
-    mixerRightMaster.gain(2,0.25);
-    mixerRightMaster.gain(3,0.25);
+    mixerLeft1.gain(0, 0.25);
+    mixerLeft1.gain(1, 0.25);
+    mixerLeft1.gain(2, 0.25);
+    mixerLeft1.gain(3, 0.25);
+    mixerLeft2.gain(0, 0.25);
+    mixerLeft2.gain(1, 0.25);
+    mixerLeft2.gain(2, 0.25);
+    mixerLeft2.gain(3, 0.25);
+    mixerLeft3.gain(0, 0.25);
+    mixerLeft3.gain(1, 0.25);
+    mixerLeft3.gain(2, 0.25);
+    mixerLeft3.gain(3, 0.25);
+    mixerLeft4.gain(0, 0.25);
+    mixerLeft4.gain(1, 0.25);
+    mixerLeft4.gain(2, 0.25);
+    mixerLeft4.gain(3, 0.25);
+    mixerRight1.gain(0, 0.25);
+    mixerRight1.gain(1, 0.25);
+    mixerRight1.gain(2, 0.25);
+    mixerRight1.gain(3, 0.25);
+    mixerRight2.gain(0, 0.25);
+    mixerRight2.gain(1, 0.25);
+    mixerRight2.gain(2, 0.25);
+    mixerRight2.gain(3, 0.25);
+    mixerRight3.gain(0, 0.25);
+    mixerRight3.gain(1, 0.25);
+    mixerRight3.gain(2, 0.25);
+    mixerRight3.gain(3, 0.25);
+    mixerRight4.gain(0, 0.25);
+    mixerRight4.gain(1, 0.25);
+    mixerRight4.gain(2, 0.25);
+    mixerRight4.gain(3, 0.25);
+    mixerLeftMaster.gain(0, 0.25);
+    mixerLeftMaster.gain(1, 0.25);
+    mixerLeftMaster.gain(2, 0.25);
+    mixerLeftMaster.gain(3, 0.25);
+    mixerRightMaster.gain(0, 0.25);
+    mixerRightMaster.gain(1, 0.25);
+    mixerRightMaster.gain(2, 0.25);
+    mixerRightMaster.gain(3, 0.25);
 }
 
 void playFile(const char *filename)

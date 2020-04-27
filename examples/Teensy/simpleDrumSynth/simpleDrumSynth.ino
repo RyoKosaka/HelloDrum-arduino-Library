@@ -41,6 +41,9 @@ AudioControlSGTL5000 audioShield;
 
 void setup()
 {
+    //Set Curve Type
+    pad1.setCurve(1);
+
     // Audio connections require memory to work.  For more
     // detailed information, see the MemoryAndCpuUsage example
     AudioMemory(10);

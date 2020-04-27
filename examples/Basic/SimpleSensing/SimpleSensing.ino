@@ -17,20 +17,22 @@
 //Determine the setting value.
 //By changing the number in this array you can set sensitivity, threshold and so on.
 
-int SNARE[5] = {
+byte SNARE[6] = {
     100, //sensitivity (1-100)
     10,  //threshold (1-100)
     30,  //scan time (1-)
     10,  //mask time (1-)
-    38   //note (0-127)
+    38,  //note (0-127)
+    1    //curve type (0-4)
 };
 
-int TOM[5] = {
+byte TOM[6] = {
     100, //sensitivity (1-100)
     10,  //threshold (1-100)
     30,  //scan time (1-)
     10,  //mask time(1-)
-    50   //note (0-127)
+    50,  //note (0-127)
+    1    //curve type(0-4)
 };
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -53,6 +55,10 @@ void setup()
   //And uncomment the next two lines.
   //MIDI.begin();
   //Serial.begin(38400);
+
+  //Set Curve Type
+  snare.setCurve(SNARE[5]);
+  tom.setCurve(TOM[5]);
 }
 
 void loop()

@@ -49,7 +49,7 @@ LiquidCrystal lcd(12, 11, 5, 4, 3, 2); //(rs, en, d4, d5, d6, d7)
 HelloDrum kick(0);
 HelloDrum snare(1);
 HelloDrum hihat(2);
-HelloDrum hihatControl(3);
+HelloDrum hihatPedal(3);
 HelloDrum ride(4, 5);
 
 //Set the DIGITAL pin number to which the buttons are connected.
@@ -71,7 +71,7 @@ void setup()
   kick.settingName("KICK");
   snare.settingName("SNARE");
   hihat.settingName("HIHAT");
-  hihatControl.settingName("HIHAT PEDAL");
+  hihatPedal.settingName("HIHAT PEDAL");
   ride.settingName("RIDE");
 
   //Load settings from EEPROM.
@@ -79,7 +79,7 @@ void setup()
   kick.loadMemory();
   snare.loadMemory();
   hihat.loadMemory();
-  hihatControl.loadMemory();
+  hihatPedal.loadMemory();
   ride.loadMemory();
 
   //boot message
@@ -109,7 +109,7 @@ void loop()
   kick.settingEnable();
   snare.settingEnable();
   hihat.settingEnable();
-  hihatControl.settingEnable();
+  hihatPedal.settingEnable();
   ride.settingEnable();
 
   if (buttonPush == true)
@@ -166,7 +166,7 @@ void loop()
   kick.singlePiezo();
   snare.singlePiezo();
   hihat.HH();
-  hihatControl.TCRT5000();
+  hihatPedal.hihatControl();
   ride.cymbal3zone();
 
   //Sending MIDI signals.
@@ -189,7 +189,7 @@ void loop()
   {
     //check open or close
     //1.open
-    if (hihatControl.openHH == true)
+    if (hihatPedal.openHH == true)
     {
       MIDI.sendNoteOn(hihat.noteOpen, hihat.velocity, 10); //(note of open, velocity, channel)
       MIDI.sendNoteOff(hihat.noteOpen, 0, 10);
@@ -204,16 +204,16 @@ void loop()
 
   //HIHAT CONTROLLER//
   //when hihat is closed
-  if (hihatControl.closeHH == true)
+  if (hihatPedal.closeHH == true)
   {
-    MIDI.sendNoteOn(hihatControl.note, hihatControl.velocity, 10); //(note of pedal, velocity, channel)
-    MIDI.sendNoteOff(hihatControl.note, 0, 10);
+    MIDI.sendNoteOn(hihatPedal.note, hihatPedal.velocity, 10); //(note of pedal, velocity, channel)
+    MIDI.sendNoteOff(hihatPedal.note, 0, 10);
   }
 
   //sending state of pedal with controll change
-  if (hihatControl.moving == true)
+  if (hihatPedal.moving == true)
   {
-    MIDI.sendControlChange(4, hihatControl.pedalCC, 10);
+    MIDI.sendControlChange(4, hihatPedal.pedalCC, 10);
   }
 
   //RIDE//
