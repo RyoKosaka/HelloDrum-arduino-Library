@@ -1,7 +1,7 @@
 /*
   EXAMPLE - 2 Zone Cymbal Sensing
 
-  This sample code tesed with YAMAHA PCY135/PCY155.
+  This sample code is tesed with YAMAHA PCY135/PCY155.
   https://open-e-drums.tumblr.com/
 */
 
@@ -34,8 +34,8 @@ byte CRASH[8] = {
 #include <hellodrum.h>
 MIDI_CREATE_DEFAULT_INSTANCE();
 
-//Please name your piezo.
-//The piezo named "crash" is connected to the A0 pin and A1 pin.
+//Please name your cymbal.
+//The cymbal named "crash" is connected to the A0 pin (piezo) and A1 pin (edge sensor).
 HelloDrum crash(0, 1);
 
 void setup()

@@ -1,14 +1,14 @@
 /*
-  EXAMPLE - 2-zone Hi-Hat with hihat Controller (FSR or TCRT5000)
+    EXAMPLE - 2-zone Hi-Hat with hihat Controller (FSR or TCRT5000)
 
-  This sample code tesed with Roland VH-10.
-  https://open-e-drums.tumblr.com/
+    This sample code tesed with Roland VH-10.
+    https://open-e-drums.tumblr.com/
 */
 
 /* NOTICE
 
-  You have to install the MIDI library.
-  MIDI : https://playground.arduino.cc/Main/MIDILibrary
+    You have to install the MIDI library.
+    MIDI : https://playground.arduino.cc/Main/MIDILibrary
 
 */
 
@@ -87,7 +87,7 @@ void loop()
             MIDI.sendNoteOff(HIHAT[5], 0, 10);
         }
         //2.close
-        else
+        else if (hihatPedal.closeHH == true)
         {
             MIDI.sendNoteOn(HIHAT[6], hihat.velocity, 10); //(note, velocity, channel)
             MIDI.sendNoteOff(HIHAT[6], 0, 10);
@@ -105,7 +105,7 @@ void loop()
             MIDI.sendNoteOff(HIHAT[7], 0, 10);
         }
         //2.close
-        else
+        else if (hihatPedal.closeHH == true)
         {
             MIDI.sendNoteOn(HIHAT[8], hihat.velocity, 10); //(note, velocity, channel)
             MIDI.sendNoteOff(HIHAT[8], 0, 10);
@@ -113,7 +113,7 @@ void loop()
     }
 
     //when pedal is closed
-    if (hihatPedal.closeHH == true)
+    if (hihatPedal.hit == true)
     {
         MIDI.sendNoteOn(HIHAT_PEDAL[5], hihatPedal.velocity, 10); //(note, velocity, channel)
         MIDI.sendNoteOff(HIHAT_PEDAL[5], 0, 10);

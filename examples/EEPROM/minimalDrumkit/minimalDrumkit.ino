@@ -18,13 +18,12 @@
     Button for BACK to digital pin 10
 
   LCD Circuit:https://www.arduino.cc/en/Tutorial/HelloWorld
-   LCD RS pin to digital pin 12
-   LCD Enable pin to digital pin 11
-   LCD D4 pin to digital pin 5
-   LCD D5 pin to digital pin 4
-   LCD D6 pin to digital pin 3
-   LCD D7 pin to digital pin 2
-   
+    LCD RS pin to digital pin 12
+    LCD Enable pin to digital pin 11
+    LCD D4 pin to digital pin 5
+    LCD D5 pin to digital pin 4
+    LCD D6 pin to digital pin 3
+    LCD D7 pin to digital pin 2
 
   https://open-e-drums.tumblr.com/
 */
@@ -158,6 +157,23 @@ void loop()
     lcd.print(hitPad);
     lcd.setCursor(0, 1);
     lcd.print(velocity);
+
+    if (hihat.hit == true)
+    {
+      //check open or close
+      //1.open
+      if (hihatPedal.openHH == true)
+      {
+        lcd.setCursor(15, 0);
+        lcd.print("O");
+      }
+      //2.close
+      else if (hihatPedal.closeHH == true)
+      {
+        lcd.setCursor(15, 0);
+        lcd.print("C");
+      }
+    }
   }
 
   ////////// 2. SENSING & SENDING MIDI////////////
@@ -195,7 +211,7 @@ void loop()
       MIDI.sendNoteOff(hihat.noteOpen, 0, 10);
     }
     //2.close
-    else
+    else if (hihatPedal.closeHH == true)
     {
       MIDI.sendNoteOn(hihat.noteClose, hihat.velocity, 10); //(note of close, velocity, channel)
       MIDI.sendNoteOff(hihat.noteClose, 0, 10);
@@ -204,7 +220,7 @@ void loop()
 
   //HIHAT CONTROLLER//
   //when hihat is closed
-  if (hihatPedal.closeHH == true)
+  if (hihatPedal.hit == true)
   {
     MIDI.sendNoteOn(hihatPedal.note, hihatPedal.velocity, 10); //(note of pedal, velocity, channel)
     MIDI.sendNoteOff(hihatPedal.note, 0, 10);

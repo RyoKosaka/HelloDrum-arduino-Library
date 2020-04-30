@@ -207,7 +207,7 @@ void loop()
       MIDI.sendNoteOff(hihat.noteOpen, 0, 10);
     }
     //2.close
-    else
+    else if (hihatPedal.closeHH == true)
     {
       MIDI.sendNoteOn(hihat.noteClose, hihat.velocity, 10); //(note of close, velocity, channel)
       MIDI.sendNoteOff(hihat.noteClose, 0, 10);
@@ -216,7 +216,7 @@ void loop()
 
   //HIHAT CONTROLLER//
   //when hihat is closed
-  if (hihatPedal.closeHH == true)
+  if (hihatPedal.hit == true)
   {
     MIDI.sendNoteOn(hihatPedal.note, hihatPedal.velocity, 10); //(note of pedal, velocity, channel)
     MIDI.sendNoteOff(hihatPedal.note, 0, 10);

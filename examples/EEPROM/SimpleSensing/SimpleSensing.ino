@@ -1,5 +1,5 @@
 /*
-  EXAMPLE - Simple Piezo Sensing
+  EXAMPLE - Simple Piezo Sensing (EEPROM and LCD)
 
   With this sample code, you will make snare and tom using two piezo.
   https://open-e-drums.tumblr.com/

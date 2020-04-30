@@ -1,5 +1,5 @@
 /*
-  " HELLO DRUM LIBRARY" Ver.0.7.4
+  " HELLO DRUM LIBRARY" Ver.0.7.5
   
   by Ryo Kosaka
 

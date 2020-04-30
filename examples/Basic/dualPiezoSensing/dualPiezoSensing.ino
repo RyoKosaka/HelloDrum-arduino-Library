@@ -1,7 +1,7 @@
 /*
   EXAMPLE - Dual Piezo Sensing
 
-  With this sample code, you can make 2 zone snare drum.
+  With this sample code, you can make 2-zone snare drum.
   Tested with Roland PD-85
 
   Pads & Controller Circuit:
@@ -61,7 +61,6 @@ void setup()
 
 void loop()
 {
-
   //Sensing pad.
   snare.dualPiezo(SNARE[0], SNARE[1], SNARE[2], SNARE[3], SNARE[4], SNARE[5]); //dualPiezo(byte sens, byte thre, byte scan, byte mask, byte rimSens, byte rimThre);
 

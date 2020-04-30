@@ -20,8 +20,8 @@
 byte SNARE[6] = {
     100, //sensitivity (1-100)
     10,  //threshold (1-100)
-    30,  //scan time (1-)
-    10,  //mask time (1-)
+    10,  //scan time (1-)
+    30,  //mask time (1-)
     38,  //note (0-127)
     1    //curve type (0-4)
 };
@@ -29,8 +29,8 @@ byte SNARE[6] = {
 byte TOM[6] = {
     100, //sensitivity (1-100)
     10,  //threshold (1-100)
-    30,  //scan time (1-)
-    10,  //mask time(1-)
+    10,  //scan time (1-)
+    30,  //mask time(1-)
     50,  //note (0-127)
     1    //curve type(0-4)
 };

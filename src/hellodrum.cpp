@@ -1,13 +1,14 @@
 /*
-  "HELLO DRUM LIBRARY" Ver.0.7.4
+  "HELLO DRUM LIBRARY" Ver.0.7.5
   
-  by Ryo Kosaka, Claudio Cas
+  by Ryo Kosaka
 
   GitHub : https://github.com/RyoKosaka/HelloDrum-arduino-Library
   Blog : https://open-e-drums.tumblr.com/
 */
 
-//#define DEBUG_DRUM //<-- uncomment this line to have debug value on Serial
+//#define DEBUG_DRUM //<-- uncomment this line to enable debug mode with Serial.
+//#define PULLUP //<-- uncomment this line to enable pullup mode.
 
 #include "hellodrum.h"
 #include "Arduino.h"
@@ -22,6 +23,10 @@
 HelloDrum::HelloDrum(byte pin1)
 {
   pin_1 = pin1;
+
+#ifdef PULLUP
+  pinMode(pin_1, INPUT_PULLUP);
+#endif
 
   //initial EEPROM value
   sensitivity = 100;   //0
@@ -45,6 +50,11 @@ HelloDrum::HelloDrum(byte pin1, byte pin2)
 {
   pin_1 = pin1;
   pin_2 = pin2;
+
+#ifdef PULLUP
+  pinMode(pin_1, INPUT_PULLUP);
+  pinMode(pin_2, INPUT_PULLUP);
+#endif
 
   //initial value
   sensitivity = 100;   //0
@@ -131,14 +141,16 @@ HelloDrumKnob::HelloDrumKnob(byte pin1)
 
 void HelloDrum::singlePiezoSensing(byte sens, byte thre, byte scanTime, byte maskTime)
 {
-
 #ifdef ESP32
-  int Threshold = thre * 40;
-  int Sensitivity = sens * 40;
-#else
+  piezoValue = piezoValue / 4;
+#endif
+
+#ifdef PULLUP
+  piezoValue = (1024 - piezoValue);
+#endif
+
   int Threshold = thre * 10;
   int Sensitivity = sens * 10;
-#endif
 
   hit = false;
 
@@ -189,13 +201,13 @@ void HelloDrum::singlePiezoSensing(byte sens, byte thre, byte scanTime, byte mas
       padIndex = padNum;
 
 #ifdef DEBUG_DRUM
-      Serial.print("Hit : ");
+      Serial.print("[Hit] velocity : ");
       Serial.print(velocity);
-      Serial.print(" (raw:");
+      Serial.print(" (raw value : ");
       Serial.print(prevVel);
-      Serial.print("), loopTimes");
+      Serial.print("), loopTimes : ");
       Serial.print(loopTimes);
-      Serial.print(" ScanTime ms ");
+      Serial.print(", ScanTime(ms) : ");
       Serial.println((time_end - time_hit));
 #endif
 
@@ -208,16 +220,19 @@ void HelloDrum::dualPiezoSensing(byte sens, byte thre, byte scanTime, byte maskT
 {
 
 #ifdef ESP32
-  int Threshold = thre * 40;
-  int Sensitivity = sens * 40;
-  int RimThreshold = rimThre * 40;
-  int RimSensitivity = rimSens * 40;
-#else
+  piezoValue = piezoValue / 4;
+  RimPiezoValue = RimPiezoValue / 4;
+#endif
+
+#ifdef PULLUP
+  piezoValue = (1024 - piezoValue);
+  RimPiezoValue = (1024 - RimPiezoValue);
+#endif
+
   int Threshold = thre * 10;
   int Sensitivity = sens * 10;
   int RimThreshold = rimThre * 10;
   int RimSensitivity = rimSens * 10;
-#endif
 
   hit = false;
   hitRim = false;
@@ -270,24 +285,20 @@ void HelloDrum::dualPiezoSensing(byte sens, byte thre, byte scanTime, byte maskT
         velocityRim = curve(velocityRim, Threshold, Sensitivity, curvetype);
 
 #ifdef DEBUG_DRUM
-        Serial.print("HitRim : ");
+        Serial.print("[HitRim] velocity : ");
         Serial.print(velocity);
-        Serial.print(", ");
+        Serial.print(", velocity rim : ");
         Serial.print(velocityRim);
-        Serial.print(" (raw:");
+        Serial.print(" (raw value : ");
         Serial.print(prevVel);
         Serial.print(", ");
         Serial.print(prevVelR);
-        Serial.print(", ");
+        Serial.print(", head - rim : ");
         Serial.print(prevVel - prevVelR);
-        Serial.print("), loopTimes");
+        Serial.print("), loopTimes : ");
         Serial.print(loopTimes);
-        Serial.print(" ScanTime ms ");
-        Serial.print((time_end - time_hit));
-        Serial.print(", ");
-        Serial.print(RimSensitivity);
-        Serial.print(", ");
-        Serial.println(RimThreshold);
+        Serial.print(", ScanTime(ms) : ");
+        Serial.println((time_end - time_hit));
 #endif
         velocity = velocityRim;
         hitRim = true;
@@ -300,24 +311,20 @@ void HelloDrum::dualPiezoSensing(byte sens, byte thre, byte scanTime, byte maskT
         velocityRim = curve(velocityRim, Threshold, Sensitivity, curvetype);
 
 #ifdef DEBUG_DRUM
-        Serial.print("Hit : ");
+        Serial.print("[Hit Head] velocity : ");
         Serial.print(velocity);
-        Serial.print(", ");
+        Serial.print(", velocity rim : ");
         Serial.print(velocityRim);
-        Serial.print(" (raw:");
+        Serial.print(" (raw value : ");
         Serial.print(prevVel);
         Serial.print(", ");
         Serial.print(prevVelR);
-        Serial.print(", ");
+        Serial.print(", d : ");
         Serial.print(prevVel - prevVelR);
-        Serial.print("), loopTimes");
+        Serial.print("), loopTimes : ");
         Serial.print(loopTimes);
-        Serial.print(" ScanTime ms ");
-        Serial.print((time_end - time_hit));
-        Serial.print(", ");
-        Serial.print(RimSensitivity);
-        Serial.print(", ");
-        Serial.println(RimThreshold);
+        Serial.print(", ScanTime(ms) : ");
+        Serial.println((time_end - time_hit));
 #endif
         hit = true;
       }
@@ -337,14 +344,18 @@ void HelloDrum::cymbal2zoneSensing(byte sens, byte thre, byte scanTime, byte mas
 {
 
 #ifdef ESP32
-  int Threshold = thre * 40;
-  int Sensitivity = sens * 40;
-  int edgeThreshold = edgeThre * 40;
-#else
+  piezoValue = piezoValue / 4;
+  sensorValue = sensorValue / 4;
+#endif
+
+#ifdef PULLUP
+  piezoValue = (1024 - piezoValue);
+  sensorValue = (1024 - sensorValue);
+#endif
+
   int Threshold = thre * 10;
   int Sensitivity = sens * 10;
   int edgeThreshold = edgeThre * 10;
-#endif
 
   hit = false;
   hitRim = false;
@@ -398,17 +409,17 @@ void HelloDrum::cymbal2zoneSensing(byte sens, byte thre, byte scanTime, byte mas
         velocity = curve(velocity, Threshold, Sensitivity, curvetype);
 
 #ifdef DEBUG_DRUM
-        Serial.print("Hit Bow : ");
+        Serial.print("[Hit Bow] velocity : ");
         Serial.print(velocity);
-        Serial.print(" (raw:");
+        Serial.print(" (raw value : ");
         Serial.print(prevVel);
-        Serial.print(", ");
+        Serial.print(", firstSensorValue : ");
         Serial.print(firstSensorValue);
-        Serial.print(", ");
+        Serial.print(", lastSensorValue : ");
         Serial.print(lastSensorValue);
-        Serial.print("), loopTimes");
+        Serial.print("), loopTimes : ");
         Serial.print(loopTimes);
-        Serial.print(" ScanTime ms ");
+        Serial.print(", ScanTime(ms) : ");
         Serial.println((time_end - time_hit));
 #endif
 
@@ -424,17 +435,17 @@ void HelloDrum::cymbal2zoneSensing(byte sens, byte thre, byte scanTime, byte mas
         velocity = curve(velocity, Threshold, Sensitivity, curvetype);
 
 #ifdef DEBUG_DRUM
-        Serial.print("Hit Edge : ");
+        Serial.print("[Hit Edge] velocity : ");
         Serial.print(velocity);
-        Serial.print(" (raw:");
+        Serial.print(" (raw value : ");
         Serial.print(prevVel);
-        Serial.print(", ");
+        Serial.print(", firstSensorValue : ");
         Serial.print(firstSensorValue);
-        Serial.print(", ");
+        Serial.print(", lastSensorValue : ");
         Serial.print(lastSensorValue);
-        Serial.print("), loopTimes");
+        Serial.print("), loopTimes : ");
         Serial.print(loopTimes);
-        Serial.print(" ScanTime ms ");
+        Serial.print(", ScanTime(ms) : ");
         Serial.println((time_end - time_hit));
 #endif
 
@@ -449,17 +460,13 @@ void HelloDrum::cymbal2zoneSensing(byte sens, byte thre, byte scanTime, byte mas
       {
 
 #ifdef DEBUG_DRUM
-        Serial.print("Choke : ");
-        Serial.print(velocity);
-        Serial.print(" (raw:");
-        Serial.print(prevVel);
-        Serial.print(", ");
+        Serial.print("[Choke] firstSensorValue : ");
         Serial.print(firstSensorValue);
-        Serial.print(", ");
+        Serial.print(", lastSensorValue : ");
         Serial.print(lastSensorValue);
-        Serial.print("), loopTimes");
+        Serial.print("), loopTimes : ");
         Serial.print(loopTimes);
-        Serial.print(" ScanTime ms ");
+        Serial.print(", ScanTime(ms) : ");
         Serial.println((time_end - time_hit));
 #endif
 
@@ -473,17 +480,21 @@ void HelloDrum::cymbal2zoneSensing(byte sens, byte thre, byte scanTime, byte mas
 
 void HelloDrum::cymbal3zoneSensing(byte sens, byte thre, byte scanTime, byte maskTime, byte edgeThre, byte cupThre)
 {
+
 #ifdef ESP32
-  int Threshold = thre * 40;
-  int Sensitivity = sens * 40;
-  int edgeThreshold = edgeThre * 40;
-  int cupThreshold = cupThre * 40;
-#else
+  piezoValue = piezoValue / 4;
+  sensorValue = sensorValue / 4;
+#endif
+
+#ifdef PULLUP
+  piezoValue = (1024 - piezoValue);
+  sensorValue = (1024 - sensorValue);
+#endif
+
   int Threshold = thre * 10;
   int Sensitivity = sens * 10;
   int edgeThreshold = edgeThre * 10;
   int cupThreshold = cupThre * 10;
-#endif
 
   hit = false;
   hitRim = false;
@@ -538,17 +549,17 @@ void HelloDrum::cymbal3zoneSensing(byte sens, byte thre, byte scanTime, byte mas
       {
         velocity = curve(velocity, Threshold, Sensitivity, curvetype);
 #ifdef DEBUG_DRUM
-        Serial.print("Hit Bow : ");
+        Serial.print("[Hit Bow] velocity : ");
         Serial.print(velocity);
-        Serial.print(" (raw:");
+        Serial.print(" (raw value : ");
         Serial.print(prevVel);
-        Serial.print(", ");
+        Serial.print(", firstSensorValue : ");
         Serial.print(firstSensorValue);
-        Serial.print(", ");
+        Serial.print(", lastSensorValue : ");
         Serial.print(lastSensorValue);
-        Serial.print("), loopTimes");
+        Serial.print("), loopTimes : ");
         Serial.print(loopTimes);
-        Serial.print(" ScanTime ms ");
+        Serial.print(", ScanTime(ms) : ");
         Serial.println((time_end - time_hit));
 #endif
         hit = true;
@@ -562,17 +573,17 @@ void HelloDrum::cymbal3zoneSensing(byte sens, byte thre, byte scanTime, byte mas
       {
         velocity = curve(velocity, Threshold, Sensitivity, curvetype);
 #ifdef DEBUG_DRUM
-        Serial.print("Hit Edge : ");
+        Serial.print("[Hit Edge] velocity : ");
         Serial.print(velocity);
-        Serial.print(" (raw:");
+        Serial.print(" (raw value : ");
         Serial.print(prevVel);
-        Serial.print(", ");
+        Serial.print(", firstSensorValue : ");
         Serial.print(firstSensorValue);
-        Serial.print(", ");
+        Serial.print(", lastSensorValue : ");
         Serial.print(lastSensorValue);
-        Serial.print("), loopTimes");
+        Serial.print("), loopTimes : ");
         Serial.print(loopTimes);
-        Serial.print(" ScanTime ms ");
+        Serial.print(", ScanTime(ms) : ");
         Serial.println((time_end - time_hit));
 #endif
         hitRim = true;
@@ -586,17 +597,17 @@ void HelloDrum::cymbal3zoneSensing(byte sens, byte thre, byte scanTime, byte mas
       {
         velocity = curve(velocity, Threshold, Sensitivity, curvetype);
 #ifdef DEBUG_DRUM
-        Serial.print("Hit Cup : ");
+        Serial.print("[Hit Cup] velocity : ");
         Serial.print(velocity);
-        Serial.print(" (raw:");
+        Serial.print(" (raw value : ");
         Serial.print(prevVel);
-        Serial.print(", ");
+        Serial.print(", firstSensorValue : ");
         Serial.print(firstSensorValue);
-        Serial.print(", ");
+        Serial.print(", lastSensorValue : ");
         Serial.print(lastSensorValue);
-        Serial.print("), loopTimes");
+        Serial.print("), loopTimes : ");
         Serial.print(loopTimes);
-        Serial.print(" ScanTime ms ");
+        Serial.print(", ScanTime(ms) : ");
         Serial.println((time_end - time_hit));
 #endif
         hitCup = true;
@@ -609,17 +620,13 @@ void HelloDrum::cymbal3zoneSensing(byte sens, byte thre, byte scanTime, byte mas
       else if (firstSensorValue > edgeThreshold && lastSensorValue > edgeThreshold)
       {
 #ifdef DEBUG_DRUM
-        Serial.print("Choke : ");
-        Serial.print(velocity);
-        Serial.print(" (raw:");
-        Serial.print(prevVel);
-        Serial.print(", ");
+        Serial.print("[Choke] firstSensorValue : ");
         Serial.print(firstSensorValue);
-        Serial.print(", ");
+        Serial.print(", lastSensorValue : ");
         Serial.print(lastSensorValue);
-        Serial.print("), loopTimes");
+        Serial.print("), loopTimes : ");
         Serial.print(loopTimes);
-        Serial.print(" ScanTime ms ");
+        Serial.print(", ScanTime(ms) : ");
         Serial.println((time_end - time_hit));
 #endif
         choke = true;
@@ -742,20 +749,22 @@ void HelloDrum::TCRT5000Sensing(byte sens, byte thre1, byte thre2, byte scanTime
 void HelloDrum::FSRSensing(byte sens, byte thre, byte scanStart, byte scanEnd, byte pedalSens)
 {
 #ifdef ESP32
-  int sensRaw = sens * 40;
-  int thre1Raw = thre * 40;
-  int ScanStart = scanStart * 40;
-  int ScanEnd = scanEnd * 40;
-#else
+  fsr = fsr / 4;
+#endif
+
+#ifdef PULLUP
+  fsr = (1024 - fsr);
+#endif
+
   int sensRaw = sens * 10;
   int thre1Raw = thre * 10;
   int ScanStart = scanStart * 10;
   int ScanEnd = scanEnd * 10;
-#endif
 
+  hit = false;
   velocity = 0;
-  openHH = false;
-  closeHH = false;
+  //openHH = false;
+  //closeHH = false;
 
   //scan start
   if (fsr > ScanStart && closeHH == false && pedalVelocityFlag == false && pedalFlag == false)
@@ -788,13 +797,14 @@ void HelloDrum::FSRSensing(byte sens, byte thre, byte scanStart, byte scanEnd, b
     }
 
 #ifdef DEBUG_DRUM
-    Serial.print("Close : ");
+    Serial.print("[Close] velocity : ");
     Serial.print(velocity);
-    Serial.print(" (raw time:");
+    Serial.print(" (scan time(ms) : ");
     Serial.print(prevVel);
     Serial.println(")");
 #endif
 
+    hit = true;
     closeHH = true;
     openHH = false;
     pedalFlag = true;
@@ -812,7 +822,7 @@ void HelloDrum::FSRSensing(byte sens, byte thre, byte scanStart, byte scanEnd, b
   if (fsr < ScanEnd && pedalFlag == true)
   {
 #ifdef DEBUG_DRUM
-    Serial.print("Open : ");
+    Serial.print("[Open] sensorValue : ");
     Serial.println(fsr);
 #endif
     pedalFlag = false;
@@ -865,20 +875,14 @@ void HelloDrum::FSRSensing(byte sens, byte thre, byte scanStart, byte scanEnd, b
     exFSR = fsr;
 
 #ifdef DEBUG_DRUM
-    Serial.print("Move : ");
+    Serial.print("[Move] sensorValue : ");
     Serial.print(fsr);
-    Serial.print(" (raw:");
+    Serial.print(" (raw value : ");
     Serial.print(prevFsr);
-    Serial.print(")");
-    Serial.print(sensRaw);
-    Serial.print(",");
-    Serial.print(thre1Raw);
-    Serial.print(",");
-    Serial.print(ScanStart);
-    Serial.print(",");
-    Serial.print(ScanEnd);
-    Serial.print(",");
-    Serial.println(pedalFlag);
+    Serial.print("), openHH : ");
+    Serial.print(openHH);
+    Serial.print(", closeHH : ");
+    Serial.println(closeHH);
 #endif
   }
 
