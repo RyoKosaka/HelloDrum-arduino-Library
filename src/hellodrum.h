@@ -1,5 +1,5 @@
 /*
-  " HELLO DRUM LIBRARY" Ver.0.7.5
+  " HELLO DRUM LIBRARY" Ver.0.7.6
   
   by Ryo Kosaka
 
@@ -126,13 +126,14 @@ static byte nameIndexMax;
 static byte showValue = 0;
 static byte padIndex = 0;
 static byte muxIndex = 0;
-static byte HHCnum = 255;
-static byte HHnum = 255;
-static byte HH2num = 255;
-static byte CY2num = 255;
-static byte CY3num = 255;
-static byte Dnum = 255;
-static byte Snum = 255;
+static byte Snum = 1; //pad type number
+static byte Dnum = 2;
+static byte CY2num = 3;
+static byte CY3num = 4;
+static byte HHnum = 5;
+static byte HH2num = 6;
+static byte HHCnum = 7;
+static byte padType[16]; //if you use more pad, add numer
 
 static bool edit;
 static bool editCheck;

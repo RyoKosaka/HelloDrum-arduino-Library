@@ -1,6 +1,6 @@
 # HelloDrum Arduino Library
 This is a library for making E-Drum with Arduino.  
-**Ver.0.7.5(4/30/2020) Work in progress.** 
+**Ver.0.7.6(5/1/2020) Work in progress.** 
 
 ## Description
 
@@ -190,11 +190,11 @@ Record the time you started closing the hi-hat and the time you finished closing
 
 ## Velocity Curve
 
- - Velocity Curve Type (Ver 0.7.5)  
+ - Velocity Curve Type  
  <img src="https://open-e-drums.com/images/sensing/curve.png" width="800px">  
 
 
-## Circuit (v0.7.5)
+## Circuit
 - Single Piezo  
 <img src="https://open-e-drums.com/images/circuit/074/singlePiezo.png" width="800px">
 
@@ -234,6 +234,9 @@ The STL data of pads from 6 inches to 12 inches, hi-hat controllers(<https://www
 
 ## Release History
 
+* 0.7.6
+   - Bug fix for LCD and buttons
+   - Add and Update sample codes
 * 0.7.5
    - Bug fix for ESP32
    - Bug fix for hihatControl()

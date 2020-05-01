@@ -1,5 +1,5 @@
 /*
-  "HELLO DRUM LIBRARY" Ver.0.7.5
+  "HELLO DRUM LIBRARY" Ver.0.7.6
   
   by Ryo Kosaka
 
@@ -1014,14 +1014,14 @@ void HelloDrum::setCurve(byte curveType)
 
 void HelloDrum::singlePiezo(byte sens, byte thre, byte scan, byte mask)
 {
-  Snum = padNum;
+  padType[padNum] = Snum;
   piezoValue = analogRead(pin_1);
   singlePiezoSensing(sens, thre, scan, mask);
 }
 
 void HelloDrum::dualPiezo(byte sens, byte thre, byte scan, byte mask, byte rimSens, byte rimThre)
 {
-  Dnum = padNum;
+  padType[padNum] = Dnum;
   piezoValue = analogRead(pin_1);
   RimPiezoValue = analogRead(pin_2);
   dualPiezoSensing(sens, thre, scan, mask, rimSens, rimThre);
@@ -1029,14 +1029,14 @@ void HelloDrum::dualPiezo(byte sens, byte thre, byte scan, byte mask, byte rimSe
 
 void HelloDrum::HH(byte sens, byte thre, byte scan, byte mask)
 {
-  HHnum = padNum;
+  padType[padNum] = HHnum;
   piezoValue = analogRead(pin_1);
   singlePiezoSensing(sens, thre, scan, mask);
 }
 
 void HelloDrum::HH2zone(byte sens, byte thre, byte scan, byte mask, byte edgeThre)
 {
-  HH2num = padNum;
+  padType[padNum] = HH2num;
   piezoValue = analogRead(pin_1);
   sensorValue = analogRead(pin_2);
   cymbal2zoneSensing(sens, thre, scan, mask, edgeThre);
@@ -1044,7 +1044,7 @@ void HelloDrum::HH2zone(byte sens, byte thre, byte scan, byte mask, byte edgeThr
 
 void HelloDrum::cymbal2zone(byte sens, byte thre, byte scan, byte mask, byte edgeThre)
 {
-  CY2num = padNum;
+  padType[padNum] = CY2num;
   piezoValue = analogRead(pin_1);
   sensorValue = analogRead(pin_2);
   cymbal2zoneSensing(sens, thre, scan, mask, edgeThre);
@@ -1052,7 +1052,7 @@ void HelloDrum::cymbal2zone(byte sens, byte thre, byte scan, byte mask, byte edg
 
 void HelloDrum::cymbal3zone(byte sens, byte thre, byte scan, byte mask, byte edgeThre, byte cupThre)
 {
-  CY3num = padNum;
+  padType[padNum] = CY3num;
   piezoValue = analogRead(pin_1);
   sensorValue = analogRead(pin_2);
   cymbal3zoneSensing(sens, thre, scan, mask, edgeThre, cupThre);
@@ -1060,21 +1060,21 @@ void HelloDrum::cymbal3zone(byte sens, byte thre, byte scan, byte mask, byte edg
 
 void HelloDrum::TCRT5000(byte sens, byte thre1, byte thre2, byte scan)
 {
-  HHCnum = padNum;
+  padType[padNum] = HHCnum;
   TCRT = analogRead(pin_1);
   TCRT5000Sensing(sens, thre1, thre2, scan);
 }
 
 void HelloDrum::FSR(byte sens, byte thre, byte scanStart, byte scanEnd, byte pedalSens)
 {
-  HHCnum = padNum;
+  padType[padNum] = HHCnum;
   fsr = analogRead(pin_1);
   FSRSensing(sens, thre, scanStart, scanEnd, pedalSens);
 }
 
 void HelloDrum::hihatControl(byte sens, byte thre, byte scanStart, byte scanEnd, byte pedalSens)
 {
-  HHCnum = padNum;
+  padType[padNum] = HHCnum;
   fsr = analogRead(pin_1);
   FSRSensing(sens, thre, scanStart, scanEnd, pedalSens);
 }
@@ -1083,14 +1083,14 @@ void HelloDrum::hihatControl(byte sens, byte thre, byte scanStart, byte scanEnd,
 
 void HelloDrum::singlePiezo()
 {
-  Snum = padNum;
+  padType[padNum] = Snum;
   piezoValue = analogRead(pin_1);
   singlePiezoSensing(sensitivity, threshold1, scantime, masktime);
 }
 
 void HelloDrum::dualPiezo()
 {
-  Dnum = padNum;
+  padType[padNum] = Dnum;
   piezoValue = analogRead(pin_1);
   RimPiezoValue = analogRead(pin_2);
   dualPiezoSensing(sensitivity, threshold1, scantime, masktime, rimSensitivity, rimThreshold);
@@ -1098,14 +1098,14 @@ void HelloDrum::dualPiezo()
 
 void HelloDrum::HH()
 {
-  HHnum = padNum;
+  padType[padNum] = HHnum;
   piezoValue = analogRead(pin_1);
   singlePiezoSensing(sensitivity, threshold1, scantime, masktime);
 }
 
 void HelloDrum::HH2zone()
 {
-  HH2num = padNum;
+  padType[padNum] = HH2num;
   piezoValue = analogRead(pin_1);
   sensorValue = analogRead(pin_2);
   cymbal2zoneSensing(sensitivity, threshold1, scantime, masktime, rimSensitivity);
@@ -1113,7 +1113,7 @@ void HelloDrum::HH2zone()
 
 void HelloDrum::cymbal2zone()
 {
-  CY2num = padNum;
+  padType[padNum] = CY2num;
   piezoValue = analogRead(pin_1);
   sensorValue = analogRead(pin_2);
   cymbal2zoneSensing(sensitivity, threshold1, scantime, masktime, rimSensitivity);
@@ -1121,7 +1121,7 @@ void HelloDrum::cymbal2zone()
 
 void HelloDrum::cymbal3zone()
 {
-  CY3num = padNum;
+  padType[padNum] = CY3num;
   piezoValue = analogRead(pin_1);
   sensorValue = analogRead(pin_2);
   cymbal3zoneSensing(sensitivity, threshold1, scantime, masktime, rimSensitivity, rimThreshold);
@@ -1129,21 +1129,21 @@ void HelloDrum::cymbal3zone()
 
 void HelloDrum::TCRT5000()
 {
-  HHCnum = padNum;
+  padType[padNum] = HHCnum;
   TCRT = analogRead(pin_1);
   TCRT5000Sensing(sensitivity, threshold1, masktime, scantime);
 }
 
 void HelloDrum::FSR()
 {
-  HHCnum = padNum;
+  padType[padNum] = HHCnum;
   fsr = analogRead(pin_1);
   FSRSensing(sensitivity, threshold1, scantime, masktime, rimSensitivity);
 }
 
 void HelloDrum::hihatControl()
 {
-  HHCnum = padNum;
+  padType[padNum] = HHCnum;
   fsr = analogRead(pin_1);
   FSRSensing(sensitivity, threshold1, scantime, masktime, rimSensitivity);
 }
@@ -1192,14 +1192,14 @@ void HelloDrumMUX_4067::scan()
 
 void HelloDrum::singlePiezoMUX(byte sens, byte thre, byte scan, byte mask)
 {
-  Snum = padNum;
+  padType[padNum] = Snum;
   piezoValue = rawValue[pin_1];
   singlePiezoSensing(sens, thre, scan, mask);
 }
 
 void HelloDrum::dualPiezoMUX(byte sens, byte thre, byte scan, byte mask, byte rimSens, byte rimThre)
 {
-  Dnum = padNum;
+  padType[padNum] = Dnum;
   piezoValue = rawValue[pin_1];
   RimPiezoValue = rawValue[pin_2];
   dualPiezoSensing(sens, thre, scan, mask, rimSens, rimThre);
@@ -1207,14 +1207,14 @@ void HelloDrum::dualPiezoMUX(byte sens, byte thre, byte scan, byte mask, byte ri
 
 void HelloDrum::HHMUX(byte sens, byte thre, byte scan, byte mask)
 {
-  HHnum = padNum;
+  padType[padNum] = HHnum;
   piezoValue = rawValue[pin_1];
   singlePiezoSensing(sens, thre, scan, mask);
 }
 
 void HelloDrum::HH2zoneMUX(byte sens, byte thre, byte scan, byte mask, byte edgeThre)
 {
-  HH2num = padNum;
+  padType[padNum] = HH2num;
   piezoValue = rawValue[pin_1];
   sensorValue = rawValue[pin_2];
   cymbal2zoneSensing(sens, thre, scan, mask, edgeThre);
@@ -1222,7 +1222,7 @@ void HelloDrum::HH2zoneMUX(byte sens, byte thre, byte scan, byte mask, byte edge
 
 void HelloDrum::cymbal2zoneMUX(byte sens, byte thre, byte scan, byte mask, byte edgeThre)
 {
-  CY2num = padNum;
+  padType[padNum] = CY2num;
   piezoValue = rawValue[pin_1];
   sensorValue = rawValue[pin_2];
   cymbal2zoneSensing(sens, thre, scan, mask, edgeThre);
@@ -1230,7 +1230,7 @@ void HelloDrum::cymbal2zoneMUX(byte sens, byte thre, byte scan, byte mask, byte 
 
 void HelloDrum::cymbal3zoneMUX(byte sens, byte thre, byte scan, byte mask, byte edgeThre, byte cupThre)
 {
-  CY3num = padNum;
+  padType[padNum] = CY3num;
   piezoValue = rawValue[pin_1];
   sensorValue = rawValue[pin_2];
   cymbal3zoneSensing(sens, thre, scan, mask, edgeThre, cupThre);
@@ -1238,21 +1238,21 @@ void HelloDrum::cymbal3zoneMUX(byte sens, byte thre, byte scan, byte mask, byte 
 
 void HelloDrum::TCRT5000MUX(byte sens, byte thre1, byte thre2, byte scan)
 {
-  HHCnum = padNum;
+  padType[padNum] = HHCnum;
   TCRT = rawValue[pin_1];
   TCRT5000Sensing(sens, thre1, thre2, scan);
 }
 
 void HelloDrum::FSRMUX(byte sens, byte thre, byte scanStart, byte scanEnd, byte pedalSens)
 {
-  HHCnum = padNum;
+  padType[padNum] = HHCnum;
   fsr = rawValue[pin_1];
   FSRSensing(sens, thre, scanStart, scanEnd, pedalSens);
 }
 
 void HelloDrum::hihatControlMUX(byte sens, byte thre, byte scanStart, byte scanEnd, byte pedalSens)
 {
-  HHCnum = padNum;
+  padType[padNum] = HHCnum;
   fsr = rawValue[pin_1];
   FSRSensing(sens, thre, scanStart, scanEnd, pedalSens);
 }
@@ -1261,14 +1261,14 @@ void HelloDrum::hihatControlMUX(byte sens, byte thre, byte scanStart, byte scanE
 
 void HelloDrum::singlePiezoMUX()
 {
-  Snum = padNum;
+  padType[padNum] = Snum;
   piezoValue = rawValue[pin_1];
   singlePiezoSensing(sensitivity, threshold1, scantime, masktime);
 }
 
 void HelloDrum::dualPiezoMUX()
 {
-  Dnum = padNum;
+  padType[padNum] = Dnum;
   piezoValue = rawValue[pin_1];
   RimPiezoValue = rawValue[pin_2];
   dualPiezoSensing(sensitivity, threshold1, scantime, masktime, rimSensitivity, rimThreshold);
@@ -1276,14 +1276,14 @@ void HelloDrum::dualPiezoMUX()
 
 void HelloDrum::HHMUX()
 {
-  HHnum = padNum;
+  padType[padNum] = HHnum;
   piezoValue = rawValue[pin_1];
   singlePiezoSensing(sensitivity, threshold1, scantime, masktime);
 }
 
 void HelloDrum::HH2zoneMUX()
 {
-  HH2num = padNum;
+  padType[padNum] = HH2num;
   piezoValue = rawValue[pin_1];
   sensorValue = rawValue[pin_2];
   cymbal2zoneSensing(sensitivity, threshold1, scantime, masktime, rimSensitivity);
@@ -1291,7 +1291,7 @@ void HelloDrum::HH2zoneMUX()
 
 void HelloDrum::cymbal2zoneMUX()
 {
-  CY2num = padNum;
+  padType[padNum] = CY2num;
   piezoValue = rawValue[pin_1];
   sensorValue = rawValue[pin_2];
   cymbal2zoneSensing(sensitivity, threshold1, scantime, masktime, rimSensitivity);
@@ -1299,7 +1299,7 @@ void HelloDrum::cymbal2zoneMUX()
 
 void HelloDrum::cymbal3zoneMUX()
 {
-  CY3num = padNum;
+  padType[padNum] = CY3num;
   piezoValue = rawValue[pin_1];
   sensorValue = rawValue[pin_2];
   cymbal3zoneSensing(sensitivity, threshold1, scantime, masktime, rimSensitivity, rimThreshold);
@@ -1307,21 +1307,21 @@ void HelloDrum::cymbal3zoneMUX()
 
 void HelloDrum::TCRT5000MUX()
 {
-  HHCnum = padNum;
+  padType[padNum] = HHCnum;
   TCRT = rawValue[pin_1];
   TCRT5000Sensing(sensitivity, threshold1, masktime, scantime);
 }
 
 void HelloDrum::FSRMUX()
 {
-  HHCnum = padNum;
+  padType[padNum] = HHCnum;
   fsr = rawValue[pin_1];
   FSRSensing(sensitivity, threshold1, scantime, masktime, rimSensitivity);
 }
 
 void HelloDrum::hihatControlMUX()
 {
-  HHCnum = padNum;
+  padType[padNum] = HHCnum;
   fsr = rawValue[pin_1];
   FSRSensing(sensitivity, threshold1, scantime, masktime, rimSensitivity);
 }
@@ -2050,6 +2050,20 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
 
     push = true;
     buttonState = false;
+
+#ifdef DEBUG_DRUM
+    Serial.print("itemNumber : ");
+    Serial.print(itemNumber);
+    Serial.print(", itemNumberShow : ");
+    Serial.print(itemNumberShow);
+    Serial.print(", nameIndex : ");
+    Serial.print(nameIndex);
+    Serial.print(", padType : ");
+    Serial.print(padType[nameIndex]);
+    Serial.print(", settingItem : ");
+    Serial.println(GetSettingItem());
+#endif
+
     delay(30);
   }
 
@@ -2072,6 +2086,20 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
 
     push = true;
     buttonState = false;
+
+#ifdef DEBUG_DRUM
+    Serial.print("itemNumber : ");
+    Serial.print(itemNumber);
+    Serial.print(", itemNumberShow : ");
+    Serial.print(itemNumberShow);
+    Serial.print(", nameIndex : ");
+    Serial.print(nameIndex);
+    Serial.print(", padType : ");
+    Serial.print(padType[nameIndex]);
+    Serial.print(", settingItem : ");
+    Serial.println(GetSettingItem());
+#endif
+
     delay(30);
   }
 
@@ -2090,7 +2118,7 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
 
     if (itemNumber == 4)
     {
-      if (nameIndex == HHnum || nameIndex == Snum)
+      if (padType[nameIndex] == HHnum || padType[nameIndex] == Snum)
       {
         itemNumber = 6;
       }
@@ -2098,7 +2126,7 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
 
     else if (itemNumber == 5)
     {
-      if (nameIndex == CY2num || nameIndex == HH2num || nameIndex == HHCnum)
+      if (padType[nameIndex] == CY2num || padType[nameIndex] == HH2num || padType[nameIndex] == HHCnum)
       {
         itemNumber = 6;
       }
@@ -2106,7 +2134,7 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
 
     else if (itemNumber == 8)
     {
-      if (nameIndex == Snum)
+      if (padType[nameIndex] == Snum)
       {
         itemNumber = 0;
       }
@@ -2114,7 +2142,7 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
 
     else if (itemNumber == 9)
     {
-      if (nameIndex == CY2num || nameIndex == HHnum || nameIndex == HH2num)
+      if (padType[nameIndex] == CY2num || padType[nameIndex] == HHnum || padType[nameIndex] == HH2num)
       {
         itemNumber = 0;
       }
@@ -2129,7 +2157,7 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
 
     if (itemNumberShow == 6)
     {
-      if (nameIndex == Snum)
+      if (padType[nameIndex] == Snum)
       {
         itemNumberShow = 0;
       }
@@ -2137,7 +2165,7 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
 
     else if (itemNumberShow == 7)
     {
-      if (nameIndex == HHnum)
+      if (padType[nameIndex] == HHnum)
       {
         itemNumberShow = 0;
       }
@@ -2145,7 +2173,7 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
 
     else if (itemNumberShow == 8)
     {
-      if (nameIndex == HH2num || nameIndex == CY2num)
+      if (padType[nameIndex] == HH2num || padType[nameIndex] == CY2num)
       {
         itemNumberShow = 0;
       }
@@ -2153,7 +2181,7 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
 
     else if (itemNumberShow == 9)
     {
-      if (nameIndex == HHCnum)
+      if (padType[nameIndex] == HHCnum)
       {
         itemNumberShow = 0;
       }
@@ -2161,7 +2189,7 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
 
     else if (itemNumberShow == 10)
     {
-      if (nameIndex == Dnum || nameIndex == CY3num)
+      if (padType[nameIndex] == Dnum || padType[nameIndex] == CY3num)
       {
         itemNumberShow = 0;
       }
@@ -2172,12 +2200,15 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
     buttonState = false;
 
 #ifdef DEBUG_DRUM
+    Serial.print("itemNumber : ");
     Serial.print(itemNumber);
-    Serial.print(",");
+    Serial.print(", itemNumberShow : ");
     Serial.print(itemNumberShow);
-    Serial.print(",");
+    Serial.print(", nameIndex : ");
     Serial.print(nameIndex);
-    Serial.print(",");
+    Serial.print(", padType : ");
+    Serial.print(padType[nameIndex]);
+    Serial.print(", settingItem : ");
     Serial.println(GetSettingItem());
 #endif
 
@@ -2195,15 +2226,15 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
 
     if (itemNumber == 255)
     {
-      if (nameIndex == Snum)
+      if (padType[nameIndex] == Snum)
       {
         itemNumber = 7;
       }
-      else if (nameIndex == CY2num || nameIndex == HHnum || nameIndex == HH2num)
+      else if (padType[nameIndex] == CY2num || padType[nameIndex] == HHnum || padType[nameIndex] == HH2num)
       {
         itemNumber = 8;
       }
-      else if (nameIndex == Dnum || nameIndex == CY3num || nameIndex == HHCnum)
+      else if (padType[nameIndex] == Dnum || padType[nameIndex] == CY3num || padType[nameIndex] == HHCnum)
       {
         itemNumber = 9;
       }
@@ -2211,12 +2242,12 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
 
     else if (itemNumber == 5)
     {
-      if (nameIndex == HHnum || nameIndex == Snum)
+      if (padType[nameIndex] == HHnum || padType[nameIndex] == Snum)
       {
         itemNumber = 3;
       }
 
-      else if (nameIndex == CY2num || nameIndex == HHCnum || nameIndex == HH2num)
+      else if (padType[nameIndex] == CY2num || padType[nameIndex] == HHCnum || padType[nameIndex] == HH2num)
       {
         itemNumber = 4;
       }
@@ -2224,7 +2255,7 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
 
     else if (itemNumber == 8)
     {
-      if (nameIndex == Snum)
+      if (padType[nameIndex] == Snum)
       {
         itemNumber = 7;
       }
@@ -2232,12 +2263,12 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
 
     else if (itemNumber == 9)
     {
-      if (nameIndex == Snum)
+      if (padType[nameIndex] == Snum)
       {
         itemNumber = 7;
       }
 
-      else if (nameIndex == CY2num || nameIndex == HHnum || nameIndex == HHCnum || nameIndex == HH2num)
+      else if (padType[nameIndex] == CY2num || padType[nameIndex] == HHnum || padType[nameIndex] == HHCnum || padType[nameIndex] == HH2num)
       {
         itemNumber = 8;
       }
@@ -2247,23 +2278,23 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
 
     if (itemNumberShow == 255)
     {
-      if (nameIndex == Snum)
+      if (padType[nameIndex] == Snum)
       {
         itemNumberShow = 5;
       }
-      else if (nameIndex == HHnum)
+      else if (padType[nameIndex] == HHnum)
       {
         itemNumberShow = 6;
       }
-      else if (nameIndex == CY2num || nameIndex == HH2num)
+      else if (padType[nameIndex] == CY2num || padType[nameIndex] == HH2num)
       {
         itemNumberShow = 7;
       }
-      else if (nameIndex == HHCnum)
+      else if (padType[nameIndex] == HHCnum)
       {
         itemNumberShow = 8;
       }
-      else if (nameIndex == Dnum || nameIndex == CY3num)
+      else if (padType[nameIndex] == Dnum || padType[nameIndex] == CY3num)
       {
         itemNumberShow = 9;
       }
@@ -2272,6 +2303,20 @@ void HelloDrumButton::readButton(bool button_set, bool button_up, bool button_do
     nameIndex = UPDOWN;
     push = true;
     buttonState = false;
+
+#ifdef DEBUG_DRUM
+    Serial.print("itemNumber : ");
+    Serial.print(itemNumber);
+    Serial.print(", itemNumberShow : ");
+    Serial.print(itemNumberShow);
+    Serial.print(", nameIndex : ");
+    Serial.print(nameIndex);
+    Serial.print(", padType : ");
+    Serial.print(padType[nameIndex]);
+    Serial.print(", settingItem : ");
+    Serial.println(GetSettingItem());
+#endif
+
     delay(30);
   }
 
@@ -2359,6 +2404,20 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
 
     push = true;
     buttonState = false;
+
+#ifdef DEBUG_DRUM
+    Serial.print("itemNumber : ");
+    Serial.print(itemNumber);
+    Serial.print(", itemNumberShow : ");
+    Serial.print(itemNumberShow);
+    Serial.print(", nameIndex : ");
+    Serial.print(nameIndex);
+    Serial.print(", padType : ");
+    Serial.print(padType[nameIndex]);
+    Serial.print(", settingItem : ");
+    Serial.println(GetSettingItem());
+#endif
+
     delay(30);
   }
 
@@ -2381,6 +2440,20 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
 
     push = true;
     buttonState = false;
+
+#ifdef DEBUG_DRUM
+    Serial.print("itemNumber : ");
+    Serial.print(itemNumber);
+    Serial.print(", itemNumberShow : ");
+    Serial.print(itemNumberShow);
+    Serial.print(", nameIndex : ");
+    Serial.print(nameIndex);
+    Serial.print(", padType : ");
+    Serial.print(padType[nameIndex]);
+    Serial.print(", settingItem : ");
+    Serial.println(GetSettingItem());
+#endif
+
     delay(30);
   }
 
@@ -2399,7 +2472,7 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
 
     if (itemNumber == 4)
     {
-      if (nameIndex == HHnum || nameIndex == Snum)
+      if (padType[nameIndex] == HHnum || padType[nameIndex] == Snum)
       {
         itemNumber = 6;
       }
@@ -2407,7 +2480,7 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
 
     else if (itemNumber == 5)
     {
-      if (nameIndex == CY2num || nameIndex == HH2num || nameIndex == HHCnum)
+      if (padType[nameIndex] == CY2num || padType[nameIndex] == HH2num || padType[nameIndex] == HHCnum)
       {
         itemNumber = 6;
       }
@@ -2415,7 +2488,7 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
 
     else if (itemNumber == 8)
     {
-      if (nameIndex == Snum)
+      if (padType[nameIndex] == Snum)
       {
         itemNumber = 0;
       }
@@ -2423,7 +2496,7 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
 
     else if (itemNumber == 9)
     {
-      if (nameIndex == CY2num || nameIndex == HHnum || nameIndex == HH2num)
+      if (padType[nameIndex] == CY2num || padType[nameIndex] == HHnum || padType[nameIndex] == HH2num)
       {
         itemNumber = 0;
       }
@@ -2438,7 +2511,7 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
 
     if (itemNumberShow == 6)
     {
-      if (nameIndex == Snum)
+      if (padType[nameIndex] == Snum)
       {
         itemNumberShow = 0;
       }
@@ -2446,7 +2519,7 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
 
     else if (itemNumberShow == 7)
     {
-      if (nameIndex == HHnum)
+      if (padType[nameIndex] == HHnum)
       {
         itemNumberShow = 0;
       }
@@ -2454,7 +2527,7 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
 
     else if (itemNumberShow == 8)
     {
-      if (nameIndex == HH2num || nameIndex == CY2num)
+      if (padType[nameIndex] == HH2num || padType[nameIndex] == CY2num)
       {
         itemNumberShow = 0;
       }
@@ -2462,7 +2535,7 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
 
     else if (itemNumberShow == 9)
     {
-      if (nameIndex == HHCnum)
+      if (padType[nameIndex] == HHCnum)
       {
         itemNumberShow = 0;
       }
@@ -2470,7 +2543,7 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
 
     else if (itemNumberShow == 10)
     {
-      if (nameIndex == Dnum || nameIndex == CY3num)
+      if (padType[nameIndex] == Dnum || padType[nameIndex] == CY3num)
       {
         itemNumberShow = 0;
       }
@@ -2481,12 +2554,15 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
     buttonState = false;
 
 #ifdef DEBUG_DRUM
+    Serial.print("itemNumber : ");
     Serial.print(itemNumber);
-    Serial.print(",");
+    Serial.print(", itemNumberShow : ");
     Serial.print(itemNumberShow);
-    Serial.print(",");
+    Serial.print(", nameIndex : ");
     Serial.print(nameIndex);
-    Serial.print(",");
+    Serial.print(", padType : ");
+    Serial.print(padType[nameIndex]);
+    Serial.print(", settingItem : ");
     Serial.println(GetSettingItem());
 #endif
 
@@ -2504,15 +2580,15 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
 
     if (itemNumber == 255)
     {
-      if (nameIndex == Snum)
+      if (padType[nameIndex] == Snum)
       {
         itemNumber = 7;
       }
-      else if (nameIndex == CY2num || nameIndex == HHnum || nameIndex == HH2num)
+      else if (padType[nameIndex] == CY2num || padType[nameIndex] == HHnum || padType[nameIndex] == HH2num)
       {
         itemNumber = 8;
       }
-      else if (nameIndex == Dnum || nameIndex == CY3num || nameIndex == HHCnum)
+      else if (padType[nameIndex] == Dnum || padType[nameIndex] == CY3num || padType[nameIndex] == HHCnum)
       {
         itemNumber = 9;
       }
@@ -2520,12 +2596,12 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
 
     else if (itemNumber == 5)
     {
-      if (nameIndex == HHnum || nameIndex == Snum)
+      if (padType[nameIndex] == HHnum || padType[nameIndex] == Snum)
       {
         itemNumber = 3;
       }
 
-      else if (nameIndex == CY2num || nameIndex == HHCnum || nameIndex == HH2num)
+      else if (padType[nameIndex] == CY2num || padType[nameIndex] == HHCnum || padType[nameIndex] == HH2num)
       {
         itemNumber = 4;
       }
@@ -2533,7 +2609,7 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
 
     else if (itemNumber == 8)
     {
-      if (nameIndex == Snum)
+      if (padType[nameIndex] == Snum)
       {
         itemNumber = 7;
       }
@@ -2541,12 +2617,12 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
 
     else if (itemNumber == 9)
     {
-      if (nameIndex == Snum)
+      if (padType[nameIndex] == Snum)
       {
         itemNumber = 7;
       }
 
-      else if (nameIndex == CY2num || nameIndex == HHnum || nameIndex == HHCnum || nameIndex == HH2num)
+      else if (padType[nameIndex] == CY2num || padType[nameIndex] == HHnum || padType[nameIndex] == HHCnum || padType[nameIndex] == HH2num)
       {
         itemNumber = 8;
       }
@@ -2556,23 +2632,23 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
 
     if (itemNumberShow == 255)
     {
-      if (nameIndex == Snum)
+      if (padType[nameIndex] == Snum)
       {
         itemNumberShow = 5;
       }
-      else if (nameIndex == HHnum)
+      else if (padType[nameIndex] == HHnum)
       {
         itemNumberShow = 6;
       }
-      else if (nameIndex == CY2num || nameIndex == HH2num)
+      else if (padType[nameIndex] == CY2num || padType[nameIndex] == HH2num)
       {
         itemNumberShow = 7;
       }
-      else if (nameIndex == HHCnum)
+      else if (padType[nameIndex] == HHCnum)
       {
         itemNumberShow = 8;
       }
-      else if (nameIndex == Dnum || nameIndex == CY3num)
+      else if (padType[nameIndex] == Dnum || padType[nameIndex] == CY3num)
       {
         itemNumberShow = 9;
       }
@@ -2581,6 +2657,20 @@ void HelloDrumButtonLcdShield::readButton(bool button_set, bool button_up, bool 
     nameIndex = UPDOWN;
     push = true;
     buttonState = false;
+
+#ifdef DEBUG_DRUM
+    Serial.print("itemNumber : ");
+    Serial.print(itemNumber);
+    Serial.print(", itemNumberShow : ");
+    Serial.print(itemNumberShow);
+    Serial.print(", nameIndex : ");
+    Serial.print(nameIndex);
+    Serial.print(", padType : ");
+    Serial.print(padType[nameIndex]);
+    Serial.print(", settingItem : ");
+    Serial.println(GetSettingItem());
+#endif
+
     delay(30);
   }
 
@@ -2687,33 +2777,33 @@ char *HelloDrumButton::GetPadName()
 }
 char *HelloDrumButton::GetSettingItem()
 {
-  if (nameIndex == Dnum)
+  if (padType[nameIndex] == Dnum)
   {
-    return itemD[itemNumber];
+    return itemD[itemNumberShow];
   }
-  else if (nameIndex == CY2num)
+  else if (padType[nameIndex] == CY2num)
   {
-    return itemCY2[itemNumber];
+    return itemCY2[itemNumberShow];
   }
-  else if (nameIndex == CY3num)
+  else if (padType[nameIndex] == CY3num)
   {
-    return itemCY3[itemNumber];
+    return itemCY3[itemNumberShow];
   }
-  else if (nameIndex == HH2num)
+  else if (padType[nameIndex] == HH2num)
   {
-    return itemHH2[itemNumber];
+    return itemHH2[itemNumberShow];
   }
-  else if (nameIndex == HHnum)
+  else if (padType[nameIndex] == HHnum)
   {
-    return itemHH[itemNumber];
+    return itemHH[itemNumberShow];
   }
-  else if (nameIndex == HHCnum)
+  else if (padType[nameIndex] == HHCnum)
   {
-    return itemHHC[itemNumber];
+    return itemHHC[itemNumberShow];
   }
-  else
+  else if (padType[nameIndex] == Snum)
   {
-    return item[itemNumber];
+    return item[itemNumberShow];
   }
 }
 char *HelloDrumButton::GetHitPad()
@@ -2762,31 +2852,31 @@ char *HelloDrumButtonLcdShield::GetPadName()
 }
 char *HelloDrumButtonLcdShield::GetSettingItem()
 {
-  if (nameIndex == Dnum)
+  if (padType[nameIndex] == Dnum)
   {
     return itemD[itemNumberShow];
   }
-  else if (nameIndex == CY2num)
+  else if (padType[nameIndex] == CY2num)
   {
     return itemCY2[itemNumberShow];
   }
-  else if (nameIndex == CY3num)
+  else if (padType[nameIndex] == CY3num)
   {
     return itemCY3[itemNumberShow];
   }
-  else if (nameIndex == HH2num)
+  else if (padType[nameIndex] == HH2num)
   {
     return itemHH2[itemNumberShow];
   }
-  else if (nameIndex == HHnum)
+  else if (padType[nameIndex] == HHnum)
   {
     return itemHH[itemNumberShow];
   }
-  else if (nameIndex == HHCnum)
+  else if (padType[nameIndex] == HHCnum)
   {
     return itemHHC[itemNumberShow];
   }
-  else
+  else if (padType[nameIndex] == Snum)
   {
     return item[itemNumberShow];
   }

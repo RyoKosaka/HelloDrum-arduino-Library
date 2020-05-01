@@ -7,12 +7,12 @@
     Piezo for hihat to A3.
 
   LCD Circuit:https://wiki.dfrobot.com/LCD_KeyPad_Shield_For_Arduino_SKU__DFR0009
-   LCD RS pin to digital pin 8
-   LCD Enable pin to digital pin 9
-   LCD D4 pin to digital pin 4
-   LCD D5 pin to digital pin 5
-   LCD D6 pin to digital pin 6
-   LCD D7 pin to digital pin 7
+    LCD RS pin to digital pin 8
+    LCD Enable pin to digital pin 9
+    LCD D4 pin to digital pin 4
+    LCD D5 pin to digital pin 5
+    LCD D6 pin to digital pin 6
+    LCD D7 pin to digital pin 7
 
   Buttons Circuit:
     Buttons of LCD keypad shield to analog pin A0
@@ -176,5 +176,4 @@ void loop()
     MIDI.sendNoteOn(hihat.note, hihat.velocity, 10); //(note, velocity, channel)
     MIDI.sendNoteOff(hihat.note, 0, 10);
   }
-
 }
