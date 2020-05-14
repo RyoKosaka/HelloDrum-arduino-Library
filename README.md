@@ -198,6 +198,9 @@ Record the time you started closing the hi-hat and the time you finished closing
 - Single Piezo  
 <img src="https://open-e-drums.com/images/circuit/074/singlePiezo.png" width="800px">
 
+- Single Piezo with Potentiometer  
+<img src="https://open-e-drums.com/images/circuit/074/singlePiezoPot.png" width="800px">
+
 - Dual Piezo  
 <img src="https://open-e-drums.com/images/circuit/074/dualPiezo.png" width="800px">  
 
@@ -216,6 +219,9 @@ Record the time you started closing the hi-hat and the time you finished closing
 - Cymbals  
 <img src="https://open-e-drums.com/images/circuit/074/cymbal.png" width="800px">
 
+- Roland PD-8  
+<img src="https://open-e-drums.com/images/circuit/074/PD8.png" width="800px">
+
 - Button  
 <img src="https://open-e-drums.com/images/circuit/074/button.png" width="800px">
 
@@ -233,6 +239,7 @@ Record the time you started closing the hi-hat and the time you finished closing
 The STL data of pads from 6 inches to 12 inches, hi-hat controllers(<https://www.thingiverse.com/RyoKosaka/designs>)
 
 ## Release History
+
 
 * 0.7.6
    - Bug fix for LCD and buttons
@@ -284,13 +291,10 @@ The STL data of pads from 6 inches to 12 inches, hi-hat controllers(<https://www
 * 0.1.0
    - Work in progress
 
-## Contributing
-
-1. Fork it  
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create new Pull Request
+## ToDo
+- rimGain
+- retriggerCancel
+- rotaryEncoder
 
 ## Author
 
