@@ -10,12 +10,36 @@
 //Determine the setting value.
 //By changing the number in this array you can set sensitivity, threshold and so on.
 
+#define Drum_map 0  //0-ADD2, 1-EZD2
+ 
+byte Note[2][16] = {
+/*   _ Hihat tip
+    |     _ Kick
+    |    |    _ Snare Open hit
+    |    |   |    _ Snare SideStick
+    |    |   |   |    _ Tom1
+    |    |   |   |   |    _ Tom2
+    |    |   |   |   |   |    _ Tom3
+    |    |   |   |   |   |   |    _ Tom4
+    |    |   |   |   |   |   |   |    _ Extra1
+    |    |   |   |   |   |   |   |   |    _ Extra2
+    |    |   |   |   |   |   |   |   |   |    _ Cym1  
+    |    |   |   |   |   |   |   |   |   |   |    _ Cym2
+    |    |   |   |   |   |   |   |   |   |   |   |    _ Cym3
+    |    |   |   |   |   |   |   |   |   |   |   |   |    _ Cym4
+    |    |   |   |   |   |   |   |   |   |   |   |   |   |   _ Ride tip
+    |    |   |   |   |   |   |   |   |   |   |   |   |   |  |    _ Ride bell 
+    |    |   |   |   |   |   |   |   |   |   |   |   |   |  |   |       BANK */ 
+  { 8,  36, 38, 42, 71, 69, 67, 65, 47, 96, 77, 79, 81, 89, 60, 61}, // 0 - ADD2 MAP 
+  { 20, 36, 38, 37, 47, 48, 41, 43, 45,  1, 55, 49, 57, 52, 51, 53}  // 1 - EZD MAP  
+};//1    2   3   4   5   6   7   8   9  10  11  12  13  14  15  16
+
 int PAD1[5] = {
     100, //sensitivity
     10,  //threshold
     10,  //scan time
     30,  //mask time
-    38   //note
+    Note[Drum_map][0]  //note
 };
 
 int PAD2[5] = {
@@ -23,7 +47,7 @@ int PAD2[5] = {
     10,  //threshold
     10,  //scan time
     30,  //mask time
-    36   //note
+    Note[Drum_map][1]  //note
 };
 
 int PAD3[5] = {
@@ -31,7 +55,7 @@ int PAD3[5] = {
     10,  //threshold
     10,  //scan time
     30,  //mask time
-    41   //note
+    Note[Drum_map][2]  //note
 };
 
 int PAD4[5] = {
@@ -39,7 +63,7 @@ int PAD4[5] = {
     10,  //threshold
     10,  //scan time
     30,  //mask time
-    46   //note
+    Note[Drum_map][3]  //note
 };
 
 int PAD5[5] = {
@@ -47,7 +71,7 @@ int PAD5[5] = {
     10,  //threshold
     10,  //scan time
     30,  //mask time
-    47   //note
+    Note[Drum_map][4] //note
 };
 
 int PAD6[5] = {
@@ -55,7 +79,7 @@ int PAD6[5] = {
     10,  //threshold
     10,  //scan time
     30,  //mask time
-    48   //note
+    Note[Drum_map][5]
 };
 
 int PAD7[5] = {
@@ -63,7 +87,7 @@ int PAD7[5] = {
     10,  //threshold
     10,  //scan time
     30,  //mask time
-    55   //note
+    Note[Drum_map][6]  //note
 };
 
 int PAD8[5] = {
@@ -71,7 +95,7 @@ int PAD8[5] = {
     10,  //threshold
     10,  //scan time
     30,  //mask time
-    84   //note
+    Note[Drum_map][7]
 };
 
 int PAD9[5] = {
@@ -79,7 +103,7 @@ int PAD9[5] = {
     10,  //threshold
     10,  //scan time
     30,  //mask time
-    38   //note
+    Note[Drum_map][8]  //note
 };
 
 int PAD10[5] = {
@@ -87,7 +111,7 @@ int PAD10[5] = {
     10,  //threshold
     10,  //scan time
     30,  //mask time
-    36   //note
+    Note[Drum_map][9]
 };
 
 int PAD11[5] = {
@@ -95,7 +119,7 @@ int PAD11[5] = {
     10,  //threshold
     10,  //scan time
     30,  //mask time
-    41   //note
+    Note[Drum_map][10]
 };
 
 int PAD12[5] = {
@@ -103,7 +127,7 @@ int PAD12[5] = {
     10,  //threshold
     10,  //scan time
     30,  //mask time
-    46   //note
+    Note[Drum_map][11]
 };
 
 int PAD13[5] = {
@@ -111,7 +135,7 @@ int PAD13[5] = {
     10,  //threshold
     10,  //scan time
     30,  //mask time
-    47   //note
+    Note[Drum_map][12]
 };
 
 int PAD14[5] = {
@@ -119,7 +143,7 @@ int PAD14[5] = {
     10,  //threshold
     10,  //scan time
     30,  //mask time
-    48   //note
+    Note[Drum_map][13]
 };
 
 int PAD15[5] = {
@@ -127,7 +151,7 @@ int PAD15[5] = {
     10,  //threshold
     10,  //scan time
     30,  //mask time
-    55   //note
+    Note[Drum_map][14]
 };
 
 int PAD16[5] = {
@@ -135,15 +159,20 @@ int PAD16[5] = {
     10,  //threshold
     10,  //scan time
     30,  //mask time
-    84   //note
+    Note[Drum_map][15]
 };
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include <MIDI.h>
-#include <hellodrum.h>
-MIDI_CREATE_DEFAULT_INSTANCE();
 
+#if defined(__AVR_ATmega32U4__)
+ #include <USB-MIDI.h>//https://github.com/lathoub/Arduino-USBMIDI
+ USBMIDI_CREATE_DEFAULT_INSTANCE();
+#else
+ #include <MIDI.h>
+ MIDI_CREATE_DEFAULT_INSTANCE();
+#endif
+#include <hellodrum.h>
 /*
 Mux Breakout ----------- Arduino
 S0 ------------------- 2
