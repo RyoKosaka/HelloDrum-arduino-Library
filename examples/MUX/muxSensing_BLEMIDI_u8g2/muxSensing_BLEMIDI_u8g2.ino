@@ -4,7 +4,7 @@
   With this sample code, you can make the octapad with ESP32 and 74HC4051.
   And you can set the value of sensitivity etc.. with OLED (SSD1306).
   And send MIDI signals with bluetooth. 
-  https://open-e-drums.tumblr.com/
+  https://github.com/RyoKosaka/HelloDrum-arduino-Library
 */
 
 /* NOTICE
@@ -14,13 +14,12 @@
 
 */
 
-#include <BLEDevice.h>
-#include <BLEServer.h>
-#include <BLEUtils.h>
-#include <BLE2902.h>
 #include <hellodrum.h>
+#include <BLEMIDI_Transport.h>
+#include <hardware/BLEMIDI_ESP32.h>
 #include <Arduino.h>
 #include <U8g2lib.h>
+BLEMIDI_CREATE_DEFAULT_INSTANCE();
 
 #ifdef U8X8_HAVE_HW_I2C
 #include <Wire.h>
@@ -50,37 +49,6 @@ HelloDrum pad8(7); //mux pin
 
 //Define control buttons
 HelloDrumButton button(12, 14, 27, 26, 25); //(EDIT,UP,DOWN,NEXT,BACK)
-
-///////////////////////////////   BLE MIDI SETTING   ///////////////////////////////////
-
-BLECharacteristic *pCharacteristic;
-bool deviceConnected = false;
-
-#define MIDI_SERVICE_UUID "03b80e5a-ede8-4b33-a751-6ce34ec4c700"
-#define MIDI_CHARACTERISTIC_UUID "7772e5db-3868-4112-a1a9-f2669d106bf3"
-
-uint8_t midiPacket[] = {
-    0x80, // header
-    0x80, // timestamp, not implemented
-    0x00, // status
-    0x3c, // 0x3c == 60 == middle c == note
-    0x00  // velocity
-};
-
-class MyServerCallbacks : public BLEServerCallbacks
-{
-  void onConnect(BLEServer *pServer)
-  {
-    deviceConnected = true;
-  };
-
-  void onDisconnect(BLEServer *pServer)
-  {
-    deviceConnected = false;
-  }
-};
-
-/////////////////////////////////////////////////////////////////////////////////////
 
 void setup()
 {
@@ -112,45 +80,6 @@ void setup()
   pad6.loadMemory();
   pad7.loadMemory();
   pad8.loadMemory();
-
-  ///////////////////////////////   BLE MIDI INITIALIZE   ///////////////////////////////////
-
-  BLEDevice::init("DRUM"); //Device Name
-
-  // Create the BLE Server
-  BLEServer *pServer = BLEDevice::createServer();
-  pServer->setCallbacks(new MyServerCallbacks());
-  BLEDevice::setEncryptionLevel((esp_ble_sec_act_t)ESP_LE_AUTH_REQ_SC_BOND);
-
-  // Create the BLE Service
-  BLEService *pService = pServer->createService(BLEUUID(MIDI_SERVICE_UUID));
-
-  // Create a BLE Characteristic
-  pCharacteristic = pService->createCharacteristic(
-      BLEUUID(MIDI_CHARACTERISTIC_UUID),
-      BLECharacteristic::PROPERTY_READ |
-          BLECharacteristic::PROPERTY_NOTIFY |
-          BLECharacteristic::PROPERTY_WRITE_NR);
-  pCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
-
-  // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
-  // Create a BLE Descriptor
-  pCharacteristic->addDescriptor(new BLE2902());
-
-  // Start the service
-  pService->start();
-
-  // Start advertising
-
-  BLESecurity *pSecurity = new BLESecurity();
-  pSecurity->setAuthenticationMode(ESP_LE_AUTH_REQ_SC_BOND);
-  pSecurity->setCapability(ESP_IO_CAP_NONE);
-  pSecurity->setInitEncryptionKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
-
-  pServer->getAdvertising()->addServiceUUID(MIDI_SERVICE_UUID);
-  pServer->getAdvertising()->start();
-
-  /////////////////////////////////////////////////////////////////////////////////////
 }
 
 void loop()
@@ -160,11 +89,11 @@ void loop()
   bool editDone = button.GetEditdoneState();
   bool display = button.GetDisplayState();
 
-  char *padName = button.GetPadName();
-  char *item = button.GetSettingItem();
+  const char *padName = button.GetPadName();
+  const char *item = button.GetSettingItem();
   int settingValue = button.GetSettingValue();
   int velocity = button.GetVelocity();
-  char *hitPad = button.GetHitPad();
+  const char *hitPad = button.GetHitPad();
 
   button.readButtonState();
 
@@ -233,150 +162,66 @@ void loop()
   }
   */
 
-  //Sensing and Sending MIDI
-  if (deviceConnected)
+  //scanning 8 piezos.
+  mux.scan();
+
+  //Piezo sensing is done in this line. And it is returned as a velocity of 127 stages.
+  //For each piezo, one line is required.
+  pad1.singlePiezoMUX();
+  pad2.singlePiezoMUX();
+  pad3.singlePiezoMUX();
+  pad4.singlePiezoMUX();
+  pad5.singlePiezoMUX();
+  pad6.singlePiezoMUX();
+  pad7.singlePiezoMUX();
+  pad8.singlePiezoMUX();
+  //ride.cymbal3zoneMUX();
+
+  if (pad1.hit == true)
   {
-    //scanning 8 piezos.
-    mux.scan();
+    MIDI.sendNoteOn(pad1.note, pad1.velocity, 10); //(note, velocity, channel)
+    MIDI.sendNoteOff(pad1.note, 0, 10);
+  }
 
-    //Piezo sensing is done in this line. And it is returned as a velocity of 127 stages.
-    //For each piezo, one line is required.
-    pad1.singlePiezoMUX();
-    pad2.singlePiezoMUX();
-    pad3.singlePiezoMUX();
-    pad4.singlePiezoMUX();
-    pad5.singlePiezoMUX();
-    pad6.singlePiezoMUX();
-    pad7.singlePiezoMUX();
-    pad8.singlePiezoMUX();
-    //ride.cymbal3zoneMUX();
+  if (pad2.hit == true)
+  {
+    MIDI.sendNoteOn(pad2.note, pad2.velocity, 10); //(note, velocity, channel)
+    MIDI.sendNoteOff(pad2.note, 0, 10);
+  }
 
-    if (pad1.hit == true)
-    {
-      // noteOn
-      midiPacket[2] = 0x90;                     // note down, channel 0
-      midiPacket[3] = pad1.note;                //snare note is 38
-      midiPacket[4] = pad1.velocity;            // velocity
-      pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes
-      pCharacteristic->notify();
-      // noteOff
-      midiPacket[2] = 0x80;                     // note up, channel 0
-      midiPacket[3] = pad1.note;                //snare note is 38
-      midiPacket[4] = 0;                        // velocity
-      pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
-      pCharacteristic->notify();
-    }
+  if (pad3.hit == true)
+  {
+    MIDI.sendNoteOn(pad3.note, pad3.velocity, 10); //(note, velocity, channel)
+    MIDI.sendNoteOff(pad3.note, 0, 10);
+  }
 
-    if (pad2.hit == true)
-    {
-      // noteOn
-      midiPacket[2] = 0x90;                     // note down, channel 0
-      midiPacket[3] = pad2.note;                //snare note is 38
-      midiPacket[4] = pad2.velocity;            // velocity
-      pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes
-      pCharacteristic->notify();
-      // noteOff
-      midiPacket[2] = 0x80;                     // note up, channel 0
-      midiPacket[3] = pad2.note;                //snare note is 38
-      midiPacket[4] = 0;                        // velocity
-      pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
-      pCharacteristic->notify();
-    }
+  if (pad4.hit == true)
+  {
+    MIDI.sendNoteOn(pad4.note, pad4.velocity, 10); //(note, velocity, channel)
+    MIDI.sendNoteOff(pad4.note, 0, 10);
+  }
 
-    if (pad3.hit == true)
-    {
-      // noteOn
-      midiPacket[2] = 0x90;                     // note down, channel 0
-      midiPacket[3] = pad3.note;                //snare note is 38
-      midiPacket[4] = pad3.velocity;            // velocity
-      pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes
-      pCharacteristic->notify();
-      // noteOff
-      midiPacket[2] = 0x80;                     // note up, channel 0
-      midiPacket[3] = pad3.note;                //snare note is 38
-      midiPacket[4] = 0;                        // velocity
-      pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
-      pCharacteristic->notify();
-    }
+  if (pad5.hit == true)
+  {
+    MIDI.sendNoteOn(pad5.note, pad5.velocity, 10); //(note, velocity, channel)
+    MIDI.sendNoteOff(pad5.note, 0, 10);
+  }
 
-    if (pad4.hit == true)
-    {
-      // noteOn
-      midiPacket[2] = 0x90;                     // note down, channel 0
-      midiPacket[3] = pad4.note;                //snare note is 38
-      midiPacket[4] = pad4.velocity;            // velocity
-      pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes
-      pCharacteristic->notify();
-      // noteOff
-      midiPacket[2] = 0x80;                     // note up, channel 0
-      midiPacket[3] = pad4.note;                //snare note is 38
-      midiPacket[4] = 0;                        // velocity
-      pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
-      pCharacteristic->notify();
-    }
+  if (pad6.hit == true)
+  {
+    MIDI.sendNoteOn(pad6.note, pad6.velocity, 10); //(note, velocity, channel)
+    MIDI.sendNoteOff(pad6.note, 0, 10);
+  }
 
-    if (pad5.hit == true)
-    {
-      // noteOn
-      midiPacket[2] = 0x90;                     // note down, channel 0
-      midiPacket[3] = pad5.note;                //snare note is 38
-      midiPacket[4] = pad5.velocity;            // velocity
-      pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes
-      pCharacteristic->notify();
-      // noteOff
-      midiPacket[2] = 0x80;                     // note up, channel 0
-      midiPacket[3] = pad5.note;                //snare note is 38
-      midiPacket[4] = 0;                        // velocity
-      pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
-      pCharacteristic->notify();
-    }
+  if (pad7.hit == true)
+  {
+    MIDI.sendNoteOn(pad7.note, pad7.velocity, 10); //(note, velocity, channel)
+    MIDI.sendNoteOff(pad7.note, 0, 10);
+  }
 
-    if (pad6.hit == true)
-    {
-      // noteOn
-      midiPacket[2] = 0x90;                     // note down, channel 0
-      midiPacket[3] = pad6.note;                //snare note is 38
-      midiPacket[4] = pad6.velocity;            // velocity
-      pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes
-      pCharacteristic->notify();
-      // noteOff
-      midiPacket[2] = 0x80;                     // note up, channel 0
-      midiPacket[3] = pad6.note;                //snare note is 38
-      midiPacket[4] = 0;                        // velocity
-      pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
-      pCharacteristic->notify();
-    }
-
-    if (pad7.hit == true)
-    {
-      // noteOn
-      midiPacket[2] = 0x90;                     // note down, channel 0
-      midiPacket[3] = pad7.note;                //snare note is 38
-      midiPacket[4] = pad7.velocity;            // velocity
-      pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes
-      pCharacteristic->notify();
-      // noteOff
-      midiPacket[2] = 0x80;                     // note up, channel 0
-      midiPacket[3] = pad7.note;                //snare note is 38
-      midiPacket[4] = 0;                        // velocity
-      pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
-      pCharacteristic->notify();
-    }
-
-    if (pad8.hit == true)
-    {
-      // noteOn
-      midiPacket[2] = 0x90;                     // note down, channel 0
-      midiPacket[3] = pad8.note;                //snare note is 38
-      midiPacket[4] = pad8.velocity;            // velocity
-      pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes
-      pCharacteristic->notify();
-      // noteOff
-      midiPacket[2] = 0x80;                     // note up, channel 0
-      midiPacket[3] = pad8.note;                //snare note is 38
-      midiPacket[4] = 0;                        // velocity
-      pCharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
-      pCharacteristic->notify();
-    }
+  if (pad8.hit == true)
+  {
+    MIDI.sendNoteOn(pad8.note, pad8.velocity, 10); //(note, velocity, channel)
+    MIDI.sendNoteOff(pad8.note, 0, 10);
   }
 }
