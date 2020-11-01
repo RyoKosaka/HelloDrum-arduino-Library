@@ -1,5 +1,5 @@
 /*
-  "HELLO DRUM LIBRARY" Ver.0.7.6
+  "HELLO DRUM LIBRARY" Ver.0.7.7
   
   by Ryo Kosaka
 
@@ -8,7 +8,7 @@
 */
 
 //#define DEBUG_DRUM //<-- uncomment this line to enable debug mode with Serial.
-//#define PULLUP //<-- uncomment this line to enable pullup mode.
+//#define PULLUP //<-- uncomment this line to enable pullup mode (UNTESTED).
 
 #include "hellodrum.h"
 #include "Arduino.h"
@@ -142,11 +142,11 @@ HelloDrumKnob::HelloDrumKnob(byte pin1)
 void HelloDrum::singlePiezoSensing(byte sens, byte thre, byte scanTime, byte maskTime)
 {
 #ifdef ESP32
-  piezoValue = piezoValue / 4;
+  piezoValue = 1023 - piezoValue / 4;
 #endif
 
 #ifdef PULLUP
-  piezoValue = (1024 - piezoValue);
+  piezoValue = (1023 - piezoValue);
 #endif
 
   int Threshold = thre * 10;
@@ -175,6 +175,9 @@ void HelloDrum::singlePiezoSensing(byte sens, byte thre, byte scanTime, byte mas
   //peak scan start
   if (loopTimes > 0)
   {
+#ifdef DEBUG_DRUM
+    Serial.println(piezoValue);
+#endif
     if (piezoValue > velocity)
     {
       velocity = piezoValue;
@@ -220,13 +223,13 @@ void HelloDrum::dualPiezoSensing(byte sens, byte thre, byte scanTime, byte maskT
 {
 
 #ifdef ESP32
-  piezoValue = piezoValue / 4;
-  RimPiezoValue = RimPiezoValue / 4;
+  piezoValue = 1023 - piezoValue / 4;
+  RimPiezoValue = 1023 - RimPiezoValue / 4;
 #endif
 
 #ifdef PULLUP
-  piezoValue = (1024 - piezoValue);
-  RimPiezoValue = (1024 - RimPiezoValue);
+  piezoValue = (1023 - piezoValue);
+  RimPiezoValue = (1023 - RimPiezoValue);
 #endif
 
   int Threshold = thre * 10;
@@ -257,6 +260,11 @@ void HelloDrum::dualPiezoSensing(byte sens, byte thre, byte scanTime, byte maskT
   //peak scan start
   if (loopTimes > 0)
   {
+#ifdef DEBUG_DRUM
+    Serial.print(piezoValue);
+    Serial.print(", ");
+    Serial.println(RimPiezoValue);
+#endif
     if (piezoValue > velocity)
     {
       velocity = piezoValue;
@@ -344,8 +352,8 @@ void HelloDrum::cymbal2zoneSensing(byte sens, byte thre, byte scanTime, byte mas
 {
 
 #ifdef ESP32
-  piezoValue = piezoValue / 4;
-  sensorValue = sensorValue / 4;
+  piezoValue = 1023 - piezoValue / 4;
+  sensorValue = 1023 - sensorValue / 4;
 #endif
 
 #ifdef PULLUP
@@ -381,6 +389,13 @@ void HelloDrum::cymbal2zoneSensing(byte sens, byte thre, byte scanTime, byte mas
   //peak scan start
   if (loopTimes > 0)
   {
+#ifdef DEBUG_DRUM
+    Serial.print(piezoValue);
+    Serial.print(", ");
+    Serial.print(sensorValue);
+    Serial.print(", ");
+    Serial.println(abs(piezoValue - sensorValue));
+#endif
     if (abs(piezoValue - sensorValue) > velocity)
     {
       velocity = abs(piezoValue - sensorValue);
@@ -394,6 +409,7 @@ void HelloDrum::cymbal2zoneSensing(byte sens, byte thre, byte scanTime, byte mas
     //scan end
     if (millis() - time_hit >= scanTime)
     {
+      velocity = velocity - firstSensorValue;
 
 #ifdef DEBUG_DRUM
       int prevVel = velocity;
@@ -456,7 +472,7 @@ void HelloDrum::cymbal2zoneSensing(byte sens, byte thre, byte scanTime, byte mas
       }
 
       //choke
-      else if (lastSensorValue > edgeThreshold && firstSensorValue > edgeThreshold)
+      else if (lastSensorValue > edgeThreshold && firstSensorValue > edgeThreshold && lastSensorValue >= firstSensorValue)
       {
 
 #ifdef DEBUG_DRUM
@@ -482,8 +498,8 @@ void HelloDrum::cymbal3zoneSensing(byte sens, byte thre, byte scanTime, byte mas
 {
 
 #ifdef ESP32
-  piezoValue = piezoValue / 4;
-  sensorValue = sensorValue / 4;
+  piezoValue = 1023 - piezoValue / 4;
+  sensorValue = 1023 - sensorValue / 4;
 #endif
 
 #ifdef PULLUP
@@ -521,6 +537,13 @@ void HelloDrum::cymbal3zoneSensing(byte sens, byte thre, byte scanTime, byte mas
   //peak scan start
   if (loopTimes > 0)
   {
+#ifdef DEBUG_DRUM
+    Serial.print(piezoValue);
+    Serial.print(", ");
+    Serial.print(sensorValue);
+    Serial.print(", ");
+    Serial.println(abs(piezoValue - sensorValue));
+#endif
     if (abs(piezoValue - sensorValue) > velocity)
     {
       velocity = abs(piezoValue - sensorValue);
@@ -535,6 +558,7 @@ void HelloDrum::cymbal3zoneSensing(byte sens, byte thre, byte scanTime, byte mas
     //scan end
     if (millis() - time_hit >= scanTime)
     {
+      velocity = velocity - firstSensorValue;
 
 #ifdef DEBUG_DRUM
       int prevVel = velocity;
@@ -617,7 +641,7 @@ void HelloDrum::cymbal3zoneSensing(byte sens, byte thre, byte scanTime, byte mas
       }
 
       //choke
-      else if (firstSensorValue > edgeThreshold && lastSensorValue > edgeThreshold)
+      else if (firstSensorValue > edgeThreshold && lastSensorValue > edgeThreshold && lastSensorValue >= firstSensorValue)
       {
 #ifdef DEBUG_DRUM
         Serial.print("[Choke] firstSensorValue : ");
@@ -749,11 +773,11 @@ void HelloDrum::TCRT5000Sensing(byte sens, byte thre1, byte thre2, byte scanTime
 void HelloDrum::FSRSensing(byte sens, byte thre, byte scanStart, byte scanEnd, byte pedalSens)
 {
 #ifdef ESP32
-  fsr = fsr / 4;
+  fsr = 1023 - fsr / 4;
 #endif
 
 #ifdef PULLUP
-  fsr = (1024 - fsr);
+  fsr = (1023 - fsr);
 #endif
 
   int sensRaw = sens * 10;
@@ -1889,7 +1913,7 @@ void HelloDrum::settingEnable()
 }
 #endif
 
-void HelloDrum::settingName(char *instrumentName)
+void HelloDrum::settingName(const char *instrumentName)
 {
   //Store the name of the pad in the array.
   showInstrument[nameIndex] = instrumentName;
@@ -2771,11 +2795,11 @@ bool HelloDrumButton::GetPushState()
 {
   return push;
 }
-char *HelloDrumButton::GetPadName()
+const char *HelloDrumButton::GetPadName()
 {
   return showInstrument[nameIndex];
 }
-char *HelloDrumButton::GetSettingItem()
+const char *HelloDrumButton::GetSettingItem()
 {
   if (padType[nameIndex] == Dnum)
   {
@@ -2806,7 +2830,7 @@ char *HelloDrumButton::GetSettingItem()
     return item[itemNumberShow];
   }
 }
-char *HelloDrumButton::GetHitPad()
+const char *HelloDrumButton::GetHitPad()
 {
   return showInstrument[padIndex];
 }
@@ -2846,11 +2870,11 @@ bool HelloDrumButtonLcdShield::GetPushState()
 {
   return push;
 }
-char *HelloDrumButtonLcdShield::GetPadName()
+const char *HelloDrumButtonLcdShield::GetPadName()
 {
   return showInstrument[nameIndex];
 }
-char *HelloDrumButtonLcdShield::GetSettingItem()
+const char *HelloDrumButtonLcdShield::GetSettingItem()
 {
   if (padType[nameIndex] == Dnum)
   {
@@ -2881,7 +2905,7 @@ char *HelloDrumButtonLcdShield::GetSettingItem()
     return item[itemNumberShow];
   }
 }
-char *HelloDrumButtonLcdShield::GetHitPad()
+const char *HelloDrumButtonLcdShield::GetHitPad()
 {
   return showInstrument[padIndex];
 }

@@ -1,9 +1,9 @@
 /*
-  " HELLO DRUM LIBRARY" Ver.0.7.6
+  " HELLO DRUM LIBRARY" Ver.0.7.7
   
   by Ryo Kosaka
 
-  GitHUb : https://github.com/RyoKosaka/HelloDrum-arduino-Library
+  GitHub : https://github.com/RyoKosaka/HelloDrum-arduino-Library
   Blog : https://open-e-drums.tumblr.com/
 */
 
@@ -18,7 +18,7 @@
 #include "EEPROM.h"
 #endif
 
-static char *item[] = {
+const static char *item[] = {
     "SENSITIVITY", //0 0
     "THRESHOLD",   //1 1
     "SCAN TIME",   //2 2
@@ -27,7 +27,7 @@ static char *item[] = {
     "NOTE",        //7 5
 };
 
-static char *itemD[] = {
+const static char *itemD[] = {
     "SENSITIVITY", //0
     "THRESHOLD",   //1
     "SCAN TIME",   //2
@@ -40,7 +40,7 @@ static char *itemD[] = {
     "NOTE CROSS",  //9
 };
 
-static char *itemCY2[] = {
+const static char *itemCY2[] = {
     "SENSITIVITY", //0 0
     "THRESHOLD",   //1 1
     "SCAN TIME",   //2 2
@@ -51,7 +51,7 @@ static char *itemCY2[] = {
     "NOTE EDGE",   //8 7
 };
 
-static char *itemCY3[] = {
+const static char *itemCY3[] = {
     "SENSITIVITY", //0
     "THRESHOLD",   //1
     "SCAN TIME",   //2
@@ -64,7 +64,7 @@ static char *itemCY3[] = {
     "NOTE CUP",    //9
 };
 
-static char *itemHH[] = {
+const static char *itemHH[] = {
     "SENSITIVITY", //0 0
     "THRESHOLD",   //1 1
     "SCAN TIME",   //2 2
@@ -74,7 +74,7 @@ static char *itemHH[] = {
     "NOTE CLOSE",  //8 6
 };
 
-static char *itemHH2[] = {
+const static char *itemHH2[] = {
     "SENSITIVITY", //0 0
     "THRESHOLD",   //1 1
     "SCAN TIME",   //2 2
@@ -85,7 +85,7 @@ static char *itemHH2[] = {
     "NOTE CLOSE",  //8 7
 };
 
-static char *itemHHC[] = {
+const static char *itemHHC[] = {
     "SENSITIVITY",  //0 0
     "THRESHOLD",    //1 1
     "SCAN START",   //2 2
@@ -97,7 +97,7 @@ static char *itemHHC[] = {
     "NOTE CLOSE E", //9 8
 };
 
-static char *showInstrument[] = {
+const static char *showInstrument[] = {
     "Pad 1",
     "Pad 2",
     "Pad 3",
@@ -202,7 +202,7 @@ public:
 
   void setCurve(byte curveType);
 
-  void settingName(char *instrumentName);
+  void settingName(const char *instrumentName);
   void settingEnable();
 
   void loadMemory();
@@ -323,9 +323,9 @@ public:
   bool GetEditdoneState();
   bool GetPushState();
   bool GetDisplayState();
-  char *GetPadName();
-  char *GetSettingItem();
-  char *GetHitPad();
+  const char *GetPadName();
+  const char *GetSettingItem();
+  const char *GetHitPad();
 
   int UPDOWN;
   int NEXTBACK;
@@ -352,9 +352,9 @@ public:
   bool GetEditdoneState();
   bool GetPushState();
   bool GetDisplayState();
-  char *GetPadName();
-  char *GetSettingItem();
-  char *GetHitPad();
+  const char *GetPadName();
+  const char *GetSettingItem();
+  const char *GetHitPad();
 
   int UPDOWN;
   int NEXTBACK;

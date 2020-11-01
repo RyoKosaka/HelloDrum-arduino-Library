@@ -1,6 +1,7 @@
 # HelloDrum Arduino Library
+[![arduino-library-badge](https://www.ardu-badge.com/badge/Hello%20Drum.svg?)](https://www.ardu-badge.com/USB-MIDI)   
 This is a library for making E-Drum with Arduino.  
-**Ver.0.7.6(5/1/2020) Work in progress.** 
+**Ver.0.7.7(11/1/2020) Work in progress.** 
 
 ## Description
 
@@ -19,6 +20,7 @@ Use at your own risk.
 
 - Single piezo pad, Dual piezo pad, 2-Zone cymbal, 3-Zone cymbal
 - Compatible with Roland's 2 zone pads (PD Series)  
+- Compatible with YAMAHA's 3 zone pads (XP Series)  
 - Compatible with YAMAHA's 3 zone cymbal(PCY135/PCY155) and Roland's 2 zone cymbals(CY12C/CY5/CY8)
 - Compatible with SoftPot, FSR and Optical(TCRT5000) type hi-hat controllers and Roland's hihat(VH10/VH11)
 - Sensing with MUX(4051 and 4067)
@@ -27,18 +29,20 @@ Use at your own risk.
 - Sensitivity, Threshold, Scan Time, Mask Time, Note Number, Velocity Curve can be set with each pad
 - Save setting values with EEPROM
 - Works with ESP32 and Teensy and AVR boards such as UNO and MEGA.
+- Works with [MIDI Library](https://github.com/FortySevenEffects/arduino_midi_library), [BLE-MIDI Library](https://github.com/lathoub/Arduino-BLE-MIDI), [USB-MIDI library](https://github.com/lathoub/Arduino-USBMIDI).
 
 ## How to Use
 - **Install**  
 Use Arduino's Library Manager to install the library. Search for “hellodrum ”.  
-If you use MIDI, also install the MIDI Library.  
+If you use MIDI, also install the [MIDI Library](https://github.com/FortySevenEffects/arduino_midi_library). Or [BLE-MIDI Library](https://github.com/lathoub/Arduino-BLE-MIDI) or [USB-MIDI library](https://github.com/lathoub/Arduino-USBMIDI).
+
 <img src="https://open-e-drums.com/images/ide.png" width="800px">
 
 - **Initialize EEPROM**  
 If you want to use EEPROM to store the settings, you will need to initialize the EEPROM.
 Please write the sample code, example > EEPROM > InitializeEEPROM > InitializeEEPROM.ino, to your Arduino. Once it's written, the initialization is complete.  
 
-- **Coding**:
+- **Coding**
    ```cpp
     #include <hellodrum.h>
     #include <MIDI.h>
@@ -122,11 +126,64 @@ Please write the sample code, example > EEPROM > InitializeEEPROM > InitializeEE
     }
     ```  
 
-    [Check instruction.md](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/instruction.md)
+    [Check instruction.md](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/instruction.md)  
+
+## Using Arduino MIDI Library
+
+[FortySevenEffects Arduino MIDI Library](https://github.com/FortySevenEffects/arduino_midi_library)   
+There are three ways to communicate with a PC using MIDI with an arduino.
+
+1. Rewrite arduino's USB chip (UNO,MEGA only)
+    - https://www.arduino.cc/en/Hacking/DFUProgramming8U2
+    - http://morecatlab.akiba.coocan.jp/lab/index.php/aruino/midi-firmware-for-arduino-uno-moco/?lang=en
+2. Using Hairless MIDI (Easiest way)
+    - https://projectgus.github.io/hairless-midiserial/
+    - https://open-e-drums.tumblr.com/post/171304647319/using-hairless-midi
+3. Using a MIDI terminal and a MIDI-USB cable
+    - https://www.arduino.cc/en/Tutorial/Midi
+    - https://open-e-drums.tumblr.com/post/171168448524/using-midi-socket-with-arduino
+
+
+```cpp
+#include <hellodrum.h>
+#include <MIDI.h>
+MIDI_CREATE_DEFAULT_INSTANCE();
+
+//...
+```
+
+## Using USB-MIDI Library
+
+[lathoub Arduino-USBMIDI](https://github.com/lathoub/Arduino-USBMIDI)   
+If you are using atmega32u4 (Arduino Leonardo, Arduino Micro, Arduino Pro Micro...), you can use USB-MIDI library. No additional software is needed, the 32u4 is recognized as a MIDI device.
+
+```cpp
+#include <hellodrum.h>
+#include <USB-MIDI.h>
+USBMIDI_CREATE_DEFAULT_INSTANCE();
+
+//...
+```
+
+## Using BLE-MIDI Library with ESP32
+
+[lathoub Arduino-BLE-MIDI](https://github.com/lathoub/Arduino-BLE-MIDI)   
+It is very easy to use BLE-MIDI with ESP32.  
+You can find a device named "BLE-MIDI".
+
+```cpp
+#include <hellodrum.h>
+#include <BLEMIDI_Transport.h>
+#include <hardware/BLEMIDI_ESP32.h>
+BLEMIDI_CREATE_DEFAULT_INSTANCE();
+
+//...
+```
+Please check the KORG's documentation for instructions on how to connect.  
+[KORG Bluetooth MIDI Connection Guide](https://cdn.korg.com/us/support/download/files/7c456d3daad3b027197b3fda1f87dce7.pdf?response-content-disposition=inline%3Bfilename%3DBluetooth_MIDI_SettingG_E1.pdf&response-content-type=application%2Fpdf%3B) 
 
 ## Sensing and Setting Values
-- Single Piezo Sensing  
-<img src="https://open-e-drums.com/images/sensing/single.png" width="800px">  
+- Single Piezo Sensing   <img src="https://open-e-drums.com/images/sensing/single.png" width="800px">  
 If the value of the piezo exceeds the threshold, the scan will start. The scan will be done for the scantime you set. The highest piezo value during the scan is the peak. The peak value is converted to a velocity of 0-127. The peak is converted to velocity with the sensitivity value as the maximum value and the threshold value as the minimum value. In other words, if you set the threshold value to the same value as the sensitivity, the velocity will be constant.
 Depending on the rigidity of the pad, the piezo vibrates for a while. So, you can set a mask time to prevent retriggering. If you are in mask time, the scan will not start even if the piezo value exceeds the threshold.
 
@@ -240,7 +297,9 @@ The STL data of pads from 6 inches to 12 inches, hi-hat controllers(<https://www
 
 ## Release History
 
-
+* 0.7.7
+   - Bug fix for ESP32
+   - Add and Update sample codes about BLE-MIDI, USB-MIDI
 * 0.7.6
    - Bug fix for LCD and buttons
    - Add and Update sample codes
