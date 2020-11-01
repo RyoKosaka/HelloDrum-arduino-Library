@@ -19,7 +19,7 @@
     Note of rim/Edge = 39
     Note of cup = 40
 
-  https://open-e-drums.tumblr.com/
+  https://github.com/RyoKosaka/HelloDrum-arduino-Library
 */
 
 #include <hellodrum.h>

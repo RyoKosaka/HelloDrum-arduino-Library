@@ -20,23 +20,21 @@
   *****  When the button behavior is incorrect  *****
   The value of the button has individual differences depending on the shield.
   You may need to modify the source code of this library.
-  Please change the value from line 4279 to line 4301 in hellodrum.cpp.
+  Please change the value from line 2710 to line 2747 in hellodrum.cpp.
 
-  https://open-e-drums.tumblr.com/
-*/
-
-/* NOTICE
-
-  You have to install the MIDI library.
-  Arduino MIDI Library : https://playground.arduino.cc/Main/MIDILibrary
-
+  https://github.com/RyoKosaka/HelloDrum-arduino-Library
 */
 
 #include <hellodrum.h>
-#include <MIDI.h>
 #include <LiquidCrystal.h>
 
+//Using MIDI Library. If you want to use USB-MIDI, comment out the next two lines.
+#include <MIDI.h>
 MIDI_CREATE_DEFAULT_INSTANCE();
+
+//Uncomment the next two lines for using USB-MIDI with atmega32u4 or Teensy
+//#include <USB-MIDI.h>
+//USBMIDI_CREATE_DEFAULT_INSTANCE();
 
 //LCD pin define
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7); //(rs, en, d4, d5, d6, d7)
@@ -90,8 +88,8 @@ void loop()
   bool editDone = button.GetEditdoneState();
   bool display = button.GetDisplayState();
 
-  char *padName = button.GetPadName();
-  char *item = button.GetSettingItem();
+  const char *padName = button.GetPadName();
+  const char *item = button.GetSettingItem();
   int settingValue = button.GetSettingValue();
 
   button.readButtonState();
@@ -140,7 +138,7 @@ void loop()
   if (display == true)
   {
     int velocity = button.GetVelocity();
-    char *hitPad = button.GetHitPad();
+    const char *hitPad = button.GetHitPad();
 
     lcd.clear();
     lcd.print(hitPad);

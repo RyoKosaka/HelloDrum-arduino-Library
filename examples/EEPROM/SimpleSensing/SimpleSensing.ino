@@ -2,22 +2,21 @@
   EXAMPLE - Simple Piezo Sensing (EEPROM and LCD)
 
   With this sample code, you will make snare and tom using two piezo.
-  https://open-e-drums.tumblr.com/
-*/
-
-/* NOTICE
-
-  You have to install the MIDI library.
-  MIDI : https://playground.arduino.cc/Main/MIDILibrary
-
+  https://github.com/RyoKosaka/HelloDrum-arduino-Library
 */
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include <MIDI.h>
 #include <hellodrum.h>
 #include <LiquidCrystal.h>
+
+//Using MIDI Library. If you want to use USB-MIDI, comment out the next two lines.
+#include <MIDI.h>
 MIDI_CREATE_DEFAULT_INSTANCE();
+
+//Uncomment the next two lines for using USB-MIDI with atmega32u4 or Teensy
+//#include <USB-MIDI.h>
+//USBMIDI_CREATE_DEFAULT_INSTANCE();
 
 //LCD pin define
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2); //(rs, en, d4, d5, d6, d7)
@@ -66,8 +65,8 @@ void loop()
   bool editDone = button.GetEditdoneState();
   bool display = button.GetDisplayState();
 
-  char *padName = button.GetPadName();
-  char *item = button.GetSettingItem();
+  const char *padName = button.GetPadName();
+  const char *item = button.GetSettingItem();
   int settingValue = button.GetSettingValue();
 
   button.readButtonState();
@@ -115,7 +114,7 @@ void loop()
   if (display == true)
   {
     int velocity = button.GetVelocity();
-    char *hitPad = button.GetHitPad();
+    const char *hitPad = button.GetHitPad();
 
     lcd.clear();
     lcd.print(hitPad);

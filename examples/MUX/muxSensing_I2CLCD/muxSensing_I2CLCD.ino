@@ -4,24 +4,28 @@
   With this sample code, you can make the octapad with MUX(74HC4051).
   And you can set the value of sensitivity etc.. with LCD I2C.
   NOT BLE MIDI.
-  https://open-e-drums.tumblr.com/
+  https://github.com/RyoKosaka/HelloDrum-arduino-Library
 */
 
 /* NOTICE
 
-  You have to install the MIDI library and LiquidCrystal_I2C library.
-  MIDI : https://playground.arduino.cc/Main/MIDILibrary
-  LiquidCrystal_I2C : https://github.com/johnrickman/LiquidCrystal_I2C
+  You have to install the LiquidCrystal_I2C library.
+  https://github.com/johnrickman/LiquidCrystal_I2C
 
 */
 
 #include <hellodrum.h>
-#include <MIDI.h>
 #include <LiquidCrystal_I2C.h>
 
-LiquidCrystal_I2C lcd(0x27, 16, 2);
-
+//Using MIDI Library. If you want to use USB-MIDI, comment out the next two lines.
+#include <MIDI.h>
 MIDI_CREATE_DEFAULT_INSTANCE();
+
+//Uncomment the next two lines for using USB-MIDI with atmega32u4 or Teensy
+//#include <USB-MIDI.h>
+//USBMIDI_CREATE_DEFAULT_INSTANCE();
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 /*
 Mux Breakout ----------- ESP32
@@ -93,11 +97,11 @@ void loop()
     bool editDone = button.GetEditdoneState();
     bool display = button.GetDisplayState();
 
-    char *padName = button.GetPadName();
-    char *item = button.GetSettingItem();
+    const char *padName = button.GetPadName();
+    const char *item = button.GetSettingItem();
     int settingValue = button.GetSettingValue();
     int velocity = button.GetVelocity();
-    char *hitPad = button.GetHitPad();
+    const char *hitPad = button.GetHitPad();
 
     button.readButtonState();
 

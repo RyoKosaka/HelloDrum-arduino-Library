@@ -2,14 +2,7 @@
   EXAMPLE - Simple Piezo Sensing
 
   With this sample code, you will make snare and tom using two piezo.
-  https://open-e-drums.tumblr.com/
-*/
-
-/* NOTICE
-
-  You have to install the MIDI library.
-  MIDI : https://playground.arduino.cc/Main/MIDILibrary
-
+  https://github.com/RyoKosaka/HelloDrum-arduino-Library
 */
 
 ///////////////////////////////   SETTING VALUE   ///////////////////////////////////
@@ -37,13 +30,18 @@ byte TOM[6] = {
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include <MIDI.h>
 #include <hellodrum.h>
+
+//Using MIDI Library. If you want to use USB-MIDI, comment out the next two lines.
+#include <MIDI.h>
 MIDI_CREATE_DEFAULT_INSTANCE();
+
+//Uncomment the next two lines for using USB-MIDI with atmega32u4 or Teensy
+//#include <USB-MIDI.h>
+//USBMIDI_CREATE_DEFAULT_INSTANCE();
 
 //Please name your piezo.
 //The piezo named snare is connected to the A0 pin and the piezo named tom is connected to the A1 pin.
-
 HelloDrum snare(0);
 HelloDrum tom(1);
 

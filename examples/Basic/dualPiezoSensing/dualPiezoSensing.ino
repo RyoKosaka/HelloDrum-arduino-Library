@@ -8,14 +8,7 @@
     Piezo for head to A0.
     Piezo for rim to A1.
 
-  https://open-e-drums.tumblr.com/
-*/
-
-/* NOTICE
-
-  You have to install the MIDI library.
-  MIDI : https://playground.arduino.cc/Main/MIDILibrary
-
+  https://github.com/RyoKosaka/HelloDrum-arduino-Library
 */
 
 ///////////////////////////////   SETTING VALUE   ///////////////////////////////////
@@ -39,9 +32,14 @@ byte SNARE[10] = {
 /////////////////////////////////////////////////////////////////////////////////////
 
 #include <hellodrum.h>
-#include <MIDI.h>
 
+//Using MIDI Library. If you want to use USB-MIDI, comment out the next two lines.
+#include <MIDI.h>
 MIDI_CREATE_DEFAULT_INSTANCE();
+
+//Uncomment the next two lines for using USB-MIDI with atmega32u4 or Teensy
+//#include <USB-MIDI.h>
+//USBMIDI_CREATE_DEFAULT_INSTANCE();
 
 //Please name your pad and controller.
 HelloDrum snare(0, 1);

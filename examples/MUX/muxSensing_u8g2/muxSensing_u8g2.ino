@@ -1,25 +1,23 @@
 /*
-  EXAMPLE - MUX Sensing with OLED(SSD1306) and EEPROM
+    EXAMPLE - MUX Sensing with OLED(SSD1306) and EEPROM
 
-  With this sample code, you can make the octapad with MUX(74HC4051).
-  And you can set the value of sensitivity etc.. with OLED (SSD1306).
-  NOT BLE MIDI.
-  https://open-e-drums.tumblr.com/
+    With this sample code, you can make the octapad with MUX(74HC4051).
+    And you can set the value of sensitivity etc.. with OLED (SSD1306).
+    NOT BLE MIDI.
+    https://github.com/RyoKosaka/HelloDrum-arduino-Library
 */
 
 /* NOTICE
 
-  1. You have to install the MIDI library and u8g2 library.
-  MIDI : https://playground.arduino.cc/Main/MIDILibrary
-  u8g2 : https://github.com/olikraus/u8g2
+    1. You have to install the u8g2 library.
+    u8g2 : https://github.com/olikraus/u8g2
 
-  2. You CAN NOT use this code with Arduino UNO because of u8g2.
-     You have to use arudino MEGA or ESP32.
+    2. You CAN NOT use this code with Arduino UNO because of u8g2.
+    You have to use arudino MEGA or ESP32.
 
 */
 
 #include <hellodrum.h>
-#include <MIDI.h>
 #include <Arduino.h>
 #include <U8g2lib.h>
 
@@ -27,7 +25,13 @@
 #include <Wire.h>
 #endif
 
+//Using MIDI Library. If you want to use USB-MIDI, comment out the next two lines.
+#include <MIDI.h>
 MIDI_CREATE_DEFAULT_INSTANCE();
+
+//Uncomment the next two lines for using USB-MIDI with atmega32u4 or Teensy
+//#include <USB-MIDI.h>
+//USBMIDI_CREATE_DEFAULT_INSTANCE();
 
 U8G2_SSD1306_128X32_UNIVISION_F_SW_I2C u8g2(U8G2_R0, /* clock=*/SCL, /* data=*/SDA, /* reset=*/U8X8_PIN_NONE);
 
@@ -100,11 +104,11 @@ void loop()
     bool editDone = button.GetEditdoneState();
     bool display = button.GetDisplayState();
 
-    char *padName = button.GetPadName();
-    char *item = button.GetSettingItem();
+    const char *padName = button.GetPadName();
+    const char *item = button.GetSettingItem();
     int settingValue = button.GetSettingValue();
     int velocity = button.GetVelocity();
-    char *hitPad = button.GetHitPad();
+    const char *hitPad = button.GetHitPad();
 
     button.readButtonState();
 

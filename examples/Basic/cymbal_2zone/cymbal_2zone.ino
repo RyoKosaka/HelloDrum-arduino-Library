@@ -2,14 +2,7 @@
   EXAMPLE - 2 Zone Cymbal Sensing
 
   This sample code is tesed with YAMAHA PCY135/PCY155.
-  https://open-e-drums.tumblr.com/
-*/
-
-/* NOTICE
-
-  You have to install the MIDI library.
-  MIDI : https://playground.arduino.cc/Main/MIDILibrary
-
+  https://github.com/RyoKosaka/HelloDrum-arduino-Library
 */
 
 //////////////////////////////////////////   SETTING VALUE   ////////////////////////////////////////////
@@ -30,9 +23,15 @@ byte CRASH[8] = {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <MIDI.h>
 #include <hellodrum.h>
+
+//Using MIDI Library. If you want to use USB-MIDI, comment out the next two lines.
+#include <MIDI.h>
 MIDI_CREATE_DEFAULT_INSTANCE();
+
+//Uncomment the next two lines for using USB-MIDI with atmega32u4 or Teensy
+//#include <USB-MIDI.h>
+//USBMIDI_CREATE_DEFAULT_INSTANCE();
 
 //Please name your cymbal.
 //The cymbal named "crash" is connected to the A0 pin (piezo) and A1 pin (edge sensor).

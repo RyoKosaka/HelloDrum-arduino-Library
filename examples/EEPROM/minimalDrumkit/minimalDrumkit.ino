@@ -25,21 +25,19 @@
     LCD D6 pin to digital pin 3
     LCD D7 pin to digital pin 2
 
-  https://open-e-drums.tumblr.com/
-*/
-
-/* NOTICE
-
-  You have to install the MIDI library.
-  Arduino MIDI Library : https://playground.arduino.cc/Main/MIDILibrary
-
+  https://github.com/RyoKosaka/HelloDrum-arduino-Library
 */
 
 #include <hellodrum.h>
-#include <MIDI.h>
 #include <LiquidCrystal.h>
 
+//Using MIDI Library. If you want to use USB-MIDI, comment out the next two lines.
+#include <MIDI.h>
 MIDI_CREATE_DEFAULT_INSTANCE();
+
+//Uncomment the next two lines for using USB-MIDI with atmega32u4 or Teensy
+//#include <USB-MIDI.h>
+//USBMIDI_CREATE_DEFAULT_INSTANCE();
 
 //LCD pin define
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2); //(rs, en, d4, d5, d6, d7)
@@ -99,8 +97,8 @@ void loop()
   bool editDone = button.GetEditdoneState();
   bool display = button.GetDisplayState();
 
-  char *padName = button.GetPadName();
-  char *item = button.GetSettingItem();
+  const char *padName = button.GetPadName();
+  const char *item = button.GetSettingItem();
   int settingValue = button.GetSettingValue();
 
   button.readButtonState();
@@ -151,7 +149,7 @@ void loop()
   if (display == true)
   {
     int velocity = button.GetVelocity();
-    char *hitPad = button.GetHitPad();
+    const char *hitPad = button.GetHitPad();
 
     lcd.clear();
     lcd.print(hitPad);
@@ -256,11 +254,20 @@ void loop()
   //4.choke
   if (ride.choke == true)
   {
+    MIDI.sendAfterTouch(ride.note, 127, 10);
+    MIDI.sendAfterTouch(ride.noteRim, 127, 10);
+    MIDI.sendAfterTouch(ride.noteCup, 127, 10);
+    MIDI.sendAfterTouch(ride.note, 0, 10);
+    MIDI.sendAfterTouch(ride.noteRim, 0, 10);
+    MIDI.sendAfterTouch(ride.noteCup, 0, 10);
+
+    /*
     MIDI.sendPolyPressure(ride.note, 127, 10);
     MIDI.sendPolyPressure(ride.noteRim, 127, 10);
     MIDI.sendPolyPressure(ride.noteCup, 127, 10);
     MIDI.sendPolyPressure(ride.note, 0, 10);
     MIDI.sendPolyPressure(ride.noteRim, 0, 10);
     MIDI.sendPolyPressure(ride.noteCup, 0, 10);
+    */
   }
 }

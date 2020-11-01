@@ -3,14 +3,13 @@
 
   With this sample code, you can make minimal drum kit with MUX (74HC4051) and I2CLCD.
   NOT BLE MIDI.
-  https://open-e-drums.tumblr.com/
+  https://github.com/RyoKosaka/HelloDrum-arduino-Library
 */
 
 /* NOTICE
 
-  You have to install the MIDI library and LiquidCrystal_I2C library.
-  MIDI : https://playground.arduino.cc/Main/MIDILibrary
-  LiquidCrystal_I2C : https://github.com/johnrickman/LiquidCrystal_I2C
+  You have to install the LiquidCrystal_I2C library.
+  https://github.com/johnrickman/LiquidCrystal_I2C
 
 */
 
@@ -64,7 +63,7 @@ void setup()
   hihat.settingName("HIHAT");
   hihatPedal.settingName("HIHAT PEDAL");
   ride.settingName("RIDE");
-  ride.settingName("TOM");
+  tom.settingName("TOM");
 
   //Load settings from EEPROM.
   //It is necessary to make the order in exactly the same order as you named the pad first.
@@ -91,11 +90,11 @@ void loop()
   bool editDone = button.GetEditdoneState();
   bool display = button.GetDisplayState();
 
-  char *padName = button.GetPadName();
-  char *item = button.GetSettingItem();
+  const char *padName = button.GetPadName();
+  const char *item = button.GetSettingItem();
   int settingValue = button.GetSettingValue();
   int velocity = button.GetVelocity();
-  char *hitPad = button.GetHitPad();
+  const char *hitPad = button.GetHitPad();
 
   button.readButtonState();
 
