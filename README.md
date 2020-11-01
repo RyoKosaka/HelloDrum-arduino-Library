@@ -1,5 +1,5 @@
 # HelloDrum Arduino Library
-[![arduino-library-badge](https://www.ardu-badge.com/badge/Hello%20Drum.svg?)](https://www.ardu-badge.com/USB-MIDI)   
+[![arduino-library-badge](https://www.ardu-badge.com/badge/Hello%20Drum.svg?)](https://www.ardu-badge.com/Hello%20Drum)   
 This is a library for making E-Drum with Arduino.  
 **Ver.0.7.7(11/1/2020) Work in progress.** 
 
