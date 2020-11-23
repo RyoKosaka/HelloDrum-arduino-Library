@@ -13,8 +13,8 @@ Blog :[https://open-e-drums.tumblr.com/](https://open-e-drums.tumblr.com/)
 YouTube :[https://www.youtube.com/channel/UCNCDcIO26xL_NhI04QY-v4A](https://www.youtube.com/channel/UCNCDcIO26xL_NhI04QY-v4A)  
 3D Models of Pad :[https://www.thingiverse.com/RyoKosaka/designs](https://www.thingiverse.com/RyoKosaka/designs)  
 
-This software is an alpha version, and is unsupported.
-Use at your own risk.
+**This software is an alpha version, and is unsupported.  
+Use at your own risk.**
 
 ## Features
 
@@ -126,7 +126,7 @@ Please write the sample code, example > EEPROM > InitializeEEPROM > InitializeEE
     }
     ```  
 
-    [Check instruction.md](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/instruction.md)  
+    [Check instruction.md](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/docs/instruction.md) for more info on coding.
 
 ## Using Arduino MIDI Library
 
@@ -182,114 +182,13 @@ BLEMIDI_CREATE_DEFAULT_INSTANCE();
 Please check the KORG's documentation for instructions on how to connect.  
 [KORG Bluetooth MIDI Connection Guide](https://cdn.korg.com/us/support/download/files/7c456d3daad3b027197b3fda1f87dce7.pdf?response-content-disposition=inline%3Bfilename%3DBluetooth_MIDI_SettingG_E1.pdf&response-content-type=application%2Fpdf%3B) 
 
-## Sensing and Setting Values
-- Single Piezo Sensing   <img src="https://open-e-drums.com/images/sensing/single.png" width="800px">  
-If the value of the piezo exceeds the threshold, the scan will start. The scan will be done for the scantime you set. The highest piezo value during the scan is the peak. The peak value is converted to a velocity of 0-127. The peak is converted to velocity with the sensitivity value as the maximum value and the threshold value as the minimum value. In other words, if you set the threshold value to the same value as the sensitivity, the velocity will be constant.
-Depending on the rigidity of the pad, the piezo vibrates for a while. So, you can set a mask time to prevent retriggering. If you are in mask time, the scan will not start even if the piezo value exceeds the threshold.
-
-    - Sensitivity (1 - 100)
-    - Threshold (1 - 100)
-    - Scan Time (1 - 100) milliseconds
-    - Mask Time (1 - 100) milliseconds
-    - Velocity Curve Type (0 - 4)
-
-- Dual Piezo Sensing  
-<img src="https://open-e-drums.com/images/sensing/dual.png" width="800px">  
-Since it's piezo sensing, it's basically the same as single piezo sensing. By comparing the signals from the piezo for the head to the piezo for the rim, we can determine which part of the pad was hit. On most pads, when the head is hit, the piezo for the rim also vibrates. Similarly, the piezo for the head vibrates when the rim is hit. The difference(d) between the peak of the piezo for the rim and the peak of the piezo for the head is used to judge. This can be set in rimSensitivity.  
-
-    - Sensitivity (1 - 100)
-    - Threshold (1 - 100)
-    - Scan Time (1 - 100) milliseconds
-    - Mask Time (1 - 100) milliseconds
-    - Rim Sensitivity (1 - 100)
-    - Rim Threshold (1 - 100)
-    - Velocity Curve Type (0 - 4)
-
-- 2-Zone Cymbal Sensing  
-<img src="https://open-e-drums.com/images/sensing/cy2.png" width="800px">  
-A film switch is used for the edge of the cymbal. This is a quicker response than the piezo. There is no need to scan. Because there is only ON and OFF. To determine the hit position, the value of the film switch at the beginning of the scan and the value of the film switch at the end of the scan are used. If it's a hit to the edge, the film switch will be low by the time the scan is over. On the other hand, if the film switch value is high at the beginning and end of the scan, it is determined to be a choke.  
-
-    - Sensitivity (1 - 100)
-    - Threshold (1 - 100)
-    - Scan Time (1 - 100) milliseconds
-    - Mask Time (1 - 100) milliseconds
-    - Edge Threshold (1 - 100)
-    - Velocity Curve Type (0 - 4)
-
-- 3-Zone Cymbal Sensing  
-<img src="https://open-e-drums.com/images/sensing/cy3.png" width="800px">  
-It's almost the same as 2-Zone. So far, it only supports YAMAHA's PCY135/155.  
-In the PCY135/155, the film switch value is divided by the voltage divider circuit. So, you need to set the Edge Threshold and Cup Threshold. Since the Cup switch has a higher value, set the Cup Threshold higher than the Edge.  
-When I checked with the PCY-155  
-    Cup Threshold : 4  
-    Edge Threshold : 2       
-it worked well.
-
-    - Sensitivity (1 - 100)
-    - Threshold (1 - 100)
-    - Scan Time (1 - 100) milliseconds
-    - Mask Time (1 - 100) milliseconds
-    - Edge Threshold (1 - 100)
-    - Cup Threshold (1 - 100)
-    - Velocity Curve Type (0 - 4)
-
-- Hihat Controller Sensing  
-<img src="https://open-e-drums.com/images/sensing/hhc.png" width="800px">  
-Whether it's the FSR, the infrared sensor (TCRT5000), or Roland's VH-10, they are the same.  
-Record the time you started closing the hi-hat and the time you finished closing it. Then, the time it took to close the hi-hat is converted to the velocity. Only ScanStart and ScanEnd and PedalSensitivity are relevant to the velocity. The MIDI CC value can be set in the Sensitivity and Threshold. Velocity Curve here is only applied to MIDI CC values.  
-
-    - Sensitivity (1 - 100)
-    - Threshold (1 - 100)
-    - Scan Start (1 - 100)
-    - Scan End (1 - 100)
-    - Pedal Sensitivity (1 - 100)
-    - Velocity Curve Type (0 - 4)
-
-## Velocity Curve
-
- - Velocity Curve Type  
- <img src="https://open-e-drums.com/images/sensing/curve.png" width="800px">  
-
+## Sensing Method and Setting Values
+**Be sure to check here first if it is not working properly.**  
+[Check sensing.md](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/docs/sensing.md) for sensing methods.  
+[Check setting.md](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/docs/setting.md) for setting values. 
 
 ## Circuit
-- Single Piezo  
-<img src="https://open-e-drums.com/images/circuit/074/singlePiezo.png" width="800px">
-
-- Single Piezo with Potentiometer  
-<img src="https://open-e-drums.com/images/circuit/074/singlePiezoPot.png" width="800px">
-
-- Dual Piezo  
-<img src="https://open-e-drums.com/images/circuit/074/dualPiezo.png" width="800px">  
-
-- Roland PD series  
-<img src="https://open-e-drums.com/images/circuit/074/PD.png" width="800px">
-
-- FSR  
-<img src="https://open-e-drums.com/images/circuit/074/FSR.png" width="800px">
-
-- Roland VH-10/VH-11  
-<img src="https://open-e-drums.com/images/circuit/074/VH.png" width="800px">
-
-- TCRT5000  
-<img src="https://open-e-drums.com/images/circuit/074/TCRT.png" width="800px">
-
-- Cymbals  
-<img src="https://open-e-drums.com/images/circuit/074/cymbal.png" width="800px">
-
-- Roland PD-8  
-<img src="https://open-e-drums.com/images/circuit/074/PD8.png" width="800px">
-
-- Button  
-<img src="https://open-e-drums.com/images/circuit/074/button.png" width="800px">
-
-- LCD Keypad Shield  
-<img src="https://open-e-drums.com/images/circuit/074/keypad.png" width="800px">
-
-- Arduino UNO with MUX  
-<img src="https://open-e-drums.com/images/circuit/MUX_uno.png" width="600px">
-
-- ESP32 with MUX  
-<img src="https://open-e-drums.com/images/circuit/MUX_esp32.png" width="600px">
+[Check circuit.md](https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/docs/circuit.md) for how to connect the pad and the board.
 
 ## Pads
 
