@@ -24,6 +24,9 @@ These circuits are beta versions. The optimal resistance value may be a differen
 - Cymbals  
 <img src="https://open-e-drums.com/images/circuit/074/cymbal.png" width="800px">
 
+- DIY 3-Zone Cymbal  
+<img src="https://open-e-drums.com/images/circuit/pcyClone.png" width="800px">
+
 - Roland PD-8  
 <img src="https://open-e-drums.com/images/circuit/074/PD8.png" width="800px">
 
