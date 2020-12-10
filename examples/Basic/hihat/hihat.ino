@@ -9,23 +9,27 @@
 //Determine the setting value.
 //By changing the number in this array you can set sensitivity, threshold and so on.
 
-byte HIHAT[6] = {
+byte HIHAT[7] = {
     100, //sensitivity
     10,  //threshold
-    10,  //scan start
-    30,  //scan end
+    10,  //scan time
+    30,  //mask time
+    0,   //curve type
     46,  //note of open
-    42,  //note of close
+    42   //note of close
 };
 
-byte HIHAT_PEDAL[6] = {
-    90, //sensitivity
-    30, //threshold
-    60, //scan start
-    80, //scan end
-    10, //pedal sensitivity
+byte HIHAT_PEDAL[7] = {
+    90, //sensitivity (Hold the pedal at the position where you want to send 127(full open) in the MIDI CC, and read the Analog Read value in the TCRT5000. Divide the value by 10 and enter the value.)
+    30, //threshold (Hold the pedal at the position where you want to send 0(close) in the MIDI CC, and read the Analog Read value in the TCRT5000. Divide the value by 10 and enter the value.)
+    70, //scan start (When the analogRead value reaches this value * 10, the scan will start and the time will be recorded.)
+    90, //scan end (When the analogRead value reaches this value * 10, the scan is finished and the time taken for the scan is referenced to determine the velocity.Then noteOn will be sent.The default value is 90, the same as Sensitivity. This means that the pedal is closed at the point where MIDI CC is 127.)
+    10, //pedal sensitivity (This value multiplied by 100 is the time used to determine the velocity of the pedal. If the time taken from the scan start position to the scan end position is more than 1000 milliseconds, the velocity will be set to 1. So, if you feel that the velocity is low, either increase pedalSensitivity or increase the value of scan start.)
+    0,  //curve type
     44  //note of pedal
 };
+
+//about setting, see also https://github.com/RyoKosaka/HelloDrum-arduino-Library/blob/master/docs/sensing.md
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -54,6 +58,10 @@ void setup()
   //And uncomment the next two lines.
   MIDI.begin();
   Serial.begin(38400);
+
+  //set curve type
+  hihat.setCurve(HIHAT[4]);
+  hihatPedal.setCurve(HIHAT_PEDAL[5])
 }
 
 void loop()
@@ -71,22 +79,22 @@ void loop()
     //1.open
     if (hihatPedal.openHH == true)
     {
-      MIDI.sendNoteOn(HIHAT[4], hihat.velocity, 10); //(note, velocity, channel)
-      MIDI.sendNoteOff(HIHAT[4], 0, 10);
+      MIDI.sendNoteOn(HIHAT[5], hihat.velocity, 10); //(note, velocity, channel)
+      MIDI.sendNoteOff(HIHAT[5], 0, 10);
     }
     //2.close
     else if (hihatPedal.closeHH == true)
     {
-      MIDI.sendNoteOn(HIHAT[5], hihat.velocity, 10); //(note, velocity, channel)
-      MIDI.sendNoteOff(HIHAT[5], 0, 10);
+      MIDI.sendNoteOn(HIHAT[6], hihat.velocity, 10); //(note, velocity, channel)
+      MIDI.sendNoteOff(HIHAT[6], 0, 10);
     }
   }
 
   //when pedal is closed
   if (hihatPedal.hit == true)
   {
-    MIDI.sendNoteOn(HIHAT_PEDAL[5], hihatPedal.velocity, 10); //(note, velocity, channel)
-    MIDI.sendNoteOff(HIHAT_PEDAL[5], 0, 10);
+    MIDI.sendNoteOn(HIHAT_PEDAL[6], hihatPedal.velocity, 10); //(note, velocity, channel)
+    MIDI.sendNoteOff(HIHAT_PEDAL[6], 0, 10);
   }
 
   //sending state of pedal with controll change
