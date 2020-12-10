@@ -61,7 +61,7 @@ void setup()
 
   //set curve type
   hihat.setCurve(HIHAT[4]);
-  hihatPedal.setCurve(HIHAT_PEDAL[5])
+  hihatPedal.setCurve(HIHAT_PEDAL[5]);
 }
 
 void loop()
