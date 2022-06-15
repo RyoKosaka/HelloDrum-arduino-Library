@@ -13,7 +13,10 @@
 #include "hellodrum.h"
 #include "Arduino.h"
 
-#ifdef ESP32
+#if defined(ARDUINO_ARCH_MBED_RP2040) || defined(ARDUINO_ARCH_RP2040)
+  // ignore for now
+  //ToDo: Implement EEPROM handler for RP2040, see https://arduino-pico.readthedocs.io/en/latest/eeprom.html#eeprom-examples
+#elif defined(ESP32)
 #include "EEPROM_ESP.h"
 #else
 #include "EEPROM.h"
@@ -1352,7 +1355,12 @@ void HelloDrum::hihatControlMUX()
 
 //////////////////////////// 6. EEPROM SETTING  //////////////////////////////
 
-#ifdef ESP32
+#if defined(ARDUINO_ARCH_MBED_RP2040) || defined(ARDUINO_ARCH_RP2040)
+
+  // ignore for now
+  //ToDo: Implement EEPROM handler for RP2040, see https://arduino-pico.readthedocs.io/en/latest/eeprom.html#eeprom-examples
+
+#elif defined(ESP32)
 
 void HelloDrum::settingEnable()
 {
