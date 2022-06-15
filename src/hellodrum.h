@@ -12,7 +12,7 @@
 
 #include "Arduino.h"
 
-#if defined(ARDUINO_ARCH_MBED_RP2040) || defined(ARDUINO_ARCH_RP2040)
+#if ( defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_RASPBERRY_PI_PICO) || defined(ARDUINO_ADAFRUIT_FEATHER_RP2040) || defined(ARDUINO_GENERIC_RP2040) )
   // ignore for now
   //ToDo: Implement EEPROM handler for RP2040, see https://arduino-pico.readthedocs.io/en/latest/eeprom.html#eeprom-examples
 #elif defined(ESP32)
